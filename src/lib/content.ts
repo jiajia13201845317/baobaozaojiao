@@ -2,8 +2,12 @@ export type CategoryId =
   | "animals"
   | "body"
   | "family"
+  | "colors"
+  | "numbers"
   | "zh-songs"
   | "en-songs"
+  | "tales"
+  | "poems"
   | "stories";
 
 export type LessonStep = "zh" | "en" | "sound";
@@ -17,6 +21,8 @@ export type Flashcard = {
   image: string;
   color: string;
   accent: string;
+  swatch?: string;
+  numeral?: string;
 };
 
 export type Note = {
@@ -60,6 +66,18 @@ export type Story = {
   color: string;
   accent: string;
   lines: string[];
+  image?: string;
+};
+
+export type Poem = {
+  id: string;
+  title: string;
+  author: string;
+  verses: string[];
+  fun: string[];
+  color: string;
+  accent: string;
+  image?: string;
 };
 
 export const categories: {
@@ -73,6 +91,8 @@ export const categories: {
   deep: string;
   shadow: string;
   sky: string;
+  hero: string;
+  group: "learn" | "listen";
 }[] = [
   {
     id: "animals",
@@ -81,70 +101,138 @@ export const categories: {
     hint: "狗 · dog · 汪汪汪",
     english: "Happy Farm",
     emoji: "🐶",
-    tint: "#D9F5C8",
+    tint: "#E4F8DC",
     deep: "#39C15B",
     shadow: "#249A40",
     sky: "#C8F0B0",
+    hero: "/art/hero-dog.png",
+    group: "learn",
   },
   {
     id: "body",
     title: "身体部位",
-    place: "认识自己",
-    hint: "眼睛 · eyes",
+    place: "豆豆的身体",
+    hint: "这是眼睛 · eyes",
     english: "My Body",
     emoji: "👀",
-    tint: "#FFE4D6",
-    deep: "#FF6B4A",
-    shadow: "#E24A2C",
-    sky: "#FFD8C2",
+    tint: "#D9F5C8",
+    deep: "#39C15B",
+    shadow: "#249A40",
+    sky: "#C8F0B0",
+    hero: "/art/hero-body.png",
+    group: "learn",
   },
   {
     id: "family",
     title: "我的家人",
-    place: "家人小屋",
-    hint: "爸爸 · Daddy",
+    place: "豆豆一家",
+    hint: "爸爸猪 · Daddy",
     english: "My Family",
-    emoji: "👨‍👩‍👧",
+    emoji: "🐷",
+    tint: "#FFE4D6",
+    deep: "#FF6B4A",
+    shadow: "#E24A2C",
+    sky: "#FFD8C2",
+    hero: "/art/hero-family.png",
+    group: "learn",
+  },
+  {
+    id: "colors",
+    title: "认识颜色",
+    place: "彩虹小屋",
+    hint: "红色 · red",
+    english: "Colors",
+    emoji: "🌈",
     tint: "#FFE9C8",
     deep: "#F4A261",
     shadow: "#D9822B",
     sky: "#FFE2B0",
+    hero: "/art/hero-colors.png",
+    group: "learn",
+  },
+  {
+    id: "numbers",
+    title: "数一数",
+    place: "数字乐园",
+    hint: "一 · one",
+    english: "Numbers",
+    emoji: "1️⃣",
+    tint: "#FFF3B0",
+    deep: "#D4A017",
+    shadow: "#B8860B",
+    sky: "#FFE566",
+    hero: "/art/hero-numbers.png",
+    group: "learn",
   },
   {
     id: "zh-songs",
     title: "中文儿歌",
     place: "唱歌花园",
-    hint: "和小乖乖一起唱",
-    english: "Sing with Bunny",
+    hint: "小兔子乖乖",
+    english: "Sing Garden",
     emoji: "🐰",
     tint: "#FFE4D6",
     deep: "#FF6B4A",
     shadow: "#E24A2C",
     sky: "#FFD8C2",
+    hero: "/art/hero-songs.png",
+    group: "listen",
   },
   {
     id: "en-songs",
     title: "英文儿歌",
     place: "星星城堡",
-    hint: "Twinkle with friends",
+    hint: "Twinkle Star",
     english: "Star Castle",
     emoji: "🌟",
     tint: "#DCE6FF",
     deep: "#5B7CFF",
     shadow: "#3D5DE8",
     sky: "#C9D4FF",
+    hero: "/art/hero-english.png",
+    group: "listen",
+  },
+  {
+    id: "tales",
+    title: "童话故事",
+    place: "童话城堡",
+    hint: "小红帽出门啦",
+    english: "Fairy Tales",
+    emoji: "🏰",
+    tint: "#EDE0FF",
+    deep: "#9B6CFF",
+    shadow: "#7A49E0",
+    sky: "#E0D0FF",
+    hero: "/art/hero-tales.png",
+    group: "listen",
+  },
+  {
+    id: "poems",
+    title: "古诗背诵",
+    place: "小小书院",
+    hint: "先背，再听好玩的话",
+    english: "Poems",
+    emoji: "📜",
+    tint: "#FFE7B0",
+    deep: "#D49020",
+    shadow: "#B8860B",
+    sky: "#FFE566",
+    hero: "/art/hero-poems.png",
+    group: "listen",
   },
   {
     id: "stories",
     title: "寓言故事",
     place: "故事树屋",
-    hint: "今晚听一本",
-    english: "Story Treehouse",
+    hint: "乌鸦喝水",
+    english: "Fables",
     emoji: "📖",
-    tint: "#EDE0FF",
-    deep: "#9B6CFF",
-    shadow: "#7A49E0",
-    sky: "#E0D0FF",
+    tint: "#E0D0FF",
+    deep: "#8B6CC9",
+    shadow: "#6B4FA6",
+    sky: "#D8C8FF",
+    hero: "/art/hero-fables.png",
+    group: "listen",
   },
 ];
 
@@ -440,22 +528,227 @@ export const animals: Flashcard[] = [
 ];
 
 export const bodyParts: Flashcard[] = [
-  { id: "head", zh: "头", en: "Head", image: "/art/body-head.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "head", zh: "头", en: "Head", image: "/art/hero-body.png", color: "#D9F5C8", accent: "#39C15B" },
   { id: "eyes", zh: "眼睛", en: "Eyes", image: "/art/body-eyes.png", color: "#FFE4C8", accent: "#E0892C" },
   { id: "nose", zh: "鼻子", en: "Nose", image: "/art/body-nose.png", color: "#FFF3B0", accent: "#D4A017" },
   { id: "ears", zh: "耳朵", en: "Ears", image: "/art/body-ears.png", color: "#EDE0FF", accent: "#9B6CFF" },
   { id: "mouth", zh: "嘴巴", en: "Mouth", image: "/art/body-mouth.png", color: "#FFD6E0", accent: "#E07090" },
   { id: "hands", zh: "手", en: "Hands", image: "/art/body-hands.png", color: "#FFE9C8", accent: "#F4A261" },
+  { id: "feet", zh: "脚", en: "Feet", image: "/art/hero-body.png", color: "#C8EEF8", accent: "#2A88B0" },
 ];
 
 export const familyMembers: Flashcard[] = [
-  { id: "dad", zh: "爸爸", en: "Daddy", image: "/art/family-dad.png", color: "#C8EEF8", accent: "#2A88B0" },
-  { id: "mom", zh: "妈妈", en: "Mommy", image: "/art/family-mom.png", color: "#FFE4C8", accent: "#E0892C" },
-  { id: "grandpa", zh: "爷爷", en: "Grandpa", image: "/art/family-grandpa.png", color: "#D9F5C8", accent: "#39C15B" },
-  { id: "grandma", zh: "奶奶", en: "Grandma", image: "/art/family-grandma.png", color: "#EDE0FF", accent: "#9B6CFF" },
-  { id: "brother", zh: "哥哥", en: "Brother", image: "/art/family-brother.png", color: "#FFF3B0", accent: "#D4A017" },
-  { id: "sister", zh: "姐姐", en: "Sister", image: "/art/family-sister.png", color: "#FFD6E0", accent: "#E07090" },
-  { id: "baby", zh: "宝宝", en: "Baby", image: "/art/family-baby.png", color: "#F4F0E8", accent: "#8A7A6A" },
+  { id: "dad", zh: "爸爸", en: "Daddy", image: "/art/pig-dad.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "mom", zh: "妈妈", en: "Mommy", image: "/art/pig-mom.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "grandpa", zh: "爷爷", en: "Grandpa", image: "/art/pig-grandpa.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "grandma", zh: "奶奶", en: "Grandma", image: "/art/pig-grandma.png", color: "#EDE0FF", accent: "#9B6CFF" },
+  { id: "brother", zh: "哥哥", en: "Brother", image: "/art/pig-brother.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "sister", zh: "姐姐", en: "Sister", image: "/art/pig-sister.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "baby", zh: "宝宝", en: "Baby", image: "/art/pig-baby.png", color: "#F4F0E8", accent: "#8A7A6A" },
+];
+
+export const colorCards: Flashcard[] = [
+  { id: "red", zh: "红色", en: "Red", image: "/art/hero-colors.png", color: "#FFD6D6", accent: "#E05656", swatch: "#E05656" },
+  { id: "yellow", zh: "黄色", en: "Yellow", image: "/art/hero-colors.png", color: "#FFF3B0", accent: "#D4A017", swatch: "#FFD84A" },
+  { id: "blue", zh: "蓝色", en: "Blue", image: "/art/hero-colors.png", color: "#D6E8FF", accent: "#3E9ED0", swatch: "#3E9ED0" },
+  { id: "green", zh: "绿色", en: "Green", image: "/art/hero-colors.png", color: "#D4F0C8", accent: "#39C15B", swatch: "#39C15B" },
+  { id: "orange", zh: "橙色", en: "Orange", image: "/art/hero-colors.png", color: "#FFE0C0", accent: "#E07030", swatch: "#E07030" },
+  { id: "purple", zh: "紫色", en: "Purple", image: "/art/hero-colors.png", color: "#EDE0FF", accent: "#9B6CFF", swatch: "#9B6CFF" },
+];
+
+export const numberCards: Flashcard[] = [
+  { id: "one", zh: "一", en: "One", image: "/art/hero-numbers.png", color: "#FFE4D6", accent: "#FF6B4A", numeral: "1" },
+  { id: "two", zh: "二", en: "Two", image: "/art/hero-numbers.png", color: "#DCE6FF", accent: "#5B7CFF", numeral: "2" },
+  { id: "three", zh: "三", en: "Three", image: "/art/hero-numbers.png", color: "#D9F5C8", accent: "#39C15B", numeral: "3" },
+  { id: "four", zh: "四", en: "Four", image: "/art/hero-numbers.png", color: "#FFF3B0", accent: "#D4A017", numeral: "4" },
+  { id: "five", zh: "五", en: "Five", image: "/art/hero-numbers.png", color: "#EDE0FF", accent: "#9B6CFF", numeral: "5" },
+];
+
+export const poems: Poem[] = [
+  {
+    id: "goose",
+    title: "咏鹅",
+    author: "骆宾王",
+    color: "#C8EEF8",
+    accent: "#2A88B0",
+    image: "/art/hero-poems.png",
+    verses: ["鹅，鹅，鹅，曲项向天歌。", "白毛浮绿水，红掌拨清波。"],
+    fun: [
+      "先听完啦。这句话很好玩：",
+      "一只大白鹅，弯着脖子朝天唱歌。",
+      "白白的毛像小船，浮在绿绿的水上。",
+      "红红的脚掌一拨，水面就笑出波纹。",
+    ],
+  },
+  {
+    id: "dawn",
+    title: "春晓",
+    author: "孟浩然",
+    color: "#D9F5C8",
+    accent: "#39C15B",
+    image: "/art/hero-poems.png",
+    verses: ["春眠不觉晓，处处闻啼鸟。", "夜来风雨声，花落知多少。"],
+    fun: [
+      "诗背完了，来听好玩的话：",
+      "春天的早上，宝宝睡到自己醒来。",
+      "窗外好多小鸟在聊天：啾啾啾。",
+      "夜里悄悄下过雨，花瓣像给草地盖了一层小被子。",
+    ],
+  },
+  {
+    id: "moon",
+    title: "静夜思",
+    author: "李白",
+    color: "#DCE6FF",
+    accent: "#5B7CFF",
+    image: "/art/hero-poems.png",
+    verses: ["床前明月光，疑是地上霜。", "举头望明月，低头思故乡。"],
+    fun: [
+      "古诗念完了，我们来译成小朋友的话：",
+      "床边白白亮亮的，还以为地上结霜了。",
+      "抬头一看，原来是月亮在眨眼。",
+      "低头就想起家里，好像月亮也在看妈妈。",
+    ],
+  },
+  {
+    id: "farmer",
+    title: "悯农",
+    author: "李绅",
+    color: "#FFE4D6",
+    accent: "#FF6B4A",
+    image: "/art/hero-poems.png",
+    verses: ["锄禾日当午，汗滴禾下土。", "谁知盘中餐，粒粒皆辛苦。"],
+    fun: [
+      "背完啦，听一听它在说什么：",
+      "农民伯伯顶着大太阳种粮食，汗水滴到泥土里。",
+      "碗里的米饭，一粒一粒都是辛苦换来的。",
+      "吃饭时不撒米，就是谢谢伯伯。",
+    ],
+  },
+  {
+    id: "tower",
+    title: "登鹳雀楼",
+    author: "王之涣",
+    color: "#FFE7B0",
+    accent: "#D49020",
+    image: "/art/hero-poems.png",
+    verses: ["白日依山尽，黄河入海流。", "欲穷千里目，更上一层楼。"],
+    fun: [
+      "诗念完了，翻译成好玩的话：",
+      "太阳顺着山坡回家睡觉了。",
+      "黄河像一条黄丝带，跑去海里玩。",
+      "想看更远的地方？再爬高一点点就好啦。",
+    ],
+  },
+  {
+    id: "jiangnan",
+    title: "江南",
+    author: "汉乐府",
+    color: "#D4F0C8",
+    accent: "#5AAA4A",
+    image: "/art/hero-poems.png",
+    verses: ["江南可采莲，莲叶何田田。", "鱼戏莲叶间。"],
+    fun: [
+      "好听的古诗结束啦：",
+      "江南的水里能采莲蓬，叶子圆圆的像小伞。",
+      "小鱼在叶子东边西边捉迷藏。",
+      "宝宝要是去，也可以轻轻跟鱼打招呼。",
+    ],
+  },
+];
+
+export const tales: Story[] = [
+  {
+    id: "hood",
+    title: "小红帽",
+    subtitle: "去看外婆",
+    emoji: "🧺",
+    color: "#FFD6D6",
+    accent: "#E05656",
+    image: "/art/hero-tales.png",
+    lines: [
+      "小红帽戴着红帽子，去看外婆。",
+      "路上遇见大灰狼。大灰狼跑去外婆家，躲在被子里。",
+      "小红帽说：外婆，你的牙齿怎么这么大？",
+      "猎人赶来，把大灰狼赶跑了。",
+      "小红帽抱抱外婆。出门要跟家人在一起。",
+    ],
+  },
+  {
+    id: "duckling",
+    title: "丑小鸭",
+    subtitle: "后来变天鹅",
+    emoji: "🦢",
+    color: "#E8F0FF",
+    accent: "#4A7FD4",
+    image: "/art/hero-tales.png",
+    lines: [
+      "鸭窝里走出一只灰灰的小鸭子，大家笑它丑。",
+      "它走呀走，冬天好冷，春天来了。",
+      "它低头看水面：呀，自己变成白天鹅啦。",
+      "原来慢慢长大，也会变得漂亮。",
+    ],
+  },
+  {
+    id: "snow",
+    title: "白雪公主",
+    subtitle: "七个好朋友",
+    emoji: "🍎",
+    color: "#F4F0E8",
+    accent: "#8A7A6A",
+    image: "/art/hero-tales.png",
+    lines: [
+      "白雪公主住在森林里，遇见七个矮矮人好朋友。",
+      "坏皇后送来红苹果，公主睡着了。",
+      "朋友们守护她。王子来了，公主醒来。",
+      "大家又唱歌，又跳舞。好朋友最重要。",
+    ],
+  },
+  {
+    id: "cinder",
+    title: "灰姑娘",
+    subtitle: "水晶鞋",
+    emoji: "👠",
+    color: "#EDE0FF",
+    accent: "#9B6CFF",
+    image: "/art/hero-tales.png",
+    lines: [
+      "灰姑娘天天干活，仙女教母给她漂亮裙子和水晶鞋。",
+      "她去跳舞，十二点要回家，丢下一只鞋。",
+      "王子拿着鞋子找人。鞋子正好合适。",
+      "灰姑娘笑了。善良的孩子，会遇到好事。",
+    ],
+  },
+  {
+    id: "bean",
+    title: "杰克与豆茎",
+    subtitle: "爬得高高的",
+    emoji: "🌱",
+    color: "#D4F0C8",
+    accent: "#39C15B",
+    image: "/art/hero-tales.png",
+    lines: [
+      "杰克种下一颗豆子，豆茎长到天上。",
+      "他爬上去，看见一座大房子。",
+      "他带回一把竖琴，豆茎又变回小芽芽。",
+      "小小的种子，也能长得高高的。",
+    ],
+  },
+  {
+    id: "goldfish",
+    title: "渔夫和金鱼",
+    subtitle: "知足就好",
+    emoji: "🐠",
+    color: "#C8EEF8",
+    accent: "#2A88B0",
+    image: "/art/hero-tales.png",
+    lines: [
+      "渔夫网到一条会说话的金鱼，金鱼说：放我走吧。",
+      "渔夫放了它。后来要房子、要城堡，要得太多。",
+      "金鱼游走了，家里又变回小木屋。",
+      "够用就好，心里会甜甜的。",
+    ],
+  },
 ];
 
 export const stories: Story[] = [
@@ -562,18 +855,30 @@ export function cardsFor(id: CategoryId): Flashcard[] {
   if (id === "animals") return animals;
   if (id === "body") return bodyParts;
   if (id === "family") return familyMembers;
+  if (id === "colors") return colorCards;
+  if (id === "numbers") return numberCards;
   return [];
 }
 
 export function isLesson(id: CategoryId) {
-  return id === "animals" || id === "body" || id === "family";
+  return id === "animals" || id === "body" || id === "family" || id === "colors" || id === "numbers";
+}
+
+export function storiesFor(id: CategoryId): Story[] {
+  if (id === "tales") return tales;
+  if (id === "stories") return stories;
+  return [];
 }
 
 export function itemsFor(id: CategoryId) {
   if (id === "zh-songs") return zhSongs;
   if (id === "en-songs") return enSongs;
+  if (id === "poems") return poems;
+  if (id === "tales") return tales;
   if (id === "animals") return animals;
   if (id === "body") return bodyParts;
   if (id === "family") return familyMembers;
+  if (id === "colors") return colorCards;
+  if (id === "numbers") return numberCards;
   return stories;
 }

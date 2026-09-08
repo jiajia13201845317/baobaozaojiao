@@ -4,13 +4,12 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, Pause, RotateCcw, Volume1, Volume2, VolumeX } from "lucide-react";
 import {
   Balloon,
-  CategoryScene,
   ItemArt,
   Mascot,
   PlayBadge,
   WorldBackdrop,
 } from "@/components/art";
-import { CoverImage } from "@/components/cover";
+import { CoverImage, Portrait, RoomHero } from "@/components/cover";
 import { FlashcardPlayer } from "@/components/flashcard";
 import { toyPlayer, type LineInfo } from "@/lib/audio";
 import {
@@ -19,10 +18,12 @@ import {
   enSongs,
   getCategory,
   isLesson,
-  stories,
+  poems,
+  storiesFor,
   zhSongs,
   type CategoryId,
   type LessonStep,
+  type Poem,
   type Song,
   type Story,
 } from "@/lib/content";
@@ -35,10 +36,11 @@ type View =
 
 const VOLUME_STEPS = [0, 0.45, 0.82] as const;
 
-function songOrStory(category: CategoryId, itemId: string) {
+function listenItem(category: CategoryId, itemId: string) {
   if (category === "zh-songs") return zhSongs.find((s) => s.id === itemId);
   if (category === "en-songs") return enSongs.find((s) => s.id === itemId);
-  return stories.find((s) => s.id === itemId);
+  if (category === "poems") return poems.find((s) => s.id === itemId);
+  return storiesFor(category).find((s) => s.id === itemId);
 }
 
 export function ToyApp() {
@@ -85,7 +87,12 @@ export function ToyApp() {
       if (song) await toyPlayer.playSong(song);
       return;
     }
-    const story = stories.find((s) => s.id === itemId);
+    if (category === "poems") {
+      const poem = poems.find((s) => s.id === itemId);
+      if (poem) await toyPlayer.playPoem(poem);
+      return;
+    }
+    const story = storiesFor(category).find((s) => s.id === itemId);
     if (story) await toyPlayer.playStory(story);
   }, []);
 
@@ -208,58 +215,81 @@ function Home({
   volume: ReactNode;
 }) {
   const featured = categories[0]!;
-  const rest = categories.slice(1);
+  const learn = categories.filter((c) => c.group === "learn" && c.id !== "animals");
+  const listen = categories.filter((c) => c.group === "listen");
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-5 sm:px-6">
+    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-5 sm:px-6">
       <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="grid h-16 w-16 place-items-center rounded-full bg-white/70 shadow-[0_8px_20px_rgba(42,39,64,0.12)]">
-            <Mascot pose="wave" className="h-14 w-14" />
+          <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-white shadow-[0_8px_20px_rgba(42,39,64,0.12)]">
+            <Mascot pose="wave" className="h-12 w-12" />
           </div>
           <div>
             <p className="font-rounded text-xs font-semibold tracking-wider text-[#5B7CFF]">
               XIAO GUAI GUAI
             </p>
-            <h1 className="text-2xl font-black text-[#2A2740] sm:text-3xl">先听汪汪汪？</h1>
+            <h1 className="text-2xl font-black text-[#2A2740]">今天听什么？</h1>
           </div>
         </div>
         {volume}
       </header>
 
-      <button type="button" onClick={() => onOpen(featured.id)} className="island-card group mt-5 text-left">
-        <span className="relative block h-44 overflow-hidden sm:h-52">
-          <CategoryScene id={featured.id} />
-          <CoverImage src="/art/dog.png" alt="狗" className="absolute right-2 bottom-0 h-[92%] w-auto object-contain drop-shadow-xl" />
-          <span className="absolute bottom-3 right-3">
-            <PlayBadge className="h-12 w-12" />
+      <button type="button" onClick={() => onOpen(featured.id)} className="island-card mt-5 text-left">
+        <span className="flex items-center gap-4 bg-[#E4F8DC] px-4 py-4">
+          <span className="grid h-32 w-32 shrink-0 place-items-center rounded-[2rem] bg-white p-2 shadow-sm sm:h-36 sm:w-36">
+            <CoverImage src={featured.hero} alt="狗" />
           </span>
-        </span>
-        <span className="block bg-white px-4 py-3">
-          <span className="block text-[11px] font-bold tracking-wide text-[#8A84A3]">{featured.place}</span>
-          <span className="mt-0.5 block text-2xl font-black text-[#2A2740]">{featured.title}</span>
-          <span className="mt-0.5 block text-sm font-medium text-[#6B6580]">狗 · dog · 汪汪汪，点一下再叫</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-bold tracking-wide text-[#249A40]">{featured.place}</span>
+            <span className="mt-1 block text-2xl font-black leading-tight text-[#2A2740]">{featured.title}</span>
+            <span className="mt-2 block text-sm font-bold text-[#4A3228]">
+              狗 → dog → 汪汪汪
+            </span>
+            <span className="mt-3 inline-flex">
+              <PlayBadge className="h-11 w-11" />
+            </span>
+          </span>
         </span>
       </button>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
-        {rest.map((cat) => (
-          <button key={cat.id} type="button" onClick={() => onOpen(cat.id)} className="island-card group text-left">
-            <span className="relative block aspect-[1.2] overflow-hidden">
-              <CategoryScene id={cat.id} />
-              <span className="absolute bottom-2 right-2">
-                <PlayBadge className="h-9 w-9" />
-              </span>
-            </span>
-            <span className="block bg-white px-3 py-3">
-              <span className="block text-[11px] font-bold tracking-wide text-[#8A84A3]">{cat.place}</span>
-              <span className="mt-0.5 block text-lg font-black leading-tight text-[#2A2740]">{cat.title}</span>
-              <span className="mt-0.5 block text-xs font-medium text-[#6B6580]">{cat.hint}</span>
-            </span>
-          </button>
+      <p className="mt-6 mb-2 text-sm font-black text-[#2A2740]/70">认一认</p>
+      <div className="grid grid-cols-2 gap-3">
+        {learn.map((cat) => (
+          <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
+        ))}
+      </div>
+
+      <p className="mt-6 mb-2 text-sm font-black text-[#2A2740]/70">听一听</p>
+      <div className="grid grid-cols-2 gap-3">
+        {listen.map((cat) => (
+          <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
         ))}
       </div>
     </main>
+  );
+}
+
+function RoomButton({
+  cat,
+  onOpen,
+}: {
+  cat: (typeof categories)[number];
+  onOpen: (id: CategoryId) => void;
+}) {
+  return (
+    <button type="button" onClick={() => onOpen(cat.id)} className="island-card text-left">
+      <span className="relative block">
+        <RoomHero src={cat.hero} tint={cat.tint} alt={cat.title} />
+        <span className="absolute bottom-2 right-2">
+          <PlayBadge className="h-9 w-9" />
+        </span>
+      </span>
+      <span className="block bg-white px-3 py-2.5">
+        <span className="block text-[11px] font-bold tracking-wide text-[#8A84A3]">{cat.place}</span>
+        <span className="mt-0.5 block text-[17px] font-black leading-tight text-[#2A2740]">{cat.title}</span>
+      </span>
+    </button>
   );
 }
 
@@ -278,7 +308,8 @@ function Library({
   const lesson = isLesson(category);
   const cards = lesson ? cardsFor(category) : [];
   const songs = category === "zh-songs" ? zhSongs : category === "en-songs" ? enSongs : [];
-  const taleItems = category === "stories" ? stories : [];
+  const poemItems = category === "poems" ? poems : [];
+  const taleItems = storiesFor(category);
 
   return (
     <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-4 sm:px-6">
@@ -291,13 +322,14 @@ function Library({
       </header>
 
       <section className="island-card mt-4 overflow-hidden">
-        <div className="relative h-36 sm:h-40">
-          <CategoryScene id={category} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
-          <div className="absolute bottom-3 left-4 right-4">
-            <p className="font-rounded text-xs font-bold tracking-wider text-white/80">{cat.english}</p>
-            <h1 className="text-3xl font-black text-white drop-shadow">{cat.place}</h1>
-            <p className="text-sm font-medium text-white/90">{cat.hint}</p>
+        <div className="flex items-center gap-3 px-3 py-3" style={{ background: cat.tint }}>
+          <span className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-white p-2">
+            <CoverImage src={cat.hero} alt={cat.title} />
+          </span>
+          <div>
+            <p className="font-rounded text-xs font-bold tracking-wider text-[#6B6580]">{cat.english}</p>
+            <h1 className="text-2xl font-black text-[#2A2740]">{cat.place}</h1>
+            <p className="text-sm font-medium text-[#6B6580]">{cat.hint}</p>
           </div>
         </div>
       </section>
@@ -307,8 +339,8 @@ function Library({
           {cards.map((card) => (
             <li key={card.id}>
               <button type="button" onClick={() => onPlay(card.id)} className="island-card w-full text-left">
-                <span className="relative block aspect-square overflow-hidden bg-white">
-                  <CoverImage src={card.image} alt={card.zh} />
+                <span className="relative block aspect-square overflow-hidden">
+                  <Portrait card={card} className="h-full w-full" />
                   <span className="absolute bottom-2 right-2">
                     <PlayBadge className="h-9 w-9" />
                   </span>
@@ -328,18 +360,24 @@ function Library({
 
       {!lesson && (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {(songs.length ? songs : taleItems).map((item) => (
+          {(songs.length ? songs : poemItems.length ? poemItems : taleItems).map((item) => (
             <li key={item.id}>
               <button type="button" onClick={() => onPlay(item.id)} className="island-card w-full text-left">
-                <span className="relative block aspect-[4/3] overflow-hidden">
-                  <ItemArt id={item.id} />
+                <span className="relative block aspect-square overflow-hidden" style={{ background: item.color }}>
+                  {"image" in item && item.image ? (
+                    <CoverImage src={item.image} alt={item.title} className="p-3" />
+                  ) : (
+                    <ItemArt id={item.id} />
+                  )}
                   <span className="absolute bottom-2 right-2">
                     <PlayBadge className="h-9 w-9" />
                   </span>
                 </span>
                 <span className="block bg-white px-2.5 py-2.5">
                   <span className="block text-[15px] font-black text-[#2A2740]">{item.title}</span>
-                  <span className="text-xs font-medium text-[#8A84A3]">{item.subtitle}</span>
+                  <span className="text-xs font-medium text-[#8A84A3]">
+                    {"subtitle" in item ? item.subtitle : "author" in item ? item.author : ""}
+                  </span>
                 </span>
               </button>
             </li>
@@ -414,10 +452,12 @@ function Player({
   volume: ReactNode;
 }) {
   const cat = getCategory(category);
-  const item = songOrStory(category, itemId);
+  const item = listenItem(category, itemId);
   if (!item) return null;
   const song = category === "zh-songs" || category === "en-songs" ? (item as Song) : null;
-  const story = category === "stories" ? (item as Story) : null;
+  const poem = category === "poems" ? (item as Poem) : null;
+  const story = category === "stories" || category === "tales" ? (item as Story) : null;
+  const cover = ("image" in item && item.image) || cat.hero;
 
   return (
     <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
@@ -429,22 +469,24 @@ function Player({
         {volume}
       </header>
       <section className="island-card relative mt-4 flex flex-1 flex-col overflow-hidden">
-        <div className="relative h-36">
-          <CategoryScene id={category} />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
-        </div>
-        <div className="relative -mt-16 flex flex-1 flex-col items-center px-5 pb-6 text-center">
-          <div className={`relative h-32 w-32 overflow-hidden rounded-[2rem] bg-white shadow-[0_12px_30px_rgba(42,39,64,0.16)] ${playing ? "animate-[bob_1.1s_ease-in-out_infinite]" : ""}`}>
-            <ItemArt id={itemId} />
+        <div className="flex flex-1 flex-col items-center px-5 py-6 text-center" style={{ background: cat.tint }}>
+          <div className={`relative h-36 w-36 overflow-hidden rounded-[2rem] bg-white p-2 shadow-[0_12px_30px_rgba(42,39,64,0.16)] ${playing ? "animate-[bob_1.1s_ease-in-out_infinite]" : ""}`}>
+            <CoverImage src={cover} alt={item.title} />
           </div>
-          <h1 className="mt-3 text-3xl font-black text-[#2A2740]">{item.title}</h1>
-          <div className="story-page mt-5 w-full max-w-md">
+          <p className="mt-3 text-xs font-bold tracking-wider text-[#8A84A3]">{poem ? poem.author : cat.title}</p>
+          <h1 className="mt-1 text-3xl font-black text-[#2A2740]">{item.title}</h1>
+          {line?.kind === "fun" && (
+            <p className="mt-2 rounded-full bg-white/80 px-3 py-1 text-xs font-black text-[#D49020]">好玩的翻译</p>
+          )}
+          <div className="story-page mt-4 w-full max-w-md">
             {line ? (
               <p className="text-xl font-bold leading-relaxed text-[#2A2740]" lang={line.lang}>
                 {line.text}
               </p>
             ) : (
-              <p className="text-base font-medium text-[#8A84A3]">{story?.subtitle ?? "再听一遍，或者换一首"}</p>
+              <p className="text-base font-medium text-[#8A84A3]">
+                {poem ? "先背古诗，再听好玩的话" : story?.subtitle ?? "再听一遍"}
+              </p>
             )}
             {song && line && <p className="mt-2 text-xs font-medium text-[#B0AABC]">{song.subtitle}</p>}
           </div>

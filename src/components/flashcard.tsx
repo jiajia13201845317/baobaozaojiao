@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { CoverImage } from "@/components/cover";
+import { Portrait } from "@/components/cover";
 import type { CategoryId, Flashcard, LessonStep } from "@/lib/content";
 import { getCategory } from "@/lib/content";
 
@@ -63,7 +63,7 @@ export function FlashcardPlayer({
             <div
               className={`relative h-full w-full overflow-hidden rounded-[2.2rem] bg-white shadow-[0_16px_36px_rgba(42,39,64,0.16)] ${playing ? "animate-[bob_0.9s_ease-in-out_infinite]" : ""}`}
             >
-              <CoverImage src={card.image} alt={card.zh} />
+              <Portrait card={card} className="h-full w-full" />
             </div>
           </div>
           <p className="mt-4 text-sm font-bold text-[#8A84A3]">

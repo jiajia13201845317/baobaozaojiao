@@ -1,4 +1,4 @@
-import type { AnimalSoundId, Flashcard, LessonStep, Note, Song, Story } from "./content";
+import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
 
 const FREQ: Record<string, number> = {
   G3: 196.0,
@@ -20,6 +20,7 @@ const FREQ: Record<string, number> = {
 export type LineInfo = {
   text: string;
   lang?: "zh-CN" | "en-US";
+  kind?: "verse" | "fun" | "story";
 };
 
 type PlayToken = number;
@@ -137,7 +138,7 @@ class ToyPlayer {
     await this.wait(320, t);
     for (const line of story.lines) {
       if (!this.alive(t)) return;
-      this.emit({ text: line, lang: "zh-CN" });
+      this.emit({ text: line, lang: "zh-CN", kind: "story" });
       await this.speak(line, "zh-CN", t);
       await this.wait(280, t);
     }
@@ -145,6 +146,30 @@ class ToyPlayer {
       await this.chime(t);
       this.onEnded?.();
     }
+  }
+
+  async playPoem(poem: Poem) {
+    const t = this.begin();
+    this.emit({ text: poem.title, lang: "zh-CN", kind: "verse" });
+    await this.chime(t);
+    await this.speak(`${poem.title}，${poem.author}`, "zh-CN", t);
+    if (!this.alive(t)) return;
+    await this.wait(280, t);
+    for (const verse of poem.verses) {
+      if (!this.alive(t)) return;
+      this.emit({ text: verse, lang: "zh-CN", kind: "verse" });
+      await this.speak(verse, "zh-CN", t);
+      await this.wait(320, t);
+    }
+    if (!this.alive(t)) return;
+    await this.wait(400, t);
+    for (const line of poem.fun) {
+      if (!this.alive(t)) return;
+      this.emit({ text: line, lang: "zh-CN", kind: "fun" });
+      await this.speak(line, "zh-CN", t);
+      await this.wait(260, t);
+    }
+    if (this.alive(t)) this.onEnded?.();
   }
 
   private begin() {
