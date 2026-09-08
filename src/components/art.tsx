@@ -127,10 +127,44 @@ export function PlayBadge({ className = "h-11 w-11" }: { className?: string }) {
 }
 
 export function CategoryScene({ id }: { id: CategoryId }) {
+  if (id === "animals") return <FarmScene />;
+  if (id === "body") return <BodyScene />;
+  if (id === "family") return <FamilyScene />;
   if (id === "zh-songs") return <GardenScene />;
   if (id === "en-songs") return <CastleScene />;
-  if (id === "animals") return <FarmScene />;
   return <TreehouseScene />;
+}
+
+function BodyScene() {
+  return (
+    <svg viewBox="0 0 320 180" className="h-full w-full" aria-hidden>
+      <rect width="320" height="180" fill="#FFD3B6" />
+      <circle cx="260" cy="36" r="20" fill="#FFE566" />
+      <circle cx="160" cy="58" r="28" fill="#FFF6EA" />
+      <ellipse cx="160" cy="118" rx="36" ry="44" fill="#FF8A6A" />
+      <circle cx="148" cy="52" r="3" fill="#2A2740" />
+      <circle cx="172" cy="52" r="3" fill="#2A2740" />
+      <path d="M150 66 Q 160 72 170 66" fill="none" stroke="#2A2740" strokeWidth="2" />
+      <ellipse cx="122" cy="118" rx="10" ry="16" fill="#FFF6EA" />
+      <ellipse cx="198" cy="118" rx="10" ry="16" fill="#FFF6EA" />
+      <ellipse cx="146" cy="158" rx="10" ry="8" fill="#FFF6EA" />
+      <ellipse cx="174" cy="158" rx="10" ry="8" fill="#FFF6EA" />
+    </svg>
+  );
+}
+
+function FamilyScene() {
+  return (
+    <svg viewBox="0 0 320 180" className="h-full w-full" aria-hidden>
+      <rect width="320" height="180" fill="#FFE2B0" />
+      <rect x="70" y="70" width="180" height="80" rx="10" fill="#F4A261" />
+      <polygon points="60,78 160,28 260,78" fill="#E24A2C" />
+      <rect x="148" y="108" width="24" height="42" fill="#8A4A22" />
+      <circle cx="110" cy="118" r="16" fill="#FFF6EA" />
+      <circle cx="160" cy="112" r="18" fill="#FFE4C8" />
+      <circle cx="208" cy="118" r="16" fill="#FFF6EA" />
+    </svg>
+  );
 }
 
 function GardenScene() {

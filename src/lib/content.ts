@@ -1,4 +1,23 @@
-export type CategoryId = "zh-songs" | "en-songs" | "animals" | "stories";
+export type CategoryId =
+  | "animals"
+  | "body"
+  | "family"
+  | "zh-songs"
+  | "en-songs"
+  | "stories";
+
+export type LessonStep = "zh" | "en" | "sound";
+
+export type Flashcard = {
+  id: string;
+  zh: string;
+  en: string;
+  cry?: string;
+  sound?: AnimalSoundId;
+  image: string;
+  color: string;
+  accent: string;
+};
 
 export type Note = {
   n: string;
@@ -17,17 +36,7 @@ export type Song = {
   melody: Note[];
 };
 
-export type Animal = {
-  id: string;
-  zh: string;
-  en: string;
-  emoji: string;
-  color: string;
-  accent: string;
-  sound: AnimalSoundId;
-  zhLine: string;
-  enLine: string;
-};
+export type Animal = Flashcard;
 
 export type AnimalSoundId =
   | "cat"
@@ -66,6 +75,42 @@ export const categories: {
   sky: string;
 }[] = [
   {
+    id: "animals",
+    title: "动物叫声",
+    place: "快乐农场",
+    hint: "狗 · dog · 汪汪汪",
+    english: "Happy Farm",
+    emoji: "🐶",
+    tint: "#D9F5C8",
+    deep: "#39C15B",
+    shadow: "#249A40",
+    sky: "#C8F0B0",
+  },
+  {
+    id: "body",
+    title: "身体部位",
+    place: "认识自己",
+    hint: "眼睛 · eyes",
+    english: "My Body",
+    emoji: "👀",
+    tint: "#FFE4D6",
+    deep: "#FF6B4A",
+    shadow: "#E24A2C",
+    sky: "#FFD8C2",
+  },
+  {
+    id: "family",
+    title: "我的家人",
+    place: "家人小屋",
+    hint: "爸爸 · Daddy",
+    english: "My Family",
+    emoji: "👨‍👩‍👧",
+    tint: "#FFE9C8",
+    deep: "#F4A261",
+    shadow: "#D9822B",
+    sky: "#FFE2B0",
+  },
+  {
     id: "zh-songs",
     title: "中文儿歌",
     place: "唱歌花园",
@@ -88,18 +133,6 @@ export const categories: {
     deep: "#5B7CFF",
     shadow: "#3D5DE8",
     sky: "#C9D4FF",
-  },
-  {
-    id: "animals",
-    title: "动物叫声",
-    place: "快乐农场",
-    hint: "中文 · English",
-    english: "Happy Farm",
-    emoji: "🐶",
-    tint: "#D9F5C8",
-    deep: "#39C15B",
-    shadow: "#249A40",
-    sky: "#C8F0B0",
   },
   {
     id: "stories",
@@ -391,139 +424,38 @@ export const enSongs: Song[] = [
   },
 ];
 
-export const animals: Animal[] = [
-  {
-    id: "cat",
-    zh: "小猫",
-    en: "Cat",
-    emoji: "🐱",
-    color: "#FFE4C8",
-    accent: "#E0892C",
-    sound: "cat",
-    zhLine: "小猫，喵喵。",
-    enLine: "Cat. Meow.",
-  },
-  {
-    id: "dog",
-    zh: "小狗",
-    en: "Dog",
-    emoji: "🐶",
-    color: "#F0D8C0",
-    accent: "#B07840",
-    sound: "dog",
-    zhLine: "小狗，汪汪。",
-    enLine: "Dog. Woof woof.",
-  },
-  {
-    id: "chick",
-    zh: "小鸡",
-    en: "Chick",
-    emoji: "🐥",
-    color: "#FFF3B0",
-    accent: "#D4A017",
-    sound: "chick",
-    zhLine: "小鸡，叽叽。",
-    enLine: "Chick. Cheep cheep.",
-  },
-  {
-    id: "duck",
-    zh: "小鸭",
-    en: "Duck",
-    emoji: "🦆",
-    color: "#D4F0C8",
-    accent: "#5AAA4A",
-    sound: "duck",
-    zhLine: "小鸭子，嘎嘎。",
-    enLine: "Duck. Quack quack.",
-  },
-  {
-    id: "cow",
-    zh: "奶牛",
-    en: "Cow",
-    emoji: "🐮",
-    color: "#F0E8DC",
-    accent: "#8A6A4A",
-    sound: "cow",
-    zhLine: "奶牛，哞哞。",
-    enLine: "Cow. Moo.",
-  },
-  {
-    id: "sheep",
-    zh: "小羊",
-    en: "Sheep",
-    emoji: "🐑",
-    color: "#F4F0E8",
-    accent: "#8A7A6A",
-    sound: "sheep",
-    zhLine: "小羊，咩咩。",
-    enLine: "Sheep. Baa baa.",
-  },
-  {
-    id: "pig",
-    zh: "小猪",
-    en: "Pig",
-    emoji: "🐷",
-    color: "#FFD6E0",
-    accent: "#E07090",
-    sound: "pig",
-    zhLine: "小猪，哼哼。",
-    enLine: "Pig. Oink oink.",
-  },
-  {
-    id: "bird",
-    zh: "小鸟",
-    en: "Bird",
-    emoji: "🐦",
-    color: "#C8EEF8",
-    accent: "#2A88B0",
-    sound: "bird",
-    zhLine: "小鸟，啾啾。",
-    enLine: "Bird. Tweet tweet.",
-  },
-  {
-    id: "frog",
-    zh: "青蛙",
-    en: "Frog",
-    emoji: "🐸",
-    color: "#C8F0B8",
-    accent: "#4A9A3A",
-    sound: "frog",
-    zhLine: "青蛙，呱呱。",
-    enLine: "Frog. Ribbit.",
-  },
-  {
-    id: "horse",
-    zh: "小马",
-    en: "Horse",
-    emoji: "🐴",
-    color: "#E8D4B8",
-    accent: "#8A6030",
-    sound: "horse",
-    zhLine: "小马，嘶嘶。",
-    enLine: "Horse. Neigh.",
-  },
-  {
-    id: "lion",
-    zh: "狮子",
-    en: "Lion",
-    emoji: "🦁",
-    color: "#FFE7B0",
-    accent: "#D49020",
-    sound: "lion",
-    zhLine: "狮子，吼——",
-    enLine: "Lion. Roar.",
-  },
-  {
-    id: "elephant",
-    zh: "大象",
-    en: "Elephant",
-    emoji: "🐘",
-    color: "#D8DCE8",
-    accent: "#6A7088",
-    sound: "elephant",
-    zhLine: "大象，嗷——",
-    enLine: "Elephant. Toot.",
-  },
+export const animals: Flashcard[] = [
+  { id: "dog", zh: "狗", en: "Dog", cry: "汪汪汪", sound: "dog", image: "/art/dog.png", color: "#F0D8C0", accent: "#B07840" },
+  { id: "cat", zh: "猫", en: "Cat", cry: "喵喵喵", sound: "cat", image: "/art/cat.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "chick", zh: "鸡", en: "Chick", cry: "叽叽叽", sound: "chick", image: "/art/chick.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "duck", zh: "鸭", en: "Duck", cry: "嘎嘎嘎", sound: "duck", image: "/art/duck.png", color: "#D4F0C8", accent: "#5AAA4A" },
+  { id: "cow", zh: "牛", en: "Cow", cry: "哞哞哞", sound: "cow", image: "/art/cow.png", color: "#F0E8DC", accent: "#8A6A4A" },
+  { id: "sheep", zh: "羊", en: "Sheep", cry: "咩咩咩", sound: "sheep", image: "/art/sheep.png", color: "#F4F0E8", accent: "#8A7A6A" },
+  { id: "pig", zh: "猪", en: "Pig", cry: "哼哼哼", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "bird", zh: "鸟", en: "Bird", cry: "啾啾啾", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "frog", zh: "青蛙", en: "Frog", cry: "呱呱呱", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
+  { id: "horse", zh: "马", en: "Horse", cry: "嘶嘶嘶", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
+  { id: "lion", zh: "狮子", en: "Lion", cry: "吼吼吼", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
+  { id: "elephant", zh: "大象", en: "Elephant", cry: "嗷嗷嗷", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
+];
+
+export const bodyParts: Flashcard[] = [
+  { id: "head", zh: "头", en: "Head", image: "/art/body-head.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "eyes", zh: "眼睛", en: "Eyes", image: "/art/body-eyes.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "nose", zh: "鼻子", en: "Nose", image: "/art/body-nose.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "ears", zh: "耳朵", en: "Ears", image: "/art/body-ears.png", color: "#EDE0FF", accent: "#9B6CFF" },
+  { id: "mouth", zh: "嘴巴", en: "Mouth", image: "/art/body-mouth.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "hands", zh: "手", en: "Hands", image: "/art/body-hands.png", color: "#FFE9C8", accent: "#F4A261" },
+];
+
+export const familyMembers: Flashcard[] = [
+  { id: "dad", zh: "爸爸", en: "Daddy", image: "/art/family-dad.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "mom", zh: "妈妈", en: "Mommy", image: "/art/family-mom.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "grandpa", zh: "爷爷", en: "Grandpa", image: "/art/family-grandpa.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "grandma", zh: "奶奶", en: "Grandma", image: "/art/family-grandma.png", color: "#EDE0FF", accent: "#9B6CFF" },
+  { id: "brother", zh: "哥哥", en: "Brother", image: "/art/family-brother.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "sister", zh: "姐姐", en: "Sister", image: "/art/family-sister.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "baby", zh: "宝宝", en: "Baby", image: "/art/family-baby.png", color: "#F4F0E8", accent: "#8A7A6A" },
 ];
 
 export const stories: Story[] = [
@@ -626,9 +558,22 @@ export function getCategory(id: CategoryId) {
   return categories.find((c) => c.id === id)!;
 }
 
+export function cardsFor(id: CategoryId): Flashcard[] {
+  if (id === "animals") return animals;
+  if (id === "body") return bodyParts;
+  if (id === "family") return familyMembers;
+  return [];
+}
+
+export function isLesson(id: CategoryId) {
+  return id === "animals" || id === "body" || id === "family";
+}
+
 export function itemsFor(id: CategoryId) {
   if (id === "zh-songs") return zhSongs;
   if (id === "en-songs") return enSongs;
   if (id === "animals") return animals;
+  if (id === "body") return bodyParts;
+  if (id === "family") return familyMembers;
   return stories;
 }

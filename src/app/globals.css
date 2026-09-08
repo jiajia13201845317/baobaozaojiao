@@ -239,6 +239,35 @@
   transform: translateY(5px);
 }
 
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  height: 3.4rem;
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: #2a2740;
+  font-size: 0.92rem;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(42, 39, 64, 0.1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-pill:disabled {
+  opacity: 0.4;
+}
+
+.nav-pill:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.nav-pill-strong {
+  background: linear-gradient(180deg, #ff8a6a 0%, #ff6b4a 100%);
+  color: white;
+  box-shadow: 0 8px 0 #e24a2c, 0 12px 20px rgba(226, 74, 44, 0.22);
+}
+
 @keyframes float {
   0%,
   100% {

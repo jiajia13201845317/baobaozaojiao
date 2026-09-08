@@ -1,4 +1,4 @@
-import type { Animal, AnimalSoundId, Note, Song, Story } from "./content";
+import type { AnimalSoundId, Flashcard, LessonStep, Note, Song, Story } from "./content";
 
 const FREQ: Record<string, number> = {
   G3: 196.0,
@@ -33,6 +33,7 @@ class ToyPlayer {
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: (() => void) | null = null;
+  onStep: ((step: LessonStep) => void) | null = null;
 
   get ready() {
     return Boolean(this.ctx);
@@ -85,21 +86,45 @@ class ToyPlayer {
     if (this.alive(t)) this.onEnded?.();
   }
 
-  async playAnimal(animal: Animal) {
+  async playLesson(card: Flashcard) {
     const t = this.begin();
-    this.emit({ text: `${animal.zh}  ·  ${animal.en}` });
-    await this.playAnimalSound(animal.sound, t);
+    this.onStep?.("zh");
+    this.emit({ text: card.zh, lang: "zh-CN" });
+    await this.speak(card.zh, "zh-CN", t);
     if (!this.alive(t)) return;
     await this.wait(220, t);
-    this.emit({ text: animal.zhLine, lang: "zh-CN" });
-    await this.speak(animal.zhLine, "zh-CN", t);
+    this.onStep?.("en");
+    this.emit({ text: card.en, lang: "en-US" });
+    await this.speak(card.en, "en-US", t);
     if (!this.alive(t)) return;
-    await this.wait(160, t);
-    this.emit({ text: animal.enLine, lang: "en-US" });
-    await this.speak(animal.enLine, "en-US", t);
-    if (!this.alive(t)) return;
-    await this.wait(200, t);
-    await this.playAnimalSound(animal.sound, t);
+    if (card.cry) {
+      await this.wait(180, t);
+      this.onStep?.("sound");
+      this.emit({ text: card.cry, lang: "zh-CN" });
+      await this.speak(card.cry, "zh-CN", t);
+      if (!this.alive(t)) return;
+      if (card.sound) await this.playAnimalSound(card.sound, t);
+    }
+    if (this.alive(t)) this.onEnded?.();
+  }
+
+  async playCry(card: Flashcard) {
+    const t = this.begin();
+    if (card.cry) {
+      this.onStep?.("sound");
+      this.emit({ text: card.cry, lang: "zh-CN" });
+      await this.speak(card.cry, "zh-CN", t);
+      if (!this.alive(t)) return;
+      if (card.sound) await this.playAnimalSound(card.sound, t);
+    } else {
+      this.onStep?.("zh");
+      this.emit({ text: card.zh, lang: "zh-CN" });
+      await this.speak(card.zh, "zh-CN", t);
+      if (!this.alive(t)) return;
+      this.onStep?.("en");
+      this.emit({ text: card.en, lang: "en-US" });
+      await this.speak(card.en, "en-US", t);
+    }
     if (this.alive(t)) this.onEnded?.();
   }
 
