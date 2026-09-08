@@ -1,9 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronLeft, RotateCcw, Square, Volume1, Volume2, VolumeX } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Cloud, SoundRings, Sun } from "@/components/decor";
+import { ChevronLeft, Pause, RotateCcw, Volume1, Volume2, VolumeX } from "lucide-react";
+import {
+  Balloon,
+  CategoryScene,
+  ItemArt,
+  Mascot,
+  PlayBadge,
+  WorldBackdrop,
+} from "@/components/art";
 import { toyPlayer, type LineInfo } from "@/lib/audio";
 import {
   animals,
@@ -98,11 +104,17 @@ export function ToyApp() {
     [stop]
   );
 
+  const mood = view.name === "player" && view.category === "en-songs"
+    ? "night"
+    : view.name === "player" && view.category === "stories"
+      ? "dusk"
+      : "day";
+
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 toy-sky" />
-      <Cloud className="pointer-events-none absolute -left-6 top-16 h-16 w-32 opacity-70 animate-[float_8s_ease-in-out_infinite]" />
-      <Cloud className="pointer-events-none absolute right-0 top-28 h-12 w-24 opacity-50 animate-[float_10s_ease-in-out_infinite_reverse]" />
+      <WorldBackdrop mood={mood} />
+      <Balloon color="#FF6B4A" className="pointer-events-none absolute left-[8%] top-16 h-16 w-10 animate-[float_7s_ease-in-out_infinite] opacity-90" />
+      <Balloon color="#5B7CFF" className="pointer-events-none absolute right-[10%] top-24 h-14 w-9 animate-[float_9s_ease-in-out_infinite_reverse] opacity-80" />
 
       {view.name === "welcome" && <Welcome onStart={start} />}
       {view.name === "home" && (
@@ -139,50 +151,45 @@ export function ToyApp() {
   );
 }
 
-function VolumeButton({
-  index,
-  onClick,
-}: {
-  index: number;
-  onClick: () => void;
-}) {
+function VolumeChip({ index, onClick }: { index: number; onClick: () => void }) {
   const Icon = index === 0 ? VolumeX : index === 1 ? Volume1 : Volume2;
   const label = index === 0 ? "静音" : index === 1 ? "小声" : "大声";
   return (
-    <Button
-      variant="secondary"
-      size="lg"
+    <button
+      type="button"
       onClick={onClick}
       aria-label={`音量：${label}，点一下切换`}
-      className="h-12 rounded-full border-2 border-white/80 bg-white/80 px-4 text-base text-[#5C4033] shadow-sm"
+      className="glass-chip"
     >
       <Icon className="size-5" />
-      <span className="font-medium">{label}</span>
-    </Button>
+      <span>{label}</span>
+    </button>
   );
 }
 
 function Welcome({ onStart }: { onStart: () => void }) {
   return (
-    <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
-      <Sun />
-      <h1 className="font-display mt-4 text-5xl text-[#5C4033] sm:text-6xl">宝宝听听</h1>
-      <p className="mt-3 max-w-xs text-lg leading-relaxed text-[#7A5644]">
-        给一岁宝宝的小电台
+    <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-16 pt-10 text-center">
+      <div className="relative">
+        <div className="absolute inset-x-6 top-10 h-28 rounded-full bg-white/30 blur-2xl" />
+        <Mascot pose="wave" className="relative h-44 w-44 sm:h-52 sm:w-52" />
+      </div>
+      <div className="relative mt-1 rounded-[1.8rem] bg-white px-7 py-3 shadow-[0_12px_28px_rgba(42,39,64,0.14)]">
+        <p className="font-rounded text-xs font-bold tracking-[0.22em] text-[#5B7CFF]">
+          XIAO GUAI GUAI
+        </p>
+        <h1 className="text-4xl font-black tracking-tight text-[#2A2740] sm:text-5xl">宝宝听听</h1>
+      </div>
+      <p className="mt-3 max-w-[16rem] text-base font-semibold leading-relaxed text-[#2A2740]/75">
+        小乖乖的声音乐园
         <br />
-        儿歌、英文歌、动物叫声、小故事
+        唱歌、英文、动物、故事
       </p>
-      <button type="button" onClick={onStart} className="toy-press mt-10">
-        <span
-          className="toy-knob grid h-40 w-40 place-items-center rounded-full text-2xl font-display text-white"
-          style={{ background: "#E56B4A", boxShadow: "0 10px 0 #C24F33" }}
-        >
-          点一下
-          <br />
-          开始听
-        </span>
+      <button type="button" onClick={onStart} className="candy-btn mt-8">
+        <PlayBadge className="h-12 w-12" />
+        <span>开始听</span>
       </button>
-      <p className="mt-8 text-sm text-[#9A7460]">大人先点一下，喇叭才会出声</p>
+      <p className="mt-5 text-sm font-medium text-[#2A2740]/55">大人先点一下，喇叭才会出声</p>
     </main>
   );
 }
@@ -197,42 +204,45 @@ function Home({
   onVolume: () => void;
 }) {
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-6 sm:px-6">
-      <header className="flex items-start justify-between gap-3">
+    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-10 pt-5 sm:px-6">
+      <header className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <Sun />
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-white/70 shadow-[0_8px_20px_rgba(42,39,64,0.12)]">
+            <Mascot pose="wave" className="h-14 w-14" />
+          </div>
           <div>
-            <h1 className="font-display text-3xl text-[#5C4033] sm:text-4xl">宝宝听听</h1>
-            <p className="text-sm text-[#8B6448]">点大大的按钮，就能听</p>
+            <p className="font-rounded text-xs font-semibold tracking-wider text-[#5B7CFF]">
+              XIAO GUAI GUAI
+            </p>
+            <h1 className="text-2xl font-black text-[#2A2740] sm:text-3xl">嗨，想去哪儿玩？</h1>
           </div>
         </div>
-        <VolumeButton index={volumeIndex} onClick={onVolume} />
+        <VolumeChip index={volumeIndex} onClick={onVolume} />
       </header>
 
-      <div className="mt-6 grid flex-1 grid-cols-2 content-center gap-4 sm:gap-5">
+      <div className="mt-5 grid flex-1 grid-cols-2 content-start gap-3 sm:gap-4">
         {categories.map((cat) => (
           <button
             key={cat.id}
             type="button"
             onClick={() => onOpen(cat.id)}
-            className="toy-press group text-left"
+            className="island-card group text-left"
           >
-            <span
-              className="flex min-h-[42vw] flex-col items-center justify-center rounded-[2rem] px-3 py-6 text-center sm:min-h-56"
-              style={{
-                background: cat.tint,
-                boxShadow: `0 8px 0 ${cat.shadow}`,
-              }}
-            >
-              <span className="text-6xl leading-none sm:text-7xl" aria-hidden>
-                {cat.emoji}
+            <span className="relative block aspect-[1.15] overflow-hidden">
+              <CategoryScene id={cat.id} />
+              <span className="absolute bottom-2 right-2 drop-shadow-md transition-transform group-active:scale-95">
+                <PlayBadge className="h-10 w-10" />
               </span>
-              <span className="font-display mt-3 text-2xl text-[#4A3228] sm:text-3xl">
+            </span>
+            <span className="block bg-white px-3 py-3">
+              <span className="block text-[11px] font-bold tracking-wide text-[#8A84A3]">
+                {cat.place}
+              </span>
+              <span className="mt-0.5 block text-lg font-black leading-tight text-[#2A2740]">
                 {cat.title}
               </span>
-              <span className="mt-1 text-sm text-[#6B4A3A]">{cat.hint}</span>
-              <span className="mt-0.5 text-xs tracking-wide text-[#8B6448]/80">
-                {cat.english}
+              <span className="mt-0.5 block text-xs font-medium text-[#6B6580]">
+                {cat.hint}
               </span>
             </span>
           </button>
@@ -263,49 +273,60 @@ function Library({
     return stories;
   }, [category]);
 
+  const pose =
+    category === "zh-songs"
+      ? "sing"
+      : category === "en-songs"
+        ? "listen"
+        : category === "stories"
+          ? "read"
+          : "wave";
+
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-8 pt-5 sm:px-6">
+    <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-10 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={onBack}
-          className="h-12 rounded-full border-2 border-white/80 bg-white/80 px-4 text-base text-[#5C4033]"
-        >
+        <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
-          回家
-        </Button>
-        <VolumeButton index={volumeIndex} onClick={onVolume} />
+          乐园
+        </button>
+        <VolumeChip index={volumeIndex} onClick={onVolume} />
       </header>
 
-      <div
-        className="mt-5 rounded-[1.8rem] px-5 py-4"
-        style={{ background: cat.tint, boxShadow: `0 6px 0 ${cat.shadow}` }}
-      >
-        <p className="text-4xl leading-none">{cat.emoji}</p>
-        <h1 className="font-display mt-1 text-3xl text-[#4A3228]">{cat.title}</h1>
-        <p className="text-sm text-[#6B4A3A]">{cat.hint}</p>
-      </div>
+      <section className="island-card mt-4 overflow-hidden">
+        <div className="relative h-36 sm:h-40">
+          <CategoryScene id={category} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="font-rounded text-xs font-bold tracking-wider text-white/80">
+                {cat.english}
+              </p>
+              <h1 className="text-3xl font-black text-white drop-shadow">{cat.place}</h1>
+              <p className="text-sm font-medium text-white/90">{cat.hint}</p>
+            </div>
+            <Mascot pose={pose} className="h-20 w-20 drop-shadow-lg" />
+          </div>
+        </div>
+      </section>
 
-      <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {items.map((item) => {
-          const title =
-            "title" in item ? item.title : `${(item as Animal).zh}`;
-          const sub =
-            "subtitle" in item ? item.subtitle : (item as Animal).en;
+          const title = "title" in item ? item.title : (item as Animal).zh;
+          const sub = "subtitle" in item ? item.subtitle : (item as Animal).en;
           return (
             <li key={item.id}>
-              <button type="button" onClick={() => onPlay(item.id)} className="toy-press w-full">
-                <span
-                  className="flex min-h-36 w-full flex-col items-center justify-center rounded-[1.6rem] px-2 py-4 text-center"
-                  style={{
-                    background: item.color,
-                    boxShadow: `0 6px 0 ${item.accent}`,
-                  }}
-                >
-                  <span className="text-5xl leading-none">{item.emoji}</span>
-                  <span className="font-display mt-2 text-xl text-[#4A3228]">{title}</span>
-                  <span className="text-xs text-[#6B4A3A]">{sub}</span>
+              <button type="button" onClick={() => onPlay(item.id)} className="island-card group w-full text-left">
+                <span className="relative block aspect-[4/3] overflow-hidden">
+                  <ItemArt id={item.id} />
+                  <span className="absolute bottom-2 right-2">
+                    <PlayBadge className="h-9 w-9" />
+                  </span>
+                </span>
+                <span className="block bg-white px-2.5 py-2.5">
+                  <span className="block text-[15px] font-black leading-tight text-[#2A2740]">
+                    {title}
+                  </span>
+                  <span className="mt-0.5 block text-xs font-medium text-[#8A84A3]">{sub}</span>
                 </span>
               </button>
             </li>
@@ -345,111 +366,96 @@ function Player({
 
   const title =
     "title" in item ? item.title : `${(item as Animal).zh}  ·  ${(item as Animal).en}`;
-  const emoji = item.emoji;
-  const color = item.color;
-  const accent = item.accent;
-
   const bilingual = category === "animals" ? (item as Animal) : null;
   const song = category === "zh-songs" || category === "en-songs" ? (item as Song) : null;
   const story = category === "stories" ? (item as Story) : null;
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-5 sm:px-6">
+    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={onBack}
-          className="h-12 rounded-full border-2 border-white/80 bg-white/80 px-4 text-base text-[#5C4033]"
-        >
+        <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
-          返回
-        </Button>
-        <VolumeButton index={volumeIndex} onClick={onVolume} />
+          {cat.place}
+        </button>
+        <VolumeChip index={volumeIndex} onClick={onVolume} />
       </header>
 
-      <section
-        className="relative mt-5 flex flex-1 flex-col items-center rounded-[2rem] px-5 py-8 text-center"
-        style={{ background: color, boxShadow: `0 8px 0 ${accent}` }}
-      >
-        <p className="text-sm font-medium tracking-wide text-[#6B4A3A]">{cat.title}</p>
-        <div className="relative mt-4 grid h-44 w-44 place-items-center">
-          {playing && <SoundRings color={accent} />}
-          <span
-            className={`relative text-8xl leading-none ${playing ? "animate-bounce" : ""}`}
-            aria-hidden
-          >
-            {emoji}
-          </span>
+      <section className="island-card relative mt-4 flex flex-1 flex-col overflow-hidden">
+        <div className="relative h-36">
+          <CategoryScene id={category} />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
         </div>
-        <h1 className="font-display mt-2 text-3xl text-[#4A3228] sm:text-4xl">{title}</h1>
 
-        {bilingual && (
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <span className="rounded-full bg-white/80 px-4 py-2 text-lg text-[#4A3228]">
-              中文 · {bilingual.zh}
-            </span>
-            <span className="rounded-full bg-white/80 px-4 py-2 text-lg text-[#4A3228]">
-              English · {bilingual.en}
-            </span>
+        <div className="relative -mt-16 flex flex-1 flex-col items-center px-5 pb-6 text-center">
+          <div className="relative grid h-36 w-36 place-items-center">
+            {playing && (
+              <>
+                <span className="absolute h-36 w-36 rounded-full bg-[#FF6B4A]/20 animate-[pulse-ring_1.8s_ease-out_infinite]" />
+                <span className="absolute h-44 w-44 rounded-full bg-[#5B7CFF]/15 animate-[pulse-ring_1.8s_ease-out_infinite] [animation-delay:400ms]" />
+              </>
+            )}
+            <div className={`relative h-32 w-32 overflow-hidden rounded-[2rem] bg-white shadow-[0_12px_30px_rgba(42,39,64,0.16)] ${playing ? "animate-[bob_1.1s_ease-in-out_infinite]" : ""}`}>
+              <ItemArt id={itemId} />
+            </div>
           </div>
-        )}
 
-        <div className="mt-5 min-h-24 w-full max-w-md rounded-3xl bg-white/75 px-5 py-4">
-          {line ? (
-            <p
-              className="text-xl leading-relaxed text-[#4A3228] sm:text-2xl"
-              lang={line.lang}
-            >
-              {line.text}
-            </p>
-          ) : playing ? (
-            <p className="text-lg text-[#8B6448]">正在叫醒小喇叭…</p>
-          ) : (
-            <p className="text-lg text-[#8B6448]">点下面，再听一遍</p>
+          <p className="font-rounded mt-3 text-xs font-bold tracking-wider text-[#8A84A3]">
+            {cat.title}
+          </p>
+          <h1 className="mt-1 text-3xl font-black text-[#2A2740] sm:text-4xl">{title}</h1>
+
+          {bilingual && (
+            <div className="mt-3 flex flex-wrap justify-center gap-2">
+              <span className="rounded-full bg-[#FFF1E6] px-4 py-1.5 text-sm font-bold text-[#FF6B4A]">
+                中文 {bilingual.zh}
+              </span>
+              <span className="rounded-full bg-[#E8EEFF] px-4 py-1.5 text-sm font-bold text-[#5B7CFF]">
+                English {bilingual.en}
+              </span>
+            </div>
+          )}
+
+          <div className="story-page mt-5 w-full max-w-md">
+            {line ? (
+              <p className="text-xl font-bold leading-relaxed text-[#2A2740] sm:text-2xl" lang={line.lang}>
+                {line.text}
+              </p>
+            ) : playing ? (
+              <p className="text-base font-medium text-[#8A84A3]">小乖乖正在开口…</p>
+            ) : (
+              <p className="text-base font-medium text-[#8A84A3]">再听一遍，或者换一首</p>
+            )}
+            {story && !line && (
+              <p className="mt-2 text-sm text-[#8A84A3]">{story.subtitle}</p>
+            )}
+            {song && line && (
+              <p className="mt-2 text-xs font-medium text-[#B0AABC]">{song.subtitle}</p>
+            )}
+          </div>
+
+          {!speechReady && (
+            <p className="mt-3 text-xs text-[#8A84A3]">这段会先放旋律。请打开系统声音。</p>
           )}
         </div>
-
-        {!speechReady && (
-          <p className="mt-3 text-sm text-[#8B6448]">
-            这段会先放旋律。如果没有听到说话，请打开系统声音。
-          </p>
-        )}
-
-        {song && (
-          <ol className="mt-4 hidden w-full max-w-md space-y-1 text-left text-sm text-[#6B4A3A]/80 sm:block">
-            {song.lyrics.slice(0, 3).map((lyric) => (
-              <li key={lyric}>{lyric}</li>
-            ))}
-          </ol>
-        )}
-        {story && !line && (
-          <p className="mt-3 text-sm text-[#6B4A3A]">{story.subtitle}</p>
-        )}
       </section>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <button type="button" onClick={onStop} className="toy-press" disabled={!playing}>
-          <span
-            className="flex h-20 items-center justify-center gap-2 rounded-[1.4rem] text-xl font-display text-white"
-            style={{
-              background: playing ? "#E05656" : "#C4A99A",
-              boxShadow: playing ? "0 7px 0 #B53C3C" : "0 7px 0 #A08878",
-            }}
-          >
-            <Square className="size-6 fill-current" />
-            停下
-          </span>
+      <div className="mt-5 flex items-center justify-center gap-4">
+        <button
+          type="button"
+          onClick={onStop}
+          disabled={!playing}
+          className="control-round stop"
+          aria-label="停下"
+        >
+          <Pause className="size-7 fill-current" />
         </button>
-        <button type="button" onClick={onReplay} className="toy-press">
-          <span
-            className="flex h-20 items-center justify-center gap-2 rounded-[1.4rem] text-xl font-display text-white"
-            style={{ background: accent, boxShadow: `0 7px 0 ${cat.shadow}` }}
-          >
-            <RotateCcw className="size-6" />
-            再听一遍
-          </span>
+        <button type="button" onClick={onReplay} className="control-round replay" aria-label="再听一遍">
+          <RotateCcw className="size-7" />
         </button>
+      </div>
+      <div className="mt-2 flex justify-center gap-10 text-xs font-bold text-[#6B6580]">
+        <span>停下</span>
+        <span>再听一遍</span>
       </div>
     </main>
   );

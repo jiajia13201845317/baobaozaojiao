@@ -56,52 +56,62 @@ export type Story = {
 export const categories: {
   id: CategoryId;
   title: string;
+  place: string;
   hint: string;
   english: string;
   emoji: string;
   tint: string;
   deep: string;
   shadow: string;
+  sky: string;
 }[] = [
   {
     id: "zh-songs",
     title: "中文儿歌",
-    hint: "小兔子乖乖",
-    english: "Chinese Songs",
+    place: "唱歌花园",
+    hint: "和小乖乖一起唱",
+    english: "Sing with Bunny",
     emoji: "🐰",
-    tint: "#FFD4C2",
-    deep: "#E56B4A",
-    shadow: "#C24F33",
+    tint: "#FFE4D6",
+    deep: "#FF6B4A",
+    shadow: "#E24A2C",
+    sky: "#FFD8C2",
   },
   {
     id: "en-songs",
     title: "英文儿歌",
-    hint: "Twinkle Star",
-    english: "English Songs",
+    place: "星星城堡",
+    hint: "Twinkle with friends",
+    english: "Star Castle",
     emoji: "🌟",
-    tint: "#C8E8F8",
-    deep: "#3E9ED0",
-    shadow: "#2B7EAA",
+    tint: "#DCE6FF",
+    deep: "#5B7CFF",
+    shadow: "#3D5DE8",
+    sky: "#C9D4FF",
   },
   {
     id: "animals",
     title: "动物叫声",
-    hint: "中英双语",
-    english: "Animal Sounds",
+    place: "快乐农场",
+    hint: "中文 · English",
+    english: "Happy Farm",
     emoji: "🐶",
-    tint: "#D4F0C8",
-    deep: "#5AAA4A",
-    shadow: "#3E8834",
+    tint: "#D9F5C8",
+    deep: "#39C15B",
+    shadow: "#249A40",
+    sky: "#C8F0B0",
   },
   {
     id: "stories",
     title: "寓言故事",
-    hint: "慢慢讲给你听",
-    english: "Fables",
+    place: "故事树屋",
+    hint: "今晚听一本",
+    english: "Story Treehouse",
     emoji: "📖",
-    tint: "#E8D6FF",
-    deep: "#8B6CC9",
-    shadow: "#6B4FA6",
+    tint: "#EDE0FF",
+    deep: "#9B6CFF",
+    shadow: "#7A49E0",
+    sky: "#E0D0FF",
   },
 ];
 
