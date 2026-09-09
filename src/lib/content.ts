@@ -10,6 +10,55 @@ export type CategoryId =
   | "poems"
   | "stories";
 
+export type WorldId = "learn" | "songs" | "stories";
+
+export const worlds: {
+  id: WorldId;
+  title: string;
+  hint: string;
+  rooms: CategoryId[];
+  hero: string;
+  tint: string;
+  shadow: string;
+}[] = [
+  {
+    id: "learn",
+    title: "认一认",
+    hint: "动物、身体、家人",
+    rooms: ["animals", "body", "family", "colors", "numbers"],
+    hero: "/art/hero-body.png",
+    tint: "#C8F2B0",
+    shadow: "#6FCC62",
+  },
+  {
+    id: "songs",
+    title: "唱儿歌",
+    hint: "中文歌、英文歌",
+    rooms: ["zh-songs", "en-songs"],
+    hero: "/art/hero-songs.png",
+    tint: "#FFD0C0",
+    shadow: "#FF8A6A",
+  },
+  {
+    id: "stories",
+    title: "听故事",
+    hint: "童话、古诗、寓言",
+    rooms: ["tales", "poems", "stories"],
+    hero: "/art/hero-tales.png",
+    tint: "#E8D0FF",
+    shadow: "#C0A0FF",
+  },
+];
+
+export function getWorld(id: WorldId) {
+  return worlds.find((w) => w.id === id)!;
+}
+
+export function worldFor(category: CategoryId): WorldId {
+  const found = worlds.find((w) => w.rooms.includes(category));
+  return found?.id ?? "learn";
+}
+
 export type LessonStep = "zh" | "en" | "sound";
 
 export type Flashcard = {

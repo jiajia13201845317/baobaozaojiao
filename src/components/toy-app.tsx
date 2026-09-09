@@ -13,22 +13,27 @@ import {
   categories,
   enSongs,
   getCategory,
+  getWorld,
   isLesson,
   poems,
   storiesFor,
+  worlds,
   zhSongs,
   type CategoryId,
   type LessonStep,
   type Poem,
   type Song,
   type Story,
+  type WorldId,
 } from "@/lib/content";
+import { readLastPlay, titleFor, writeLastPlay, type LastPlay } from "@/lib/progress";
 
 type View =
   | { name: "welcome" }
   | { name: "home" }
-  | { name: "library"; category: CategoryId }
-  | { name: "player"; category: CategoryId; itemId: string };
+  | { name: "world"; world: WorldId }
+  | { name: "library"; category: CategoryId; world?: WorldId }
+  | { name: "player"; category: CategoryId; itemId: string; world?: WorldId };
 
 const VOLUME_STEPS = [0, 0.45, 0.82] as const;
 
@@ -45,6 +50,7 @@ export function ToyApp() {
   const [step, setStep] = useState<LessonStep | null>(null);
   const [playing, setPlaying] = useState(false);
   const [volumeIndex, setVolumeIndex] = useState(2);
+  const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
   const { night, toggleNight } = useNightMode();
 
   useEffect(() => {
@@ -60,9 +66,14 @@ export function ToyApp() {
   }, []);
 
   useEffect(() => {
+    setLastPlay(readLastPlay());
     const go = new URLSearchParams(window.location.search).get("go");
     if (go === "home") {
       setView({ name: "home" });
+      return;
+    }
+    if (go && worlds.some((w) => w.id === go)) {
+      setView({ name: "world", world: go as WorldId });
       return;
     }
     if (go && categories.some((c) => c.id === go)) {
@@ -79,12 +90,15 @@ export function ToyApp() {
     setView({ name: "home" });
   }, []);
 
-  const playItem = useCallback(async (category: CategoryId, itemId: string) => {
+  const playItem = useCallback(async (category: CategoryId, itemId: string, world?: WorldId) => {
     await toyPlayer.unlock();
     setLine(null);
     setStep(null);
     setPlaying(true);
-    setView({ name: "player", category, itemId });
+    const last = { category, itemId, title: titleFor(category, itemId) };
+    writeLastPlay(last);
+    setLastPlay(last);
+    setView({ name: "player", category, itemId, world });
     if (isLesson(category)) {
       const card = cardsFor(category).find((c) => c.id === itemId);
       if (card) await toyPlayer.playLesson(card);
@@ -121,10 +135,18 @@ export function ToyApp() {
     setView({ name: "home" });
   }, [stop]);
 
-  const goLibrary = useCallback(
-    (category: CategoryId) => {
+  const goWorld = useCallback(
+    (world: WorldId) => {
       stop();
-      setView({ name: "library", category });
+      setView({ name: "world", world });
+    },
+    [stop]
+  );
+
+  const goLibrary = useCallback(
+    (category: CategoryId, world?: WorldId) => {
+      stop();
+      setView({ name: "library", category, world });
     },
     [stop]
   );
@@ -146,12 +168,24 @@ export function ToyApp() {
       {view.name === "welcome" && (
         <Welcome onStart={start} night={night} onToggleNight={toggleNight} />
       )}
-      {view.name === "home" && <Home volume={tools} onOpen={goLibrary} />}
+      {view.name === "home" && (
+        <Home
+          volume={tools}
+          lastPlay={lastPlay}
+          onPlayDog={() => void playItem("animals", "dog")}
+          onContinue={(item) => void playItem(item.category, item.itemId)}
+          onOpenWorld={goWorld}
+        />
+      )}
+      {view.name === "world" && (
+        <WorldGate worldId={view.world} volume={tools} onBack={goHome} onOpen={goLibrary} />
+      )}
       {view.name === "library" && (
         <Library
           category={view.category}
-          onBack={goHome}
-          onPlay={(id) => void playItem(view.category, id)}
+          backLabel={view.world ? getWorld(view.world).title : "乐园"}
+          onBack={() => (view.world ? goWorld(view.world) : goHome())}
+          onPlay={(id) => void playItem(view.category, id, view.world)}
           volume={tools}
         />
       )}
@@ -162,10 +196,10 @@ export function ToyApp() {
           step={step}
           playing={playing}
           volume={tools}
-          onBack={() => goLibrary(view.category)}
-          onOpen={(id) => void playItem(view.category, id)}
+          onBack={() => goLibrary(view.category, view.world)}
+          onOpen={(id) => void playItem(view.category, id, view.world)}
           onTap={() => void tapCard(view.category, view.itemId)}
-          onReplay={() => void playItem(view.category, view.itemId)}
+          onReplay={() => void playItem(view.category, view.itemId, view.world)}
         />
       )}
       {view.name === "player" && !isLesson(view.category) && (
@@ -174,9 +208,9 @@ export function ToyApp() {
           itemId={view.itemId}
           line={line}
           playing={playing}
-          onBack={() => goLibrary(view.category)}
+          onBack={() => goLibrary(view.category, view.world)}
           onStop={stop}
-          onReplay={() => void playItem(view.category, view.itemId)}
+          onReplay={() => void playItem(view.category, view.itemId, view.world)}
           volume={tools}
         />
       )}
@@ -205,15 +239,19 @@ function VolumeChip({ index, onClick }: { index: number; onClick: () => void }) 
 }
 
 function Home({
-  onOpen,
   volume,
+  lastPlay,
+  onPlayDog,
+  onContinue,
+  onOpenWorld,
 }: {
-  onOpen: (id: CategoryId) => void;
   volume: ReactNode;
+  lastPlay: LastPlay | null;
+  onPlayDog: () => void;
+  onContinue: (item: LastPlay) => void;
+  onOpenWorld: (id: WorldId) => void;
 }) {
-  const featured = categories[0]!;
-  const learn = categories.filter((c) => c.group === "learn" && c.id !== "animals");
-  const listen = categories.filter((c) => c.group === "listen");
+  const showContinue = Boolean(lastPlay && !(lastPlay.category === "animals" && lastPlay.itemId === "dog"));
 
   return (
     <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
@@ -226,25 +264,21 @@ function Home({
             <h1 className="ink truncate text-[26px] font-black leading-tight">
               宝宝，{greeting()}
             </h1>
-            <p className="ink-soft truncate text-sm font-bold">小乖乖在等你一起听</p>
+            <p className="ink-soft truncate text-sm font-bold">今天先听小狗叫</p>
           </div>
         </div>
         {volume}
       </header>
 
-      <button type="button" onClick={() => onOpen(featured.id)} className="hero-tile mt-4 text-left">
+      <button type="button" onClick={onPlayDog} className="hero-tile mt-5 text-left">
         <span className="hero-tile-inner">
           <span className="hero-tile-art">
-            <CoverImage src={featured.hero} alt="小狗" />
+            <CoverImage src="/art/hero-dog.png" alt="小狗" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="hero-tile-badge">今天先听这个</span>
-            <span className="ink mt-1.5 block text-[26px] font-black leading-tight">
-              {featured.title}
-            </span>
-            <span className="ink-soft mt-1 block text-[15px] font-bold">
-              狗 → dog → 汪汪汪
-            </span>
+            <span className="hero-tile-badge">先听这个</span>
+            <span className="ink mt-1.5 block text-[26px] font-black leading-tight">小狗汪汪汪</span>
+            <span className="ink-soft mt-1 block text-[15px] font-bold">狗 → dog → 汪汪汪</span>
             <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-[var(--bg)] px-3 py-1.5 shadow-sm">
               <PlayBadge className="h-8 w-8" />
               <span className="pr-1 text-sm font-black text-[var(--accent-deep)]">点一下就叫</span>
@@ -253,23 +287,86 @@ function Home({
         </span>
       </button>
 
-      <SectionLabel title="认一认" hint="跟着说说看" />
-      <div className="grid grid-cols-2 gap-3.5">
-        {learn.map((cat) => (
-          <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
+      {showContinue && lastPlay && (
+        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip">
+          <PlayBadge className="h-9 w-9" />
+          <span className="min-w-0 text-left">
+            <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
+            <span className="ink block truncate text-[17px] font-black">{lastPlay.title}</span>
+          </span>
+        </button>
+      )}
+
+      <p className="ink mt-7 text-lg font-black">再去别的房间</p>
+      <p className="ink-soft mb-3 text-sm font-bold">一次只进一扇门</p>
+      <div className="flex flex-col gap-3">
+        {worlds.map((world) => (
+          <button
+            key={world.id}
+            type="button"
+            onClick={() => onOpenWorld(world.id)}
+            className="world-door"
+            style={{ ["--room-shadow" as string]: world.shadow }}
+          >
+            <span className="world-door-art" style={{ background: world.tint }}>
+              <CoverImage src={world.hero} alt={world.title} />
+            </span>
+            <span className="min-w-0 flex-1 text-left">
+              <span className="ink block text-[22px] font-black leading-tight">{world.title}</span>
+              <span className="ink-soft mt-0.5 block text-sm font-bold">{world.hint}</span>
+            </span>
+            <PlayBadge className="h-10 w-10 shrink-0" />
+          </button>
         ))}
       </div>
 
-      <SectionLabel title="听一听" hint="歌谣和故事" />
-      <div className="grid grid-cols-2 gap-3.5">
-        {listen.map((cat) => (
-          <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
+      <p className="ink-soft mt-8 text-center text-sm font-bold">陪宝宝一起听，效果最好</p>
+    </main>
+  );
+}
+
+function WorldGate({
+  worldId,
+  volume,
+  onBack,
+  onOpen,
+}: {
+  worldId: WorldId;
+  volume: ReactNode;
+  onBack: () => void;
+  onOpen: (id: CategoryId, world: WorldId) => void;
+}) {
+  const world = getWorld(worldId);
+  const rooms = world.rooms.map((id) => getCategory(id));
+
+  return (
+    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+      <header className="flex items-center justify-between gap-2">
+        <button type="button" onClick={onBack} className="glass-chip">
+          <ChevronLeft className="size-5" />
+          乐园
+        </button>
+        {volume}
+      </header>
+
+      <section className="island-card mt-4 overflow-hidden">
+        <div className="flex items-center gap-3 px-3 py-3" style={{ background: world.tint }}>
+          <span className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-[var(--bg)] p-2">
+            <CoverImage src={world.hero} alt={world.title} />
+          </span>
+          <div>
+            <p className="ink-soft text-xs font-bold tracking-wider">选一个房间</p>
+            <h1 className="ink text-2xl font-black">{world.title}</h1>
+            <p className="ink-soft text-sm font-medium">{world.hint}</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="mt-4 grid grid-cols-2 gap-3.5">
+        {rooms.map((cat) => (
+          <RoomButton key={cat.id} cat={cat} onOpen={(id) => onOpen(id, worldId)} />
         ))}
       </div>
-
-      <p className="ink-soft mt-8 text-center text-sm font-bold">
-        陪宝宝一起听，效果最好
-      </p>
     </main>
   );
 }
@@ -279,16 +376,6 @@ function greeting() {
   if (h < 11) return "早上好";
   if (h < 18) return "下午好";
   return "晚上好";
-}
-
-function SectionLabel({ title, hint }: { title: string; hint: string }) {
-  return (
-    <div className="mt-7 mb-3 flex items-baseline gap-2">
-      <span className="h-4 w-1.5 rounded-full bg-[var(--brand)]" />
-      <h2 className="ink text-lg font-black">{title}</h2>
-      <span className="ink-soft text-xs font-bold">{hint}</span>
-    </div>
-  );
 }
 
 function RoomButton({
@@ -325,11 +412,13 @@ function RoomButton({
 
 function Library({
   category,
+  backLabel,
   onBack,
   onPlay,
   volume,
 }: {
   category: CategoryId;
+  backLabel: string;
   onBack: () => void;
   onPlay: (id: string) => void;
   volume: ReactNode;
@@ -346,7 +435,7 @@ function Library({
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
-          乐园
+          {backLabel}
         </button>
         {volume}
       </header>

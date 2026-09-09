@@ -39,7 +39,7 @@ export function Welcome({
           <div className="welcome-stack">
             <p className="welcome-kicker">XIAO GUAI GUAI</p>
             <h1 className="welcome-title">宝宝听听</h1>
-            <p className="welcome-sub">先听小狗叫，再认小猫小鸡</p>
+            <p className="welcome-sub">点一下，小狗先叫给你听</p>
 
             <div className="welcome-hero">
               <span className="welcome-hero-glow" />
