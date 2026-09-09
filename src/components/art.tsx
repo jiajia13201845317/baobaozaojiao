@@ -54,15 +54,9 @@ export function WorldBackdrop({ mood = "day" }: { mood?: "day" | "dusk" | "night
 export function CozyBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 40%, var(--surface) 100%)",
-        }}
-      />
-      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[var(--mist)]/50 blur-3xl" />
-      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[var(--lilac)]/45 blur-3xl" />
+      <div className="cozy-sky absolute inset-0" />
+      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[#fff27a]/55 blur-3xl" />
+      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[#ffb0d8]/40 blur-3xl" />
       <svg
         className="cozy-land absolute inset-x-0 bottom-0 h-40 w-full"
         viewBox="0 0 390 160"

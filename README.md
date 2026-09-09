@@ -14,7 +14,9 @@
 
 请用这个公开地址，不要打开 `127.0.0.1`：那是云端开发机自己的地址，你自己的浏览器连不上。
 
-**https://tidy-valley-592.harvis.page/?night=0**
+**https://tidy-valley-592.harvis.page/?night=0&v=playroom**
+
+想直接看新乐园页，打开 [带 go=home 的地址](https://tidy-valley-592.harvis.page/?night=0&go=home&v=playroom)。想再看开机欢迎页，打开 [go=welcome](https://tidy-valley-592.harvis.page/?night=0&go=welcome&v=playroom)。
 
 白天模式加 `?night=0`，夜里加 `?night=1`。第一次请点「开始听」，喇叭才会出声。
 

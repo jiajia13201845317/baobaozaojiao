@@ -40,8 +40,9 @@ export function Welcome({
           </button>
 
           <div className="welcome-stack">
+            <p className="welcome-kicker">小乖乖早教机</p>
             <h1 className="welcome-title">宝宝听听</h1>
-            <p className="welcome-sub">点一下，小狗马上叫</p>
+            <p className="welcome-sub">像一台真的机器，点一下小狗就叫</p>
 
             <div className="welcome-hero">
               <span className="welcome-hero-glow" />

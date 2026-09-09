@@ -121,6 +121,10 @@ export function ToyApp() {
       setView({ name: "home" });
       return;
     }
+    if (go === "welcome") {
+      setView({ name: "welcome" });
+      return;
+    }
     if (go && worlds.some((w) => w.id === go)) {
       setView({ name: "world", world: go as WorldId });
       return;
@@ -387,25 +391,31 @@ function Home({
     .join(" · ");
 
   return (
-    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[var(--bg)] shadow-[0_8px_18px_var(--shadow)]">
-            <Mascot pose="wave" className="h-14 w-14" />
-          </div>
+    <main className="page-shell home-playroom relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+      <section className="home-banner">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="ink truncate text-[26px] font-black leading-tight">
+            <p className="home-brand">小乖乖早教机</p>
+            <h1 className="ink truncate text-[28px] font-black leading-tight">
               宝宝，{greeting()}
             </h1>
-            <p className="ink-soft truncate text-sm font-bold">{homeHint()}</p>
+            <p className="ink-soft mt-1 truncate text-sm font-bold">{homeHint()}</p>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            {volume}
+            <span className="home-mascot-wrap">
+              <Mascot pose="wave" className="h-[4.6rem] w-[4.6rem]" />
+            </span>
           </div>
         </div>
-        {volume}
-      </header>
-      <p className="ink-soft mt-3 text-xs font-bold">{status} · 右上角给大人</p>
+        <div className="home-pills">
+          <span className="candy-pill">{status}</span>
+          <span className="candy-pill candy-pill-soft">右上角家长</span>
+        </div>
+      </section>
 
       {showContinue && lastPlay && (
-        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip mt-5">
+        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip">
           <PlayBadge className="h-9 w-9" />
           <span className="min-w-0 text-left">
             <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
@@ -414,42 +424,41 @@ function Home({
         </button>
       )}
 
-      <button type="button" onClick={onPlayDog} className={`hero-tile text-left ${showContinue ? "mt-3" : "mt-5"}`}>
-        <span className="hero-tile-inner">
-          <span className="hero-tile-art">
-            <CoverImage src="/art/hero-dog.png" alt="小狗" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="hero-tile-badge">先听这个</span>
-            <span className="ink mt-1.5 block text-[26px] font-black leading-tight">小狗汪汪汪</span>
-            <span className="ink-soft mt-1 block text-[15px] font-bold">狗 → dog → 汪汪汪</span>
-            <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-[var(--bg)] px-3 py-1.5 shadow-sm">
-              <PlayBadge className="h-8 w-8" />
-              <span className="pr-1 text-sm font-black text-[var(--accent-deep)]">点一下就叫</span>
-            </span>
-          </span>
+      <button type="button" onClick={onPlayDog} className="hero-poster">
+        <span className="hero-tile-badge">先听这个</span>
+        <span className="hero-poster-art">
+          <CoverImage src="/art/hero-dog.png" alt="小狗" />
+        </span>
+        <span className="ink mt-2 block text-[30px] font-black leading-none">小狗汪汪汪</span>
+        <span className="ink-soft mt-1 block text-[15px] font-bold">狗 → dog → 汪汪汪</span>
+        <span className="hero-poster-cta">
+          <PlayBadge className="h-9 w-9" />
+          点一下就叫
         </span>
       </button>
 
-      <p className="ink mt-7 text-lg font-black">还想听什么</p>
-      <p className="ink-soft mb-3 text-sm font-bold">进一扇门就好</p>
-      <div className="flex flex-col gap-3">
+      <p className="ink mt-7 text-lg font-black">还想进哪一扇门</p>
+      <p className="ink-soft mb-3 text-sm font-bold">绿的认、粉的唱、紫的听故事</p>
+      <div className="flex flex-col gap-3.5">
         {worlds.map((world) => (
           <button
             key={world.id}
             type="button"
             onClick={() => onOpenWorld(world.id)}
-            className="world-door"
-            style={{ ["--room-shadow" as string]: world.shadow }}
+            className="world-slab"
+            style={{
+              ["--room-shadow" as string]: world.shadow,
+              ["--door-tint" as string]: world.tint,
+            }}
           >
-            <span className="world-door-art" style={{ background: world.tint }}>
+            <span className="world-slab-art">
               <CoverImage src={world.hero} alt={world.title} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="ink block text-[22px] font-black leading-tight">{world.title}</span>
+              <span className="ink block text-[24px] font-black leading-tight">{world.title}</span>
               <span className="ink-soft mt-0.5 block text-sm font-bold">{world.hint}</span>
             </span>
-            <PlayBadge className="h-10 w-10 shrink-0" />
+            <PlayBadge className="h-11 w-11 shrink-0" />
           </button>
         ))}
       </div>
