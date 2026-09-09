@@ -1,10 +1,21 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pause, RotateCcw } from "lucide-react";
 import { Portrait } from "@/components/cover";
 import type { CategoryId, Flashcard, LessonStep } from "@/lib/content";
 import { getCategory } from "@/lib/content";
+
+export function ProgressDots({ total, index }: { total: number; index: number }) {
+  if (total < 2) return null;
+  return (
+    <div className="dots" aria-hidden>
+      {Array.from({ length: Math.min(total, 12) }, (_, i) => (
+        <i key={i} className={i === index ? "dot on" : "dot"} />
+      ))}
+    </div>
+  );
+}
 
 export function FlashcardPlayer({
   category,
@@ -19,6 +30,7 @@ export function FlashcardPlayer({
   onPrev,
   onNext,
   onTap,
+  onStop,
   onReplayAll,
   volume,
 }: {
@@ -34,6 +46,7 @@ export function FlashcardPlayer({
   onPrev: () => void;
   onNext: () => void;
   onTap: () => void;
+  onStop: () => void;
   onReplayAll: () => void;
   volume: ReactNode;
 }) {
@@ -61,6 +74,7 @@ export function FlashcardPlayer({
           {total > 1 && (
             <p className="ink-soft mb-2 text-sm font-bold">
               第 {index + 1} {unit} / 共 {total} {unit}
+              {playing ? <span className="now-dot"> · 正在听</span> : null}
             </p>
           )}
           <div className="relative grid h-[46vw] max-h-72 w-[46vw] max-w-72 place-items-center sm:h-72 sm:w-72">
@@ -76,6 +90,7 @@ export function FlashcardPlayer({
           <p className="ink-soft mt-4 text-sm font-bold">
             {card.cry ? `点${card.zh}，再听 ${card.cry}` : `点图片，再听 ${card.zh}`}
           </p>
+          <ProgressDots total={total} index={index} />
         </button>
 
         <div className="flex flex-wrap justify-center gap-2 px-4 pb-5">
@@ -105,13 +120,18 @@ export function FlashcardPlayer({
         </div>
       </section>
 
-      <div className="mt-5 grid grid-cols-3 gap-2">
+      <div className="mt-5 flex items-center justify-center gap-4">
+        <button type="button" onClick={onStop} disabled={!playing} className="control-round stop" aria-label="停下">
+          <Pause className="size-7 fill-current" />
+        </button>
+        <button type="button" onClick={onReplayAll} className="control-round replay" aria-label="再听一遍">
+          <RotateCcw className="size-7" />
+        </button>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <button type="button" onClick={onPrev} disabled={!hasPrev} className="nav-pill">
           <ChevronLeft className="size-5" />
           {category === "animals" ? "上一只" : "上一张"}
-        </button>
-        <button type="button" onClick={onReplayAll} className="nav-pill nav-pill-strong">
-          再听一遍
         </button>
         <button type="button" onClick={onNext} disabled={!hasNext} className="nav-pill">
           {category === "animals" ? "下一只" : "下一张"}

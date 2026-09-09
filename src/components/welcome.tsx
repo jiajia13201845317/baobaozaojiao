@@ -24,12 +24,15 @@ export function Welcome({
     <main className="welcome-page relative z-10 flex min-h-dvh flex-1 items-center justify-center p-2 sm:p-5">
       <div className="machine-shell">
         <div className="machine-lens" aria-hidden />
-        <div className="machine-screen">
+        <div className="machine-screen" onClick={onStart} role="presentation">
           <PlayroomBackdrop />
 
           <button
             type="button"
-            onClick={onToggleNight}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleNight();
+            }}
             className="welcome-night"
             aria-label={night ? "关掉夜间模式" : "打开夜间模式"}
           >
@@ -55,11 +58,11 @@ export function Welcome({
               ))}
             </div>
 
-            <button type="button" onClick={onStart} className="toy-start">
+            <button type="button" onClick={(event) => { event.stopPropagation(); onStart(); }} className="toy-start">
               <PlayBadge className="h-12 w-12" />
               <span>开始听</span>
             </button>
-            <p className="welcome-hint">这一下会出声，请先调好音量</p>
+            <p className="welcome-hint">屏幕哪里都可以点，这一下喇叭会醒</p>
           </div>
         </div>
         <div className="machine-chin" aria-hidden>

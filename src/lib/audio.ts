@@ -33,7 +33,7 @@ class ToyPlayer {
   private oscillators: OscillatorNode[] = [];
 
   onLine: ((info: LineInfo) => void) | null = null;
-  onEnded: (() => void) | null = null;
+  onEnded: ((kind?: "item" | "tap") => void) | null = null;
   onStep: ((step: LessonStep) => void) | null = null;
 
   get ready() {
@@ -57,6 +57,22 @@ class ToyPlayer {
   setVolume(v: number) {
     this.volume = v;
     if (this.master) this.master.gain.value = v;
+  }
+
+  tap() {
+    if (!this.ctx || !this.master) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(880, now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.07, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    osc.connect(gain);
+    gain.connect(this.master);
+    osc.start(now);
+    osc.stop(now + 0.08);
   }
 
   stop() {
@@ -84,7 +100,7 @@ class ToyPlayer {
       await this.speak(line, song.lyricLang, t);
       await this.wait(180, t);
     }
-    if (this.alive(t)) this.onEnded?.();
+    if (this.alive(t)) this.onEnded?.("item");
   }
 
   async playLesson(card: Flashcard) {
@@ -106,7 +122,7 @@ class ToyPlayer {
       if (!this.alive(t)) return;
       if (card.sound) await this.playAnimalSound(card.sound, t);
     }
-    if (this.alive(t)) this.onEnded?.();
+    if (this.alive(t)) this.onEnded?.("item");
   }
 
   async playCry(card: Flashcard) {
@@ -126,7 +142,7 @@ class ToyPlayer {
       this.emit({ text: card.en, lang: "en-US" });
       await this.speak(card.en, "en-US", t);
     }
-    if (this.alive(t)) this.onEnded?.();
+    if (this.alive(t)) this.onEnded?.("tap");
   }
 
   async playStory(story: Story) {
@@ -144,7 +160,7 @@ class ToyPlayer {
     }
     if (this.alive(t)) {
       await this.chime(t);
-      this.onEnded?.();
+      this.onEnded?.("item");
     }
   }
 
@@ -169,7 +185,13 @@ class ToyPlayer {
       await this.speak(line, "zh-CN", t);
       await this.wait(260, t);
     }
-    if (this.alive(t)) this.onEnded?.();
+    if (this.alive(t)) this.onEnded?.("item");
+  }
+
+  async sayGoodnight() {
+    const t = this.begin();
+    this.emit({ text: "该睡觉啦", lang: "zh-CN" });
+    await this.speak("宝宝，该睡觉啦", "zh-CN", t);
   }
 
   private begin() {

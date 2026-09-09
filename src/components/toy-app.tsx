@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ChevronLeft, Moon, Pause, RotateCcw, Sun, Volume1, Volume2, VolumeX } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { ChevronLeft, Home as HomeIcon, Pause, Play, RotateCcw, Settings2, Timer } from "lucide-react";
 import { CozyBackdrop, ItemArt, Mascot, PlayBadge } from "@/components/art";
 import { CoverImage, Portrait, RoomHero } from "@/components/cover";
-import { FlashcardPlayer } from "@/components/flashcard";
+import { FlashcardPlayer, ProgressDots } from "@/components/flashcard";
+import { ParentPanel } from "@/components/parent-panel";
 import { Welcome } from "@/components/welcome";
 import { toyPlayer, type LineInfo } from "@/lib/audio";
 import { useNightMode } from "@/lib/theme";
@@ -16,6 +17,7 @@ import {
   getWorld,
   isLesson,
   itemPlace,
+  playlist,
   poems,
   siblingId,
   storiesFor,
@@ -28,7 +30,23 @@ import {
   type Story,
   type WorldId,
 } from "@/lib/content";
-import { readLastPlay, readVolumeIndex, titleFor, writeLastPlay, writeVolumeIndex, type LastPlay } from "@/lib/progress";
+import {
+  cyclePlayMode,
+  PLAY_MODE_LABEL,
+  readHasPlayed,
+  readLastPlay,
+  readPlayMode,
+  readSleepMinutes,
+  readVolumeIndex,
+  titleFor,
+  writeHasPlayed,
+  writeLastPlay,
+  writePlayMode,
+  writeSleepMinutes,
+  writeVolumeIndex,
+  type LastPlay,
+  type PlayMode,
+} from "@/lib/progress";
 
 type View =
   | { name: "welcome" }
@@ -54,23 +72,49 @@ export function ToyApp() {
   const [volumeIndex, setVolumeIndex] = useState(2);
   const [volumeReady, setVolumeReady] = useState(false);
   const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
+  const [playMode, setPlayMode] = useState<PlayMode>("chain");
+  const [sleepMinutes, setSleepMinutes] = useState(0);
+  const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
+  const [nowTick, setNowTick] = useState(0);
+  const [parentOpen, setParentOpen] = useState(false);
   const { night, toggleNight } = useNightMode();
+  const viewRef = useRef(view);
+  const modeRef = useRef(playMode);
+  const playItemRef = useRef<(category: CategoryId, itemId: string, world?: WorldId) => Promise<void>>(async () => {});
+  const sleepTimer = useRef<number | null>(null);
+  viewRef.current = view;
+  modeRef.current = playMode;
 
   useEffect(() => {
     toyPlayer.onLine = (info) => setLine(info);
-    toyPlayer.onEnded = () => setPlaying(false);
     toyPlayer.onStep = (next) => setStep(next);
+    toyPlayer.onEnded = (kind) => {
+      setPlaying(false);
+      if (kind === "tap") return;
+      const current = viewRef.current;
+      if (current.name !== "player") return;
+      if (modeRef.current === "once") return;
+      if (modeRef.current === "loop") {
+        void playItemRef.current(current.category, current.itemId, current.world);
+        return;
+      }
+      const next = siblingId(current.category, current.itemId, 1);
+      if (next) void playItemRef.current(current.category, next, current.world);
+    };
     return () => {
       toyPlayer.onLine = null;
       toyPlayer.onEnded = null;
       toyPlayer.onStep = null;
       toyPlayer.stop();
+      if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
     };
   }, []);
 
   useEffect(() => {
     setLastPlay(readLastPlay());
     setVolumeIndex(readVolumeIndex(2));
+    setPlayMode(readPlayMode());
+    setSleepMinutes(readSleepMinutes());
     setVolumeReady(true);
     const go = new URLSearchParams(window.location.search).get("go");
     if (go === "home") {
@@ -83,7 +127,9 @@ export function ToyApp() {
     }
     if (go && categories.some((c) => c.id === go)) {
       setView({ name: "library", category: go as CategoryId });
+      return;
     }
+    if (readHasPlayed()) setView({ name: "home" });
   }, []);
 
   useEffect(() => {
@@ -91,8 +137,38 @@ export function ToyApp() {
     if (volumeReady) writeVolumeIndex(volumeIndex);
   }, [volumeIndex, volumeReady]);
 
+  const armSleep = useCallback((minutes: number) => {
+    if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
+    if (!minutes) {
+      setSleepEndsAt(null);
+      return;
+    }
+    const ends = Date.now() + minutes * 60 * 1000;
+    setSleepEndsAt(ends);
+    sleepTimer.current = window.setTimeout(() => {
+      void toyPlayer.sayGoodnight();
+      setPlaying(false);
+      setSleepEndsAt(null);
+    }, minutes * 60 * 1000);
+  }, []);
+
+  useEffect(() => {
+    if (!sleepEndsAt) return;
+    const id = window.setInterval(() => setNowTick(Date.now()), 15000);
+    setNowTick(Date.now());
+    return () => window.clearInterval(id);
+  }, [sleepEndsAt]);
+
+  const remainingLabel = sleepEndsAt
+    ? Math.max(0, Math.ceil((sleepEndsAt - (nowTick || Date.now())) / 60000))
+    : null;
+  const remainingText =
+    remainingLabel === null ? null : remainingLabel <= 0 ? "马上停" : `${remainingLabel}分`;
+
   const playItem = useCallback(async (category: CategoryId, itemId: string, world?: WorldId) => {
     await toyPlayer.unlock();
+    toyPlayer.tap();
+    writeHasPlayed();
     setLine(null);
     setStep(null);
     setPlaying(true);
@@ -100,6 +176,7 @@ export function ToyApp() {
     writeLastPlay(last);
     setLastPlay(last);
     setView({ name: "player", category, itemId, world });
+    armSleep(sleepMinutes);
     if (isLesson(category)) {
       const card = cardsFor(category).find((c) => c.id === itemId);
       if (card) await toyPlayer.playLesson(card);
@@ -117,7 +194,9 @@ export function ToyApp() {
     }
     const story = storiesFor(category).find((s) => s.id === itemId);
     if (story) await toyPlayer.playStory(story);
-  }, []);
+  }, [armSleep, sleepMinutes]);
+
+  playItemRef.current = playItem;
 
   const start = useCallback(async () => {
     await playItem("animals", "dog");
@@ -125,10 +204,12 @@ export function ToyApp() {
 
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
     await toyPlayer.unlock();
+    toyPlayer.tap();
     setPlaying(true);
+    armSleep(sleepMinutes);
     const card = cardsFor(category).find((c) => c.id === itemId);
     if (card) await toyPlayer.playCry(card);
-  }, []);
+  }, [armSleep, sleepMinutes]);
 
   const stop = useCallback(() => {
     toyPlayer.stop();
@@ -158,11 +239,21 @@ export function ToyApp() {
 
   const tools = (
     <div className="flex shrink-0 items-center gap-2">
-      <NightChip night={night} onClick={toggleNight} />
-      <VolumeChip
-        index={volumeIndex}
-        onClick={() => setVolumeIndex((i) => (i + 1) % VOLUME_STEPS.length)}
-      />
+      {remainingText && (
+        <span className="status-chip" aria-label={`定时还剩 ${remainingText}`}>
+          <Timer className="size-4" />
+          {remainingText}
+        </span>
+      )}
+      {view.name !== "home" && view.name !== "welcome" && (
+        <button type="button" onClick={goHome} className="glass-chip" aria-label="回乐园">
+          <HomeIcon className="size-5" />
+        </button>
+      )}
+      <button type="button" onClick={() => setParentOpen(true)} className="glass-chip" aria-label="家长设置">
+        <Settings2 className="size-5" />
+        <span className="hidden sm:inline">家长</span>
+      </button>
     </div>
   );
 
@@ -177,18 +268,31 @@ export function ToyApp() {
         <Home
           volume={tools}
           lastPlay={lastPlay}
+          playMode={playMode}
+          sleepMinutes={sleepMinutes}
           onPlayDog={() => void playItem("animals", "dog")}
           onContinue={(item) => void playItem(item.category, item.itemId, item.world)}
           onOpenWorld={goWorld}
         />
       )}
       {view.name === "world" && (
-        <WorldGate worldId={view.world} volume={tools} onBack={goHome} onOpen={goLibrary} />
+        <WorldGate
+          worldId={view.world}
+          volume={tools}
+          onBack={goHome}
+          onOpen={goLibrary}
+          onPlayFirst={() => {
+            const firstRoom = getWorld(view.world).rooms[0];
+            const first = playlist(firstRoom)[0];
+            if (first) void playItem(firstRoom, first.id, view.world);
+          }}
+        />
       )}
       {view.name === "library" && (
         <Library
           category={view.category}
           backLabel={view.world ? getWorld(view.world).title : "乐园"}
+          lastId={lastPlay?.category === view.category ? lastPlay.itemId : null}
           onBack={() => (view.world ? goWorld(view.world) : goHome())}
           onPlay={(id) => void playItem(view.category, id, view.world)}
           volume={tools}
@@ -204,6 +308,7 @@ export function ToyApp() {
           onBack={() => goLibrary(view.category, view.world)}
           onOpen={(id) => void playItem(view.category, id, view.world)}
           onTap={() => void tapCard(view.category, view.itemId)}
+          onStop={stop}
           onReplay={() => void playItem(view.category, view.itemId, view.world)}
         />
       )}
@@ -225,46 +330,61 @@ export function ToyApp() {
             if (id) void playItem(view.category, id, view.world);
           }}
           volume={tools}
+          playMode={playMode}
         />
       )}
+
+      <ParentPanel
+        open={parentOpen}
+        night={night}
+        volumeIndex={volumeIndex}
+        playMode={playMode}
+        sleepMinutes={sleepMinutes}
+        remainingLabel={remainingText}
+        onClose={() => setParentOpen(false)}
+        onToggleNight={toggleNight}
+        onCycleVolume={() => setVolumeIndex((i) => (i + 1) % VOLUME_STEPS.length)}
+        onCycleMode={() => {
+          setPlayMode((mode) => {
+            const next = cyclePlayMode(mode);
+            writePlayMode(next);
+            return next;
+          });
+        }}
+        onSleepMinutes={(minutes) => {
+          writeSleepMinutes(minutes);
+          setSleepMinutes(minutes);
+          armSleep(minutes);
+        }}
+      />
     </div>
-  );
-}
-
-function NightChip({ night, onClick }: { night: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} aria-label={night ? "关掉夜间模式" : "打开夜间模式"} className="glass-chip">
-      {night ? <Sun className="size-5" /> : <Moon className="size-5" />}
-      <span className="hidden sm:inline">{night ? "白天" : "夜里"}</span>
-    </button>
-  );
-}
-
-function VolumeChip({ index, onClick }: { index: number; onClick: () => void }) {
-  const Icon = index === 0 ? VolumeX : index === 1 ? Volume1 : Volume2;
-  const label = index === 0 ? "静音" : index === 1 ? "小声" : "大声";
-  return (
-    <button type="button" onClick={onClick} aria-label={`音量：${label}，点一下切换`} className="glass-chip">
-      <Icon className="size-5" />
-      <span>{label}</span>
-    </button>
   );
 }
 
 function Home({
   volume,
   lastPlay,
+  playMode,
+  sleepMinutes,
   onPlayDog,
   onContinue,
   onOpenWorld,
 }: {
   volume: ReactNode;
   lastPlay: LastPlay | null;
+  playMode: PlayMode;
+  sleepMinutes: number;
   onPlayDog: () => void;
   onContinue: (item: LastPlay) => void;
   onOpenWorld: (id: WorldId) => void;
 }) {
   const showContinue = Boolean(lastPlay && !(lastPlay.category === "animals" && lastPlay.itemId === "dog"));
+  const status = [
+    PLAY_MODE_LABEL[playMode],
+    sleepMinutes ? `${sleepMinutes}分后停下` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
@@ -277,11 +397,12 @@ function Home({
             <h1 className="ink truncate text-[26px] font-black leading-tight">
               宝宝，{greeting()}
             </h1>
-            <p className="ink-soft truncate text-sm font-bold">想听就点最大的卡片</p>
+            <p className="ink-soft truncate text-sm font-bold">{homeHint()}</p>
           </div>
         </div>
         {volume}
       </header>
+      <p className="ink-soft mt-3 text-xs font-bold">{status} · 右上角给大人</p>
 
       {showContinue && lastPlay && (
         <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip mt-5">
@@ -333,7 +454,7 @@ function Home({
         ))}
       </div>
 
-      <p className="ink-soft mt-8 text-center text-sm font-bold">陪宝宝一起听，效果最好</p>
+      <p className="ink-soft mt-8 text-center text-sm font-bold">陪着听一遍，宝宝会跟着张嘴</p>
     </main>
   );
 }
@@ -343,11 +464,13 @@ function WorldGate({
   volume,
   onBack,
   onOpen,
+  onPlayFirst,
 }: {
   worldId: WorldId;
   volume: ReactNode;
   onBack: () => void;
   onOpen: (id: CategoryId, world: WorldId) => void;
+  onPlayFirst: () => void;
 }) {
   const world = getWorld(worldId);
   const rooms = world.rooms.map((id) => getCategory(id));
@@ -367,12 +490,16 @@ function WorldGate({
           <span className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-[var(--bg)] p-2">
             <CoverImage src={world.hero} alt={world.title} />
           </span>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="ink-soft text-xs font-bold tracking-wider">点一张，就开始听</p>
             <h1 className="ink text-2xl font-black">{world.title}</h1>
             <p className="ink-soft text-sm font-medium">{world.hint}</p>
           </div>
         </div>
+        <button type="button" onClick={onPlayFirst} className="playall-btn">
+          <PlayBadge className="h-8 w-8" />
+          先听一张
+        </button>
       </section>
 
       <div className="mt-4 grid grid-cols-2 gap-3.5">
@@ -389,6 +516,13 @@ function greeting() {
   if (h < 11) return "早上好";
   if (h < 18) return "下午好";
   return "晚上好";
+}
+
+function homeHint() {
+  const h = new Date().getHours();
+  if (h >= 19 || h < 7) return "夜里先听一个短故事，再睡觉";
+  if (h < 11) return "早上先听小狗，再认一认";
+  return "点最大的卡片，右上角给大人";
 }
 
 function RoomButton({
@@ -426,12 +560,14 @@ function RoomButton({
 function Library({
   category,
   backLabel,
+  lastId,
   onBack,
   onPlay,
   volume,
 }: {
   category: CategoryId;
   backLabel: string;
+  lastId: string | null;
   onBack: () => void;
   onPlay: (id: string) => void;
   volume: ReactNode;
@@ -442,6 +578,8 @@ function Library({
   const songs = category === "zh-songs" ? zhSongs : category === "en-songs" ? enSongs : [];
   const poemItems = category === "poems" ? poems : [];
   const taleItems = storiesFor(category);
+  const first = playlist(category)[0];
+  const unit = category === "animals" ? "只" : lesson ? "张" : "首";
 
   return (
     <main className="page-shell relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-4 sm:px-6">
@@ -466,16 +604,25 @@ function Library({
         </div>
       </section>
 
+      {first && (
+        <button type="button" onClick={() => onPlay(first.id)} className="playall-btn mt-4">
+          <PlayBadge className="h-8 w-8" />
+          从第一{unit}听
+        </button>
+      )}
+
       {lesson && (
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {cards.map((card) => (
             <li key={card.id}>
-              <button type="button" onClick={() => onPlay(card.id)} className="island-card w-full text-left">
+              <button type="button" onClick={() => onPlay(card.id)} className={`island-card w-full text-left ${lastId === card.id ? "now-card" : ""}`}>
                 <span className="relative block aspect-square overflow-hidden">
                   <Portrait card={card} className="h-full w-full" />
-                  {category === "animals" && card.id === "dog" && (
+                  {lastId === card.id ? (
+                    <span className="hero-tile-badge absolute left-2 top-2">上次听</span>
+                  ) : category === "animals" && card.id === "dog" ? (
                     <span className="hero-tile-badge absolute left-2 top-2">先听</span>
-                  )}
+                  ) : null}
                   <span className="absolute bottom-2 right-2">
                     <PlayBadge className="h-9 w-9" />
                   </span>
@@ -497,12 +644,15 @@ function Library({
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {(songs.length ? songs : poemItems.length ? poemItems : taleItems).map((item) => (
             <li key={item.id}>
-              <button type="button" onClick={() => onPlay(item.id)} className="island-card w-full text-left">
+              <button type="button" onClick={() => onPlay(item.id)} className={`island-card w-full text-left ${lastId === item.id ? "now-card" : ""}`}>
                 <span className="relative block aspect-square overflow-hidden" style={{ background: item.color }}>
                   {"image" in item && item.image ? (
                     <CoverImage src={item.image} alt={item.title} className="p-3" />
                   ) : (
                     <ItemArt id={item.id} />
+                  )}
+                  {lastId === item.id && (
+                    <span className="hero-tile-badge absolute left-2 top-2">上次听</span>
                   )}
                   <span className="absolute bottom-2 right-2">
                     <PlayBadge className="h-9 w-9" />
@@ -532,6 +682,7 @@ function LessonView({
   onBack,
   onOpen,
   onTap,
+  onStop,
   onReplay,
 }: {
   category: CategoryId;
@@ -542,6 +693,7 @@ function LessonView({
   onBack: () => void;
   onOpen: (id: string) => void;
   onTap: () => void;
+  onStop: () => void;
   onReplay: () => void;
 }) {
   const list = cardsFor(category);
@@ -564,6 +716,7 @@ function LessonView({
       onPrev={() => canFlip && onOpen(list[(index - 1 + list.length) % list.length]!.id)}
       onNext={() => canFlip && onOpen(list[(index + 1) % list.length]!.id)}
       onTap={onTap}
+      onStop={onStop}
       onReplayAll={onReplay}
       volume={volume}
     />
@@ -581,6 +734,7 @@ function Player({
   onPrev,
   onNext,
   volume,
+  playMode,
 }: {
   category: CategoryId;
   itemId: string;
@@ -592,6 +746,7 @@ function Player({
   onPrev: () => void;
   onNext: () => void;
   volume: ReactNode;
+  playMode: PlayMode;
 }) {
   const cat = getCategory(category);
   const item = listenItem(category, itemId);
@@ -613,13 +768,26 @@ function Player({
       </header>
       <section className="island-card relative mt-4 flex flex-1 flex-col overflow-hidden">
         <div className="flex flex-1 flex-col items-center px-5 py-6 text-center" style={{ background: cat.tint }}>
-          <div className={`relative h-36 w-36 overflow-hidden rounded-[2rem] bg-[var(--bg)] p-2 shadow-[0_10px_22px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}>
+          <button
+            type="button"
+            onClick={() => (playing ? onStop() : onReplay())}
+            className={`cover-hit relative h-36 w-36 overflow-hidden rounded-[2rem] bg-[var(--bg)] p-2 shadow-[0_10px_22px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
+            aria-label={playing ? "点图停下" : "点图再听"}
+          >
             <CoverImage src={cover} alt={item.title} />
-          </div>
+            <span className="cover-play">
+              {playing ? <Pause className="size-5 fill-current" /> : <Play className="size-5 fill-current" />}
+            </span>
+          </button>
           <p className="ink-mute mt-3 text-xs font-bold tracking-wider">
             {place.total > 1 ? `${place.index + 1} / ${place.total}` : poem ? poem.author : cat.title}
+            {playing ? " · 正在听" : ""}
           </p>
           <h1 className="ink mt-1 text-3xl font-black">{item.title}</h1>
+          <p className="ink-soft mt-1 text-xs font-bold">
+            点图{playing ? "停下" : "再听"} · {PLAY_MODE_LABEL[playMode]}
+          </p>
+          <ProgressDots total={place.total} index={place.index} />
           {line?.kind === "fun" && (
             <p className="mt-2 rounded-full bg-[var(--bg)] px-3 py-1 text-xs font-black text-[var(--accent-deep)]">好玩的翻译</p>
           )}
