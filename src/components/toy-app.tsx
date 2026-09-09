@@ -64,6 +64,17 @@ export function ToyApp() {
   }, []);
 
   useEffect(() => {
+    const go = new URLSearchParams(window.location.search).get("go");
+    if (go === "home") {
+      setView({ name: "home" });
+      return;
+    }
+    if (go && categories.some((c) => c.id === go)) {
+      setView({ name: "library", category: go as CategoryId });
+    }
+  }, []);
+
+  useEffect(() => {
     toyPlayer.setVolume(VOLUME_STEPS[volumeIndex]);
   }, [volumeIndex]);
 

@@ -31,7 +31,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="zh-CN"
       className={`${rounded.variable} ${sans.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <noscript>
+          <p className="bg-white p-6 text-center text-base font-bold text-[#4A3228]">
+            打开宝宝听听需要浏览器允许 JavaScript。
+          </p>
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }
