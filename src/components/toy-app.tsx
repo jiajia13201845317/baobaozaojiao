@@ -232,11 +232,7 @@ function Home({
         {volume}
       </header>
 
-      <p className="ink mt-3 text-[15px] font-bold">
-        先点最大的卡片，听小狗叫。下面还可以认身体、听儿歌和故事。
-      </p>
-
-      <button type="button" onClick={() => onOpen(featured.id)} className="hero-tile mt-3 text-left">
+      <button type="button" onClick={() => onOpen(featured.id)} className="hero-tile mt-4 text-left">
         <span className="hero-tile-inner">
           <span className="hero-tile-art">
             <CoverImage src={featured.hero} alt="小狗" />
