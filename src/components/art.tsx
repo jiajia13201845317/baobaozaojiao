@@ -138,9 +138,9 @@ export function Mascot({
 export function PlayBadge({ className = "h-11 w-11" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
-      <circle cx="32" cy="32" r="30" fill="#B87A5C" />
-      <circle cx="32" cy="30" r="26" fill="#C4886A" />
-      <path d="M27 20 L46 32 L27 44 Z" fill="#F7F4EC" />
+      <circle cx="32" cy="32" r="30" fill="#FF7A45" />
+      <circle cx="32" cy="30" r="26" fill="#FF8A5C" />
+      <path d="M27 20 L46 32 L27 44 Z" fill="#FFFDFB" />
     </svg>
   );
 }

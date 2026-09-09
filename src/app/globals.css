@@ -84,24 +84,25 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  --ink: #3d2e28;
-  --ink-soft: #7a5c4e;
-  --ink-mute: #8a6e60;
-  --bg: #fff7ee;
-  --bg-2: #fff1e2;
-  --surface: #fffdf8;
-  --card-bg: #fffdf8;
-  --apricot: #ffd2a8;
-  --beige: #ffe7c4;
-  --sage: #c8f2b4;
-  --mist: #c5e8ff;
-  --lilac: #e8d6ff;
+  --ink: #3a2f2a;
+  --ink-soft: #7d6558;
+  --ink-mute: #9a8274;
+  --bg: #fff6ee;
+  --bg-2: #fff0e4;
+  --surface: #fffdfb;
+  --card-bg: #fffdfb;
+  --apricot: #ffd3b0;
+  --beige: #ffe8d0;
+  --sage: #c9efb8;
+  --mist: #c7e8ff;
+  --lilac: #e7d7ff;
   --brand: #ff7a45;
-  --brand-deep: #ef5a28;
-  --on-brand: #fffdf8;
-  --accent-deep: #ef5a28;
-  --on-accent: #fffdf8;
-  --shadow: rgba(200, 90, 50, 0.16);
+  --brand-deep: #e85a2a;
+  --on-brand: #fffdfb;
+  --accent-deep: #e85a2a;
+  --on-accent: #fffdfb;
+  --shadow: rgba(90, 48, 32, 0.08);
+  --lift: 0 10px 28px rgba(90, 48, 32, 0.08);
   --phone: 24.5rem;
   --hero: clamp(5.2rem, 28vmin, 7rem);
   --title: clamp(1.5rem, 6.2vw, 2rem);
@@ -129,7 +130,8 @@ html.night {
   --on-brand: #2a221c;
   --accent-deep: #ff8a5c;
   --on-accent: #2a221c;
-  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow: rgba(0, 0, 0, 0.28);
+  --lift: 0 10px 28px rgba(0, 0, 0, 0.28);
 }
 
 .dark {
@@ -214,15 +216,14 @@ html.night {
   display: inline-flex;
   align-items: center;
   gap: 0.28rem;
-  height: 2.35rem;
+  height: 2.3rem;
   padding: 0 0.7rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
+  background: var(--surface);
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  box-shadow: 0 6px 16px var(--shadow);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -232,11 +233,9 @@ html.night {
 
 .island-card {
   overflow: hidden;
-  border-radius: 1.6rem;
+  border-radius: 1.35rem;
   background: var(--card-bg);
-  box-shadow:
-    0 10px 22px var(--shadow),
-    0 1px 0 color-mix(in srgb, var(--surface) 70%, white) inset;
+  box-shadow: var(--lift);
   transition: transform 180ms ease, box-shadow 180ms ease;
   -webkit-tap-highlight-color: transparent;
 }
@@ -247,47 +246,49 @@ html.night {
 }
 
 .home-banner {
-  border-radius: 1.5rem;
-  padding: 0.75rem 0.8rem 0.8rem;
-  background: linear-gradient(160deg, #ffd4b4 0%, #ffb07a 52%, #ffe27a 100%);
-  box-shadow:
-    0 8px 0 #ff8a5c,
-    0 16px 26px var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  padding: 0.15rem 0.1rem 0.1rem;
+  background: transparent;
+  box-shadow: none;
 }
 
 .home-brand {
-  margin-bottom: 0.2rem;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  color: #c45c2a;
+  margin-bottom: 0.05rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink-mute);
 }
 
 .home-mascot-wrap {
   display: grid;
   place-items: center;
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.1rem;
+  height: 3.1rem;
   border-radius: 999px;
-  background: #fffdf8;
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 28%, #ffe7c4);
+  background: var(--surface);
+  box-shadow: var(--lift);
 }
 
-.home-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.55rem;
+.section-label {
+  margin: 1.05rem 0.15rem 0.55rem;
+  color: var(--ink-mute);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
 }
 
 .candy-pill {
   border-radius: 999px;
-  padding: 0.28rem 0.7rem;
-  background: #fffdf8;
-  color: var(--accent-deep);
-  font-size: 0.75rem;
-  font-weight: 800;
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand) 22%, #ffe7c4);
+  padding: 0.18rem 0.55rem;
+  background: color-mix(in srgb, var(--beige) 70%, white);
+  color: var(--ink-soft);
+  font-size: 0.7rem;
+  font-weight: 700;
+  box-shadow: none;
 }
 
 .candy-pill-soft {
@@ -299,36 +300,29 @@ html.night {
   flex-direction: row;
   align-items: center;
   width: 100%;
-  margin-top: 0.7rem;
-  padding: 0.55rem 0.7rem 0.55rem 0.55rem;
-  border-radius: 1.6rem;
-  background: linear-gradient(180deg, #ffe27a 0%, #ffb36a 100%);
-  box-shadow:
-    0 7px 0 #ef5a28,
-    0 12px 20px var(--shadow);
+  margin-top: 0.85rem;
+  padding: 0.6rem 0.75rem 0.6rem 0.6rem;
+  border-radius: 1.45rem;
+  background: linear-gradient(135deg, #ffe7a8 0%, #ffc27a 100%);
+  box-shadow: 0 12px 28px rgba(232, 90, 42, 0.16);
   text-align: left;
   -webkit-tap-highlight-color: transparent;
 }
 
 .hero-poster:active {
-  transform: translateY(6px);
-  box-shadow:
-    0 4px 0 #ef5a28,
-    0 8px 14px var(--shadow);
+  transform: scale(0.985);
 }
 
 .hero-poster-art {
   display: grid;
   place-items: center;
-  width: 5.4rem;
-  height: 5.4rem;
+  width: 5.2rem;
+  height: 5.2rem;
   margin: 0 0.7rem 0 0;
-  padding: 0.18rem;
+  padding: 0.15rem;
   border-radius: 999px;
-  background: #fffdf8;
-  box-shadow:
-    0 8px 0 color-mix(in srgb, var(--brand) 30%, #ffe7c4),
-    inset 0 0 0 4px #fff3c8;
+  background: #fffdfb;
+  box-shadow: inset 0 0 0 3px rgba(255, 243, 200, 0.9);
 }
 
 .hero-poster-cta {
@@ -347,23 +341,18 @@ html.night {
 .world-slab {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   width: 100%;
-  min-height: 4.5rem;
-  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
-  border-radius: 1.35rem;
-  background: var(--door-tint, var(--sage));
-  box-shadow:
-    0 8px 0 var(--room-shadow, var(--beige)),
-    0 14px 22px var(--shadow);
+  min-height: 4.35rem;
+  padding: 0.4rem 0.65rem 0.4rem 0.4rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--door-tint, var(--sage)) 55%, var(--surface));
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
 .world-slab:active {
-  transform: translateY(5px);
-  box-shadow:
-    0 3px 0 var(--room-shadow, var(--beige)),
-    0 8px 12px var(--shadow);
+  transform: scale(0.985);
 }
 
 .world-slab-art {
@@ -377,19 +366,14 @@ html.night {
   background: #fffdf8;
 }
 
-html.night .home-banner,
-html.night .hero-poster {
-  box-shadow:
-    0 6px 0 #8a4030,
-    0 12px 18px var(--shadow);
-}
-
 html.night .home-banner {
-  background: linear-gradient(160deg, #5a4032 0%, #4a3228 60%, #3d322b 100%);
+  background: transparent;
+  box-shadow: none;
 }
 
 html.night .hero-poster {
-  background: linear-gradient(180deg, #5a4630 0%, #4a3228 100%);
+  background: linear-gradient(135deg, #5a4630 0%, #4a3228 100%);
+  box-shadow: var(--lift);
 }
 
 html.night .home-brand {
@@ -439,10 +423,10 @@ html.night .home-brand {
 .hero-tile-badge {
   display: inline-block;
   border-radius: 999px;
-  padding: 0.15rem 0.6rem;
-  background: var(--apricot);
+  padding: 0.12rem 0.5rem;
+  background: rgba(255, 253, 251, 0.72);
   color: var(--accent-deep);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
@@ -450,13 +434,13 @@ html.night .home-brand {
 .continue-chip {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
+  gap: 0.65rem;
   width: 100%;
-  margin-top: 0.85rem;
-  padding: 0.7rem 0.85rem;
-  border-radius: 1.4rem;
+  margin-top: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 1.15rem;
   background: var(--surface);
-  box-shadow: 0 6px 14px var(--shadow);
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -467,23 +451,18 @@ html.night .home-brand {
 .world-door {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.7rem;
   width: 100%;
-  min-height: 5.4rem;
-  padding: 0.45rem 0.7rem 0.45rem 0.45rem;
-  border-radius: 1.7rem;
+  min-height: 4.6rem;
+  padding: 0.4rem 0.65rem 0.4rem 0.4rem;
+  border-radius: 1.25rem;
   background: var(--card-bg);
-  box-shadow:
-    0 7px 0 color-mix(in srgb, var(--room-shadow, var(--beige)) 70%, var(--beige)),
-    0 12px 20px var(--shadow);
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
 .world-door:active {
-  transform: translateY(4px);
-  box-shadow:
-    0 3px 0 color-mix(in srgb, var(--room-shadow, var(--beige)) 70%, var(--beige)),
-    0 6px 12px var(--shadow);
+  transform: scale(0.985);
 }
 
 .world-door-art {
@@ -499,21 +478,16 @@ html.night .home-brand {
 .room-tile {
   --room-shadow: var(--beige);
   display: block;
-  border-radius: 1.9rem;
-  padding: 0.35rem;
-  background: linear-gradient(180deg, var(--card-bg) 0%, var(--surface) 100%);
-  box-shadow:
-    0 7px 0 color-mix(in srgb, var(--room-shadow) 55%, var(--beige)),
-    0 12px 20px var(--shadow);
+  border-radius: 1.35rem;
+  padding: 0.28rem;
+  background: var(--surface);
+  box-shadow: var(--lift);
   transition: transform 180ms ease, box-shadow 180ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .room-tile:active {
-  transform: translateY(4px);
-  box-shadow:
-    0 3px 0 color-mix(in srgb, var(--room-shadow) 55%, var(--beige)),
-    0 6px 12px var(--shadow);
+  transform: scale(0.98);
 }
 
 .welcome-page {
@@ -540,13 +514,9 @@ html.night .cozy-sky {
   max-height: 100dvh;
   flex-direction: column;
   border-radius: 0;
-  padding: 0.45rem 0.4rem 0.3rem;
-  background:
-    linear-gradient(180deg, #ffe3b8 0%, #ffc48a 62%, #ff9a62 100%);
-  box-shadow:
-    0 12px 0 color-mix(in srgb, var(--accent-deep) 40%, var(--beige)),
-    0 22px 32px var(--shadow),
-    inset 0 3px 0 color-mix(in srgb, var(--bg) 55%, white);
+  padding: 0.5rem 0.45rem 0.35rem;
+  background: linear-gradient(180deg, #f6d7b6 0%, #efc09a 100%);
+  box-shadow: none;
 }
 
 .machine-shell::before,
@@ -655,12 +625,12 @@ html.night .welcome-sky {
 
 .sky-temp {
   border-radius: 999px;
-  background: #fffdf8;
-  padding: 0.05rem 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 900;
+  background: color-mix(in srgb, var(--surface) 90%, white);
+  padding: 0.05rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
   color: var(--accent-deep);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand) 20%, #ffe7c4);
+  box-shadow: var(--lift);
 }
 
 .care-toys {
@@ -678,13 +648,13 @@ html.night .welcome-sky {
   flex-direction: column;
   align-items: center;
   gap: 0.08rem;
-  padding: 0.25rem 0.4rem 0.3rem;
-  border-radius: 1.3rem;
-  background: #fffdf8;
+  padding: 0.3rem 0.45rem 0.35rem;
+  border-radius: 1.1rem;
+  background: color-mix(in srgb, var(--surface) 88%, white);
   color: var(--ink);
-  font-size: 0.78rem;
-  font-weight: 800;
-  box-shadow: 0 5px 0 color-mix(in srgb, var(--brand) 18%, #ffe7c4);
+  font-size: 0.74rem;
+  font-weight: 700;
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -710,15 +680,15 @@ html.night .welcome-sky {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  height: 2.7rem;
+  height: 2.45rem;
   flex-shrink: 0;
   padding: 0 0.7rem 0 0.35rem;
   border-radius: 999px;
-  background: #fffdf8;
+  background: var(--surface);
   color: var(--ink);
-  font-size: 0.78rem;
-  font-weight: 800;
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 18%, #ffe7c4);
+  font-size: 0.74rem;
+  font-weight: 700;
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -789,7 +759,7 @@ html.night .cozy-land {
 }
 
 html.night .machine-shell {
-  background: linear-gradient(180deg, #5a4638 0%, #4a342c 62%, #3d2a24 100%);
+  background: linear-gradient(180deg, #4a3a32 0%, #3a2c26 100%);
 }
 
 html.night .machine-shell::before,
@@ -855,8 +825,9 @@ html.night .welcome-kicker {
 
 .welcome-title {
   margin-top: 0.05rem;
+  font-family: var(--font-rounded), Fredoka, sans-serif;
   font-size: var(--title);
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.03em;
   color: var(--ink);
@@ -877,11 +848,9 @@ html.night .welcome-kicker {
   margin-top: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
-  background: #fffdf8;
-  padding: 0.28rem;
-  box-shadow:
-    0 8px 0 color-mix(in srgb, var(--brand) 28%, #ffe7c4),
-    0 14px 22px var(--shadow);
+  background: #fffdfb;
+  padding: 0.22rem;
+  box-shadow: 0 14px 32px rgba(232, 90, 42, 0.14);
 }
 
 @media (max-height: 620px) {
@@ -903,8 +872,9 @@ html.night .welcome-kicker {
   .machine-shell {
     width: min(100%, var(--phone));
     height: min(100dvh - 0.9rem, 44rem);
-    border-radius: 2.1rem;
+    border-radius: 1.8rem;
     padding: 0.55rem 0.45rem 0.35rem;
+    box-shadow: 0 18px 40px rgba(90, 48, 32, 0.12);
   }
 
   .machine-shell::before,
@@ -947,12 +917,12 @@ html.night .welcome-kicker {
 .welcome-bubble {
   margin-top: 0.3rem;
   border-radius: 999px;
-  background: #fffdf8;
-  padding: 0.2rem 0.75rem;
-  font-size: 0.78rem;
-  font-weight: 900;
+  background: color-mix(in srgb, var(--surface) 88%, white);
+  padding: 0.18rem 0.7rem;
+  font-size: 0.74rem;
+  font-weight: 800;
   color: var(--brand-deep);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand) 22%, #ffe7c4);
+  box-shadow: var(--lift);
 }
 
 .welcome-friends {
@@ -968,9 +938,9 @@ html.night .welcome-kicker {
   width: 2.7rem;
   overflow: hidden;
   border-radius: 999px;
-  background: #fffdf8;
-  padding: 0.15rem;
-  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 16%, #ffe7c4);
+  background: color-mix(in srgb, var(--surface) 88%, white);
+  padding: 0.12rem;
+  box-shadow: var(--lift);
 }
 
 .welcome-friend:nth-child(1) {
@@ -1013,23 +983,18 @@ html.night .welcome-kicker {
   align-items: center;
   gap: 0.45rem;
   height: var(--btn-h);
-  padding: 0 1.1rem 0 0.4rem;
+  padding: 0 1.15rem 0 0.4rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 80%);
+  background: linear-gradient(180deg, #ff8a55 0%, var(--brand-deep) 90%);
   color: var(--on-brand);
-  font-size: clamp(1.2rem, 5vw, 1.45rem);
+  font-size: clamp(1.15rem, 4.8vw, 1.35rem);
   font-weight: 900;
-  box-shadow:
-    0 8px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
-    0 14px 22px var(--shadow);
+  box-shadow: 0 12px 24px rgba(232, 90, 42, 0.28);
   -webkit-tap-highlight-color: transparent;
 }
 
 .toy-start:active {
-  transform: translateY(5px);
-  box-shadow:
-    0 3px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
-    0 8px 12px var(--shadow);
+  transform: scale(0.98);
 }
 
 .candy-btn {
@@ -1078,18 +1043,18 @@ html.night .welcome-kicker {
 }
 
 .control-round.stop {
-  background: linear-gradient(180deg, #c48a7a 0%, #a66b5c 100%);
-  box-shadow: 0 6px 0 #8a5648, 0 12px 18px var(--shadow);
+  background: #c48a7a;
+  box-shadow: var(--lift);
 }
 
 .control-round.stop:disabled {
-  background: linear-gradient(180deg, var(--beige) 0%, color-mix(in srgb, var(--beige) 70%, var(--ink-mute)) 100%);
-  box-shadow: 0 6px 0 var(--ink-mute), 0 12px 18px var(--shadow);
+  background: var(--beige);
+  box-shadow: none;
 }
 
 .control-round.replay {
-  background: linear-gradient(180deg, #8aa0b4 0%, #6d8498 100%);
-  box-shadow: 0 6px 0 #55687a, 0 12px 18px var(--shadow);
+  background: #8aa0b4;
+  box-shadow: var(--lift);
 }
 
 .control-round:active:not(:disabled) {
@@ -1102,12 +1067,12 @@ html.night .welcome-kicker {
   justify-content: center;
   gap: 0.15rem;
   height: 2.85rem;
-  border-radius: 1.2rem;
-  background: color-mix(in srgb, var(--surface) 90%, white);
+  border-radius: 1rem;
+  background: var(--surface);
   color: var(--ink);
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   font-weight: 800;
-  box-shadow: 0 6px 14px var(--shadow);
+  box-shadow: var(--lift);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1120,9 +1085,9 @@ html.night .welcome-kicker {
 }
 
 .nav-pill-strong {
-  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+  background: var(--brand);
   color: var(--on-brand);
-  box-shadow: 0 6px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228), 0 10px 16px var(--shadow);
+  box-shadow: 0 8px 18px rgba(232, 90, 42, 0.22);
 }
 
 .parent-layer {

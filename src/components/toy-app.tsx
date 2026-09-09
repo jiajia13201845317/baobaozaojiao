@@ -413,24 +413,19 @@ function Home({
   return (
     <main className="page-shell home-playroom relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
       <section className="home-banner">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="home-mascot-wrap">
+            <Mascot pose="wave" className="h-11 w-11" />
+          </span>
           <div className="min-w-0">
-            <p className="home-brand">小乖乖早教机</p>
-            <h1 className="ink truncate text-[22px] font-black leading-tight">
-              宝宝，{greeting()}
+            <p className="home-brand">宝宝听听</p>
+            <h1 className="ink truncate text-[20px] font-black leading-tight">
+              {greeting()}
             </h1>
-            <p className="ink-soft mt-0.5 truncate text-xs font-bold">{homeHint()}</p>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-2">
-            {volume}
-            <span className="home-mascot-wrap">
-              <Mascot pose="wave" className="h-12 w-12" />
-            </span>
+            <p className="ink-soft truncate text-[11px] font-semibold">{status}</p>
           </div>
         </div>
-        <div className="home-pills">
-          <span className="candy-pill">{status}</span>
-        </div>
+        {volume}
       </section>
       <CareStrip care={care} onTalk={onTalk} />
 
@@ -459,8 +454,7 @@ function Home({
         </span>
       </button>
 
-      <p className="ink mt-4 text-base font-black">还想进哪一扇门</p>
-      <p className="ink-soft mb-2 text-xs font-bold">绿的认、粉的唱、紫的听故事</p>
+      <p className="section-label">还想听</p>
       <div className="flex flex-col gap-2.5">
         {worlds.map((world) => (
           <button
@@ -480,7 +474,7 @@ function Home({
               <span className="ink block text-[18px] font-black leading-tight">{world.title}</span>
               <span className="ink-soft mt-0.5 block text-xs font-bold">{world.hint}</span>
             </span>
-            <PlayBadge className="h-8 w-8 shrink-0" />
+            <span className="ink-mute text-lg font-black">›</span>
           </button>
         ))}
       </div>
