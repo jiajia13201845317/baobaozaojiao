@@ -46,7 +46,7 @@ export function FlashcardPlayer({
         {volume}
       </header>
 
-      <section className="island-card mt-4 flex flex-1 flex-col overflow-hidden bg-white">
+      <section className="island-card mt-4 flex flex-1 flex-col overflow-hidden bg-[var(--card-bg)]">
         <button
           type="button"
           onClick={onTap}
@@ -55,18 +55,15 @@ export function FlashcardPlayer({
         >
           <div className="relative grid h-[46vw] max-h-72 w-[46vw] max-w-72 place-items-center sm:h-72 sm:w-72">
             {playing && (
-              <>
-                <span className="absolute h-full w-full rounded-full bg-[#39C15B]/20 animate-[pulse-ring_1.6s_ease-out_infinite]" />
-                <span className="absolute h-[118%] w-[118%] rounded-full bg-[#FF6B4A]/15 animate-[pulse-ring_1.6s_ease-out_infinite] [animation-delay:350ms]" />
-              </>
+              <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
             )}
             <div
-              className={`relative h-full w-full overflow-hidden rounded-[2.2rem] bg-white shadow-[0_16px_36px_rgba(42,39,64,0.16)] ${playing ? "animate-[bob_0.9s_ease-in-out_infinite]" : ""}`}
+              className={`relative h-full w-full overflow-hidden rounded-[2.2rem] bg-[var(--bg)] shadow-[0_12px_24px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
             >
               <Portrait card={card} className="h-full w-full" />
             </div>
           </div>
-          <p className="mt-4 text-sm font-bold text-[#8A84A3]">
+          <p className="ink-soft mt-4 text-sm font-bold">
             {card.cry ? `点${card.zh}，再听 ${card.cry}` : `点图片，再听 ${card.zh}`}
           </p>
         </button>
@@ -76,23 +73,23 @@ export function FlashcardPlayer({
             label={card.zh}
             hint="中文"
             active={step === "zh"}
-            tone="#FF6B4A"
-            bg="#FFF1E6"
+            tone="var(--accent-deep)"
+            bg="var(--apricot)"
           />
           <WordChip
             label={card.en}
             hint="English"
             active={step === "en"}
-            tone="#5B7CFF"
-            bg="#E8EEFF"
+            tone="var(--ink)"
+            bg="var(--mist)"
           />
           {showSound && (
             <WordChip
               label={card.cry!}
               hint="叫声"
               active={step === "sound"}
-              tone="#249A40"
-              bg="#E4F8DC"
+              tone="var(--ink)"
+              bg="var(--sage)"
             />
           )}
         </div>
@@ -130,7 +127,7 @@ function WordChip({
 }) {
   return (
     <span
-      className={`min-w-24 rounded-2xl px-4 py-2 text-center transition-transform ${active ? "scale-110 shadow-[0_8px_0_rgba(42,39,64,0.12)]" : "opacity-70"}`}
+      className={`min-w-24 rounded-2xl px-4 py-2 text-center ${active ? "scale-105 shadow-[0_4px_0_var(--shadow)]" : "opacity-75"}`}
       style={{ background: bg, color: tone }}
     >
       <span className="block text-[10px] font-bold tracking-wider uppercase">{hint}</span>

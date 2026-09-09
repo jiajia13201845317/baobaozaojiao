@@ -58,19 +58,19 @@ export function CozyBackdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, #FFE9CF 0%, #FFF3E2 34%, #FFF8EE 100%)",
+            "linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 40%, var(--surface) 100%)",
         }}
       />
-      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[#FFC98A]/40 blur-3xl" />
-      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[#FFB3C7]/35 blur-3xl" />
+      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[var(--mist)]/50 blur-3xl" />
+      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[var(--lilac)]/45 blur-3xl" />
       <svg
         className="absolute inset-x-0 bottom-0 h-40 w-full"
         viewBox="0 0 390 160"
         preserveAspectRatio="xMidYMax slice"
         aria-hidden
       >
-        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="#FFE2BE" />
-        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="#FFD3A6" />
+        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="var(--beige)" />
+        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="var(--apricot)" />
       </svg>
     </div>
   );
@@ -101,7 +101,7 @@ export function Mascot({
   return (
     <svg viewBox="0 0 160 170" className={className} aria-hidden>
       <ellipse cx="80" cy="158" rx="38" ry="8" fill="#2A2740" opacity="0.12" />
-      <g className={pose === "wave" ? "origin-[80px_70px] animate-[sway_2.4s_ease-in-out_infinite]" : undefined}>
+      <g className={pose === "wave" ? "origin-[80px_70px] animate-[sway_5s_ease-in-out_infinite]" : undefined}>
         <ellipse cx="48" cy="28" rx="14" ry="22" fill="#FFF6EA" />
         <ellipse cx="48" cy="30" rx="8" ry="14" fill="#FFB3C7" />
         <ellipse cx="112" cy="28" rx="14" ry="22" fill="#FFF6EA" />
@@ -128,7 +128,7 @@ export function Mascot({
           </g>
         )}
         {pose === "wave" && (
-          <g className="origin-[128px_96px] animate-[wave-hand_1.2s_ease-in-out_infinite]">
+          <g className="origin-[128px_96px] animate-[wave-hand_3.6s_ease-in-out_infinite]">
             <ellipse cx="128" cy="96" rx="10" ry="14" fill="#FFF6EA" />
           </g>
         )}
@@ -144,9 +144,9 @@ export function Mascot({
 export function PlayBadge({ className = "h-11 w-11" }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
-      <circle cx="32" cy="32" r="30" fill="#FF6B4A" />
-      <circle cx="32" cy="30" r="26" fill="#FF8A6A" />
-      <path d="M27 20 L46 32 L27 44 Z" fill="white" />
+      <circle cx="32" cy="32" r="30" fill="#B87A5C" />
+      <circle cx="32" cy="30" r="26" fill="#C4886A" />
+      <path d="M27 20 L46 32 L27 44 Z" fill="#F7F4EC" />
     </svg>
   );
 }
