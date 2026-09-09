@@ -613,8 +613,167 @@ html.night .cozy-sky {
   background: linear-gradient(180deg, #9fd6ff 0%, #d6f0ff 22%, #fff4d8 52%, #ffd7a8 100%);
 }
 
+.welcome-sky.sky-cloud {
+  background: linear-gradient(180deg, #b7c9d8 0%, #dce6ee 28%, #fff4d8 58%, #e8f0c8 100%);
+}
+
+.welcome-sky.sky-rain {
+  background: linear-gradient(180deg, #7aa0b8 0%, #b7cfe0 30%, #d8e8c8 70%, #8fde7a 100%);
+}
+
+.welcome-sky.sky-night,
 html.night .welcome-sky {
   background: linear-gradient(180deg, #243040 0%, #2a221c 42%, #3d322b 100%);
+}
+
+.sky-buddy {
+  position: absolute;
+  left: 0.7rem;
+  top: 0.75rem;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sky-face {
+  width: 4.4rem;
+  height: 4.4rem;
+  filter: drop-shadow(0 6px 0 rgba(255, 210, 110, 0.35));
+}
+
+.sky-sun {
+  animation: pulse-soft 2.4s ease-in-out infinite;
+}
+
+.sky-temp {
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: 0.05rem 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: var(--accent-deep);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand) 20%, #ffe7c4);
+}
+
+.care-toys {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-top: 0.65rem;
+}
+
+.care-toy {
+  display: flex;
+  min-width: 7.4rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.55rem 0.45rem;
+  border-radius: 1.3rem;
+  background: #fffdf8;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--brand) 18%, #ffe7c4);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.care-toy:active {
+  transform: translateY(3px);
+}
+
+.care-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.care-strip {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  margin-top: 0.85rem;
+  padding-bottom: 0.15rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.care-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.7rem;
+  flex-shrink: 0;
+  padding: 0 0.7rem 0 0.35rem;
+  border-radius: 999px;
+  background: #fffdf8;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 800;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 18%, #ffe7c4);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.care-chip .sky-face,
+.care-chip .care-icon {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.care-chip:active {
+  transform: scale(0.96);
+}
+
+.pup-hat,
+.pup-scarf,
+.pup-shade {
+  position: absolute;
+  pointer-events: none;
+}
+
+.pup-hat {
+  top: 0.15rem;
+  left: 50%;
+  width: 2.4rem;
+  height: 1.15rem;
+  translate: -50% 0;
+  border-radius: 1rem 1rem 0.3rem 0.3rem;
+  background: #ff8a5c;
+  box-shadow: 0 2px 0 #c45c2a;
+}
+
+.pup-hat::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.45rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #ffe27a;
+}
+
+.pup-scarf {
+  right: 0.35rem;
+  bottom: 1.1rem;
+  width: 1.8rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #7ec8ff;
+  box-shadow: 0 2px 0 #4a88c8;
+}
+
+.pup-shade {
+  top: 1.55rem;
+  left: 50%;
+  width: 2.6rem;
+  height: 0.55rem;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #3d2e28;
+  opacity: 0.18;
 }
 
 html.night .welcome-land,
@@ -671,7 +830,7 @@ html.night .machine-shell::after {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.1rem 1.1rem 0.9rem;
+  padding: 3.1rem 1rem 0.8rem;
   text-align: center;
 }
 
@@ -697,8 +856,9 @@ html.night .welcome-kicker {
 }
 
 .welcome-sub {
-  margin-top: 0.45rem;
-  font-size: 0.95rem;
+  margin-top: 0.35rem;
+  max-width: 16rem;
+  font-size: 0.82rem;
   font-weight: 800;
   color: var(--ink-soft);
 }
@@ -707,7 +867,7 @@ html.night .welcome-kicker {
   position: relative;
   height: 8.6rem;
   width: 8.6rem;
-  margin-top: 0.85rem;
+  margin-top: 0.7rem;
   overflow: hidden;
   border-radius: 999px;
   background: #fffdf8;

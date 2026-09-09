@@ -6,6 +6,7 @@ import { CozyBackdrop, ItemArt, Mascot, PlayBadge } from "@/components/art";
 import { CoverImage, Portrait, RoomHero } from "@/components/cover";
 import { FlashcardPlayer, ProgressDots } from "@/components/flashcard";
 import { ParentPanel } from "@/components/parent-panel";
+import { CareStrip, useCare } from "@/components/care-toys";
 import { Welcome } from "@/components/welcome";
 import { toyPlayer, type LineInfo } from "@/lib/audio";
 import { useNightMode } from "@/lib/theme";
@@ -206,6 +207,12 @@ export function ToyApp() {
     await playItem("animals", "dog");
   }, [playItem]);
 
+  const talk = useCallback(async (text: string) => {
+    await toyPlayer.unlock();
+    toyPlayer.tap();
+    await toyPlayer.sayLine(text);
+  }, []);
+
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
     await toyPlayer.unlock();
     toyPlayer.tap();
@@ -271,6 +278,7 @@ export function ToyApp() {
           night={night}
           onToggleNight={toggleNight}
           onOpenParent={() => setParentOpen(true)}
+          onTalk={(text) => void talk(text)}
         />
       )}
       {view.name === "home" && (
@@ -282,6 +290,8 @@ export function ToyApp() {
           onPlayDog={() => void playItem("animals", "dog")}
           onContinue={(item) => void playItem(item.category, item.itemId, item.world)}
           onOpenWorld={goWorld}
+          onTalk={(text) => void talk(text)}
+          night={night}
         />
       )}
       {view.name === "world" && (
@@ -378,6 +388,8 @@ function Home({
   onPlayDog,
   onContinue,
   onOpenWorld,
+  onTalk,
+  night,
 }: {
   volume: ReactNode;
   lastPlay: LastPlay | null;
@@ -386,7 +398,10 @@ function Home({
   onPlayDog: () => void;
   onContinue: (item: LastPlay) => void;
   onOpenWorld: (id: WorldId) => void;
+  onTalk: (text: string) => void;
+  night: boolean;
 }) {
+  const care = useCare(night);
   const showContinue = Boolean(lastPlay && !(lastPlay.category === "animals" && lastPlay.itemId === "dog"));
   const status = [
     PLAY_MODE_LABEL[playMode],
@@ -418,6 +433,7 @@ function Home({
           <span className="candy-pill candy-pill-soft">右上角家长</span>
         </div>
       </section>
+      <CareStrip care={care} onTalk={onTalk} />
 
       {showContinue && lastPlay && (
         <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip">

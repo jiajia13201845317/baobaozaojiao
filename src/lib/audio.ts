@@ -194,6 +194,12 @@ class ToyPlayer {
     await this.speak("宝宝，该睡觉啦", "zh-CN", t);
   }
 
+  async sayLine(text: string) {
+    const t = this.begin();
+    this.emit({ text, lang: "zh-CN" });
+    await this.speak(text, "zh-CN", t);
+  }
+
   private begin() {
     this.stop();
     const t = this.token;
