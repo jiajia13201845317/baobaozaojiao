@@ -66,6 +66,9 @@ export type Flashcard = {
   zh: string;
   en: string;
   cry?: string;
+  sayZh?: string;
+  sayEn?: string;
+  sayCry?: string;
   sound?: AnimalSoundId;
   image: string;
   color: string;
@@ -82,11 +85,13 @@ export type Note = {
 export type Song = {
   id: string;
   title: string;
+  sayTitle?: string;
   subtitle: string;
   emoji: string;
   color: string;
   accent: string;
   lyrics: string[];
+  sayLyrics?: string[];
   lyricLang: "zh-CN" | "en-US";
   melody: Note[];
 };
@@ -110,11 +115,13 @@ export type AnimalSoundId =
 export type Story = {
   id: string;
   title: string;
+  sayTitle?: string;
   subtitle: string;
   emoji: string;
   color: string;
   accent: string;
   lines: string[];
+  sayLines?: string[];
   image?: string;
 };
 
@@ -122,7 +129,10 @@ export type Poem = {
   id: string;
   title: string;
   author: string;
+  sayTitle?: string;
+  sayAuthor?: string;
   verses: string[];
+  sayVerses?: string[];
   fun: string[];
   color: string;
   accent: string;
@@ -323,6 +333,12 @@ export const zhSongs: Song[] = [
       "一只没有眼睛，一只没有尾巴。",
       "真奇怪，真奇怪。",
     ],
+    sayLyrics: [
+      "两只老虎，两只老虎。",
+      "跑得快，跑得快。",
+      "一只没有眼睛，一只没有尾巴。",
+      "真奇怪，真奇怪。",
+    ],
     melody: [
       C("C4"), C("D4"), C("E4"), C("C4"),
       C("C4"), C("D4"), C("E4"), C("C4"),
@@ -347,6 +363,11 @@ export const zhSongs: Song[] = [
       "挂在天上放光明，好像许多小眼睛。",
       "一闪一闪亮晶晶，满天都是小星星。",
     ],
+    sayLyrics: [
+      "一闪一闪，亮晶晶，满天都是小星星。",
+      "挂在天上放光明，好像许多小眼睛。",
+      "一闪一闪，亮晶晶，满天都是小星星。",
+    ],
     melody: [
       C("C4"), C("C4"), C("G4"), C("G4"), C("A4"), C("A4"), C("G4", 2),
       C("F4"), C("F4"), C("E4"), C("E4"), C("D4"), C("D4"), C("C4", 2),
@@ -359,6 +380,7 @@ export const zhSongs: Song[] = [
   {
     id: "ducks",
     title: "数鸭子",
+    sayTitle: "数鸭子",
     subtitle: "门前大桥下",
     emoji: "🦆",
     color: "#D9F0C8",
@@ -369,6 +391,12 @@ export const zhSongs: Song[] = [
       "快来快来数一数，二四六七八。",
       "嘎嘎嘎嘎，真呀真多呀。",
       "数不清到底多少鸭。",
+    ],
+    sayLyrics: [
+      "门前大桥下，游过一群小鸭子。",
+      "快来快来数一数，二，四，六，七，八。",
+      "嘎，嘎，嘎，嘎，真呀真多呀。",
+      "数不清到底多少小鸭子。",
     ],
     melody: [
       C("G4"), C("E4"), C("G4"), C("E4", 2),
@@ -390,6 +418,11 @@ export const zhSongs: Song[] = [
     lyrics: [
       "拔萝卜，拔萝卜，嘿哟嘿哟拔萝卜。",
       "嘿哟嘿哟拔不动。",
+      "老公公，快快来，快来帮我们拔萝卜。",
+    ],
+    sayLyrics: [
+      "拔萝卜，拔萝卜，嘿哟，嘿哟，拔萝卜。",
+      "嘿哟，嘿哟，拔不动。",
       "老公公，快快来，快来帮我们拔萝卜。",
     ],
     melody: [
@@ -427,6 +460,7 @@ export const enSongs: Song[] = [
   {
     id: "twinkle",
     title: "Twinkle Twinkle",
+    sayTitle: "Twinkle twinkle little star",
     subtitle: "小星星",
     emoji: "✨",
     color: "#E8F0FF",
@@ -452,12 +486,21 @@ export const enSongs: Song[] = [
   {
     id: "abc",
     title: "ABC Song",
+    sayTitle: "A B C song",
     subtitle: "字母歌",
     emoji: "🔤",
     color: "#D4F4F0",
     accent: "#2A9B8F",
     lyricLang: "en-US",
     lyrics: [
+      "A B C D E F G.",
+      "H I J K L M N O P.",
+      "Q R S, T U V.",
+      "W X Y and Z.",
+      "Now I know my A B Cs.",
+      "Next time won't you sing with me.",
+    ],
+    sayLyrics: [
       "A B C D E F G.",
       "H I J K L M N O P.",
       "Q R S, T U V.",
@@ -477,6 +520,7 @@ export const enSongs: Song[] = [
   {
     id: "macdonald",
     title: "Old MacDonald",
+    sayTitle: "Old Mac Donald",
     subtitle: "老麦克唐纳",
     emoji: "👨‍🌾",
     color: "#E8F6C8",
@@ -489,6 +533,13 @@ export const enSongs: Song[] = [
       "Here a moo, there a moo, everywhere a moo moo.",
       "Old MacDonald had a farm, E I E I O.",
     ],
+    sayLyrics: [
+      "Old Mac Donald had a farm, E I E I O.",
+      "And on that farm he had a cow, E I E I O.",
+      "With a moo, moo here, and a moo, moo there.",
+      "Here a moo, there a moo, everywhere a moo, moo.",
+      "Old Mac Donald had a farm, E I E I O.",
+    ],
     melody: [
       C("G4"), C("G4"), C("G4"), C("D4"), C("E4"), C("E4"), C("D4", 2),
       C("B4"), C("B4"), C("A4"), C("A4"), C("G4", 2), C("rest", 0.5),
@@ -498,6 +549,7 @@ export const enSongs: Song[] = [
   {
     id: "spider",
     title: "Itsy Bitsy Spider",
+    sayTitle: "Itsy Bitsy Spider",
     subtitle: "小小蜘蛛",
     emoji: "🕷️",
     color: "#E6E0FF",
@@ -519,6 +571,7 @@ export const enSongs: Song[] = [
   {
     id: "lamb",
     title: "Mary Had a Little Lamb",
+    sayTitle: "Mary had a little lamb",
     subtitle: "玛丽有只小羊羔",
     emoji: "🐑",
     color: "#F4F0E8",
@@ -540,6 +593,7 @@ export const enSongs: Song[] = [
   {
     id: "boat",
     title: "Row Row Row Your Boat",
+    sayTitle: "Row, row, row your boat",
     subtitle: "划船歌",
     emoji: "🚣",
     color: "#C8EEF8",
@@ -562,66 +616,69 @@ export const enSongs: Song[] = [
 ];
 
 export const animals: Flashcard[] = [
-  { id: "dog", zh: "狗", en: "Dog", cry: "汪汪汪", sound: "dog", image: "/art/dog.png", color: "#F0D8C0", accent: "#B07840" },
-  { id: "cat", zh: "猫", en: "Cat", cry: "喵喵喵", sound: "cat", image: "/art/cat.png", color: "#FFE4C8", accent: "#E0892C" },
-  { id: "chick", zh: "鸡", en: "Chick", cry: "叽叽叽", sound: "chick", image: "/art/chick.png", color: "#FFF3B0", accent: "#D4A017" },
-  { id: "duck", zh: "鸭", en: "Duck", cry: "嘎嘎嘎", sound: "duck", image: "/art/duck.png", color: "#D4F0C8", accent: "#5AAA4A" },
-  { id: "cow", zh: "牛", en: "Cow", cry: "哞哞哞", sound: "cow", image: "/art/cow.png", color: "#F0E8DC", accent: "#8A6A4A" },
-  { id: "sheep", zh: "羊", en: "Sheep", cry: "咩咩咩", sound: "sheep", image: "/art/sheep.png", color: "#F4F0E8", accent: "#8A7A6A" },
-  { id: "pig", zh: "猪", en: "Pig", cry: "哼哼哼", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
-  { id: "bird", zh: "鸟", en: "Bird", cry: "啾啾啾", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
-  { id: "frog", zh: "青蛙", en: "Frog", cry: "呱呱呱", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
-  { id: "horse", zh: "马", en: "Horse", cry: "嘶嘶嘶", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
-  { id: "lion", zh: "狮子", en: "Lion", cry: "吼吼吼", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
-  { id: "elephant", zh: "大象", en: "Elephant", cry: "嗷嗷嗷", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
+  { id: "dog", zh: "狗", en: "Dog", sayZh: "小狗", sayEn: "dog", cry: "汪汪汪", sayCry: "汪，汪，汪", sound: "dog", image: "/art/dog.png", color: "#F0D8C0", accent: "#B07840" },
+  { id: "cat", zh: "猫", en: "Cat", sayZh: "小猫", sayEn: "cat", cry: "喵喵喵", sayCry: "喵，喵，喵", sound: "cat", image: "/art/cat.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "chick", zh: "鸡", en: "Chick", sayZh: "小鸡", sayEn: "chick", cry: "叽叽叽", sayCry: "叽，叽，叽", sound: "chick", image: "/art/chick.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "duck", zh: "鸭", en: "Duck", sayZh: "小鸭", sayEn: "duck", cry: "嘎嘎嘎", sayCry: "嘎，嘎，嘎", sound: "duck", image: "/art/duck.png", color: "#D4F0C8", accent: "#5AAA4A" },
+  { id: "cow", zh: "牛", en: "Cow", sayZh: "奶牛", sayEn: "cow", cry: "哞哞哞", sayCry: "哞，哞，哞", sound: "cow", image: "/art/cow.png", color: "#F0E8DC", accent: "#8A6A4A" },
+  { id: "sheep", zh: "羊", en: "Sheep", sayZh: "小羊", sayEn: "sheep", cry: "咩咩咩", sayCry: "咩，咩，咩", sound: "sheep", image: "/art/sheep.png", color: "#F4F0E8", accent: "#8A7A6A" },
+  { id: "pig", zh: "猪", en: "Pig", sayZh: "小猪", sayEn: "pig", cry: "哼哼哼", sayCry: "哼，哼，哼", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "bird", zh: "鸟", en: "Bird", sayZh: "小鸟", sayEn: "bird", cry: "啾啾啾", sayCry: "啾，啾，啾", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "frog", zh: "青蛙", en: "Frog", sayZh: "青蛙", sayEn: "frog", cry: "呱呱呱", sayCry: "呱，呱，呱", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
+  { id: "horse", zh: "马", en: "Horse", sayZh: "小马", sayEn: "horse", cry: "嘶嘶嘶", sayCry: "嘶，嘶", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
+  { id: "lion", zh: "狮子", en: "Lion", sayZh: "狮子", sayEn: "lion", cry: "吼吼吼", sayCry: "吼，吼", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
+  { id: "elephant", zh: "大象", en: "Elephant", sayZh: "大象", sayEn: "elephant", cry: "嗷嗷嗷", sayCry: "嗷呜，嗷呜", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
 ];
 
 export const bodyParts: Flashcard[] = [
-  { id: "head", zh: "头", en: "Head", image: "/art/hero-body.png", color: "#D9F5C8", accent: "#39C15B" },
-  { id: "eyes", zh: "眼睛", en: "Eyes", image: "/art/body-eyes.png", color: "#FFE4C8", accent: "#E0892C" },
-  { id: "nose", zh: "鼻子", en: "Nose", image: "/art/body-nose.png", color: "#FFF3B0", accent: "#D4A017" },
-  { id: "ears", zh: "耳朵", en: "Ears", image: "/art/body-ears.png", color: "#EDE0FF", accent: "#9B6CFF" },
-  { id: "mouth", zh: "嘴巴", en: "Mouth", image: "/art/body-mouth.png", color: "#FFD6E0", accent: "#E07090" },
-  { id: "hands", zh: "手", en: "Hands", image: "/art/body-hands.png", color: "#FFE9C8", accent: "#F4A261" },
-  { id: "feet", zh: "脚", en: "Feet", image: "/art/hero-body.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "head", zh: "头", en: "Head", sayZh: "这是头", sayEn: "head", image: "/art/hero-body.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "eyes", zh: "眼睛", en: "Eyes", sayZh: "这是眼睛", sayEn: "eyes", image: "/art/body-eyes.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "nose", zh: "鼻子", en: "Nose", sayZh: "这是鼻子", sayEn: "nose", image: "/art/body-nose.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "ears", zh: "耳朵", en: "Ears", sayZh: "这是耳朵", sayEn: "ears", image: "/art/body-ears.png", color: "#EDE0FF", accent: "#9B6CFF" },
+  { id: "mouth", zh: "嘴巴", en: "Mouth", sayZh: "这是嘴巴", sayEn: "mouth", image: "/art/body-mouth.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "hands", zh: "手", en: "Hands", sayZh: "这是手", sayEn: "hands", image: "/art/body-hands.png", color: "#FFE9C8", accent: "#F4A261" },
+  { id: "feet", zh: "脚", en: "Feet", sayZh: "这是脚", sayEn: "feet", image: "/art/hero-body.png", color: "#C8EEF8", accent: "#2A88B0" },
 ];
 
 export const familyMembers: Flashcard[] = [
-  { id: "dad", zh: "爸爸", en: "Daddy", image: "/art/pig-dad.png", color: "#C8EEF8", accent: "#2A88B0" },
-  { id: "mom", zh: "妈妈", en: "Mommy", image: "/art/pig-mom.png", color: "#FFE4C8", accent: "#E0892C" },
-  { id: "grandpa", zh: "爷爷", en: "Grandpa", image: "/art/pig-grandpa.png", color: "#D9F5C8", accent: "#39C15B" },
-  { id: "grandma", zh: "奶奶", en: "Grandma", image: "/art/pig-grandma.png", color: "#EDE0FF", accent: "#9B6CFF" },
-  { id: "brother", zh: "哥哥", en: "Brother", image: "/art/pig-brother.png", color: "#FFF3B0", accent: "#D4A017" },
-  { id: "sister", zh: "姐姐", en: "Sister", image: "/art/pig-sister.png", color: "#FFD6E0", accent: "#E07090" },
-  { id: "baby", zh: "宝宝", en: "Baby", image: "/art/pig-baby.png", color: "#F4F0E8", accent: "#8A7A6A" },
+  { id: "dad", zh: "爸爸", en: "Daddy", sayZh: "爸爸", sayEn: "daddy", image: "/art/pig-dad.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "mom", zh: "妈妈", en: "Mommy", sayZh: "妈妈", sayEn: "mommy", image: "/art/pig-mom.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "grandpa", zh: "爷爷", en: "Grandpa", sayZh: "爷爷", sayEn: "grandpa", image: "/art/pig-grandpa.png", color: "#D9F5C8", accent: "#39C15B" },
+  { id: "grandma", zh: "奶奶", en: "Grandma", sayZh: "奶奶", sayEn: "grandma", image: "/art/pig-grandma.png", color: "#EDE0FF", accent: "#9B6CFF" },
+  { id: "brother", zh: "哥哥", en: "Brother", sayZh: "哥哥", sayEn: "brother", image: "/art/pig-brother.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "sister", zh: "姐姐", en: "Sister", sayZh: "姐姐", sayEn: "sister", image: "/art/pig-sister.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "baby", zh: "宝宝", en: "Baby", sayZh: "宝宝", sayEn: "baby", image: "/art/pig-baby.png", color: "#F4F0E8", accent: "#8A7A6A" },
 ];
 
 export const colorCards: Flashcard[] = [
-  { id: "red", zh: "红色", en: "Red", image: "/art/hero-colors.png", color: "#FFD6D6", accent: "#E05656", swatch: "#E05656" },
-  { id: "yellow", zh: "黄色", en: "Yellow", image: "/art/hero-colors.png", color: "#FFF3B0", accent: "#D4A017", swatch: "#FFD84A" },
-  { id: "blue", zh: "蓝色", en: "Blue", image: "/art/hero-colors.png", color: "#D6E8FF", accent: "#3E9ED0", swatch: "#3E9ED0" },
-  { id: "green", zh: "绿色", en: "Green", image: "/art/hero-colors.png", color: "#D4F0C8", accent: "#39C15B", swatch: "#39C15B" },
-  { id: "orange", zh: "橙色", en: "Orange", image: "/art/hero-colors.png", color: "#FFE0C0", accent: "#E07030", swatch: "#E07030" },
-  { id: "purple", zh: "紫色", en: "Purple", image: "/art/hero-colors.png", color: "#EDE0FF", accent: "#9B6CFF", swatch: "#9B6CFF" },
+  { id: "red", zh: "红色", en: "Red", sayZh: "红色", sayEn: "red", image: "/art/hero-colors.png", color: "#FFD6D6", accent: "#E05656", swatch: "#E05656" },
+  { id: "yellow", zh: "黄色", en: "Yellow", sayZh: "黄色", sayEn: "yellow", image: "/art/hero-colors.png", color: "#FFF3B0", accent: "#D4A017", swatch: "#FFD84A" },
+  { id: "blue", zh: "蓝色", en: "Blue", sayZh: "蓝色", sayEn: "blue", image: "/art/hero-colors.png", color: "#D6E8FF", accent: "#3E9ED0", swatch: "#3E9ED0" },
+  { id: "green", zh: "绿色", en: "Green", sayZh: "绿色", sayEn: "green", image: "/art/hero-colors.png", color: "#D4F0C8", accent: "#39C15B", swatch: "#39C15B" },
+  { id: "orange", zh: "橙色", en: "Orange", sayZh: "橙色", sayEn: "orange", image: "/art/hero-colors.png", color: "#FFE0C0", accent: "#E07030", swatch: "#E07030" },
+  { id: "purple", zh: "紫色", en: "Purple", sayZh: "紫色", sayEn: "purple", image: "/art/hero-colors.png", color: "#EDE0FF", accent: "#9B6CFF", swatch: "#9B6CFF" },
 ];
 
 export const numberCards: Flashcard[] = [
-  { id: "one", zh: "一", en: "One", image: "/art/hero-numbers.png", color: "#FFE4D6", accent: "#FF6B4A", numeral: "1" },
-  { id: "two", zh: "二", en: "Two", image: "/art/hero-numbers.png", color: "#DCE6FF", accent: "#5B7CFF", numeral: "2" },
-  { id: "three", zh: "三", en: "Three", image: "/art/hero-numbers.png", color: "#D9F5C8", accent: "#39C15B", numeral: "3" },
-  { id: "four", zh: "四", en: "Four", image: "/art/hero-numbers.png", color: "#FFF3B0", accent: "#D4A017", numeral: "4" },
-  { id: "five", zh: "五", en: "Five", image: "/art/hero-numbers.png", color: "#EDE0FF", accent: "#9B6CFF", numeral: "5" },
+  { id: "one", zh: "一", en: "One", sayZh: "数字一", sayEn: "one", image: "/art/hero-numbers.png", color: "#FFE4D6", accent: "#FF6B4A", numeral: "1" },
+  { id: "two", zh: "二", en: "Two", sayZh: "数字二", sayEn: "two", image: "/art/hero-numbers.png", color: "#DCE6FF", accent: "#5B7CFF", numeral: "2" },
+  { id: "three", zh: "三", en: "Three", sayZh: "数字三", sayEn: "three", image: "/art/hero-numbers.png", color: "#D9F5C8", accent: "#39C15B", numeral: "3" },
+  { id: "four", zh: "四", en: "Four", sayZh: "数字四", sayEn: "four", image: "/art/hero-numbers.png", color: "#FFF3B0", accent: "#D4A017", numeral: "4" },
+  { id: "five", zh: "五", en: "Five", sayZh: "数字五", sayEn: "five", image: "/art/hero-numbers.png", color: "#EDE0FF", accent: "#9B6CFF", numeral: "5" },
 ];
 
 export const poems: Poem[] = [
   {
     id: "goose",
     title: "咏鹅",
+    sayTitle: "咏鹅",
     author: "骆宾王",
+    sayAuthor: "骆宾王",
     color: "#C8EEF8",
     accent: "#2A88B0",
     image: "/art/hero-poems.png",
     verses: ["鹅，鹅，鹅，曲项向天歌。", "白毛浮绿水，红掌拨清波。"],
+    sayVerses: ["鹅，鹅，鹅。曲项，向天歌。", "白毛浮绿水，红掌拨清波。"],
     fun: [
       "先听完啦。这句话很好玩：",
       "一只大白鹅，弯着脖子朝天唱歌。",
@@ -632,11 +689,14 @@ export const poems: Poem[] = [
   {
     id: "dawn",
     title: "春晓",
+    sayTitle: "春晓",
     author: "孟浩然",
+    sayAuthor: "孟浩然",
     color: "#D9F5C8",
     accent: "#39C15B",
     image: "/art/hero-poems.png",
     verses: ["春眠不觉晓，处处闻啼鸟。", "夜来风雨声，花落知多少。"],
+    sayVerses: ["春眠不觉晓，处处闻啼鸟。", "夜来风雨声，花落知多少。"],
     fun: [
       "诗背完了，来听好玩的话：",
       "春天的早上，宝宝睡到自己醒来。",
@@ -647,11 +707,14 @@ export const poems: Poem[] = [
   {
     id: "moon",
     title: "静夜思",
+    sayTitle: "静夜思",
     author: "李白",
+    sayAuthor: "李白",
     color: "#DCE6FF",
     accent: "#5B7CFF",
     image: "/art/hero-poems.png",
     verses: ["床前明月光，疑是地上霜。", "举头望明月，低头思故乡。"],
+    sayVerses: ["床前明月光，疑是地上霜。", "举头望明月，低头思故乡。"],
     fun: [
       "古诗念完了，我们来译成小朋友的话：",
       "床边白白亮亮的，还以为地上结霜了。",
@@ -662,11 +725,14 @@ export const poems: Poem[] = [
   {
     id: "farmer",
     title: "悯农",
+    sayTitle: "悯农",
     author: "李绅",
+    sayAuthor: "李绅",
     color: "#FFE4D6",
     accent: "#FF6B4A",
     image: "/art/hero-poems.png",
     verses: ["锄禾日当午，汗滴禾下土。", "谁知盘中餐，粒粒皆辛苦。"],
+    sayVerses: ["锄禾日当午，汗滴禾下土。", "谁知盘中餐，粒粒皆辛苦。"],
     fun: [
       "背完啦，听一听它在说什么：",
       "农民伯伯顶着大太阳种粮食，汗水滴到泥土里。",
@@ -677,11 +743,14 @@ export const poems: Poem[] = [
   {
     id: "tower",
     title: "登鹳雀楼",
+    sayTitle: "登上鹳雀楼",
     author: "王之涣",
+    sayAuthor: "王之涣",
     color: "#FFE7B0",
     accent: "#D49020",
     image: "/art/hero-poems.png",
     verses: ["白日依山尽，黄河入海流。", "欲穷千里目，更上一层楼。"],
+    sayVerses: ["白日依山尽，黄河入海流。", "欲穷千里目，更上一层楼。"],
     fun: [
       "诗念完了，翻译成好玩的话：",
       "太阳顺着山坡回家睡觉了。",
@@ -692,11 +761,14 @@ export const poems: Poem[] = [
   {
     id: "jiangnan",
     title: "江南",
+    sayTitle: "江南",
     author: "汉乐府",
+    sayAuthor: "汉代乐府",
     color: "#D4F0C8",
     accent: "#5AAA4A",
     image: "/art/hero-poems.png",
     verses: ["江南可采莲，莲叶何田田。", "鱼戏莲叶间。"],
+    sayVerses: ["江南可采莲，莲叶何田田。", "鱼戏莲叶间。"],
     fun: [
       "好听的古诗结束啦：",
       "江南的水里能采莲蓬，叶子圆圆的像小伞。",
@@ -747,7 +819,7 @@ export const tales: Story[] = [
     accent: "#8A7A6A",
     image: "/art/hero-tales.png",
     lines: [
-      "白雪公主住在森林里，遇见七个矮矮人好朋友。",
+      "白雪公主住在森林里，遇见七个小矮人好朋友。",
       "坏皇后送来红苹果，公主睡着了。",
       "朋友们守护她。王子来了，公主醒来。",
       "大家又唱歌，又跳舞。好朋友最重要。",
@@ -771,6 +843,7 @@ export const tales: Story[] = [
   {
     id: "bean",
     title: "杰克与豆茎",
+    sayTitle: "杰克和豆茎",
     subtitle: "爬得高高的",
     emoji: "🌱",
     color: "#D4F0C8",

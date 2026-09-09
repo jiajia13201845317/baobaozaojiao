@@ -14,9 +14,9 @@
 
 请用这个公开地址，不要打开 `127.0.0.1`：那是云端开发机自己的地址，你自己的浏览器连不上。
 
-**https://tidy-valley-592.harvis.page/?night=0&v=playroom**
+**https://tidy-valley-592.harvis.page/?night=0&go=welcome&v=voice**
 
-想直接看新乐园页，打开 [带 go=home 的地址](https://tidy-valley-592.harvis.page/?night=0&go=home&v=playroom)。想再看开机欢迎页，打开 [go=welcome](https://tidy-valley-592.harvis.page/?night=0&go=welcome&v=playroom)。
+开机窗里有会动的天气、穿衣和吃饭提醒。点太阳、衣服或小碗会说话。乐园页同样有这三块。想看晴天/下雨/夜里，把地址里的 `weather=` 换成 `sun`、`rain` 或 `night`。
 
 白天模式加 `?night=0`，夜里加 `?night=1`。第一次请点「开始听」，喇叭才会出声。
 
@@ -40,7 +40,7 @@ npm start
 
 预览用的是静态导出：`next build` 写出 `out/`，再用 `scripts/serve.mjs` 提供页面。这样不会走 Next 开发服务器的跨域拦截。日常改代码可以先 `npm run build` 再 `npm start`，或用 `npm run dev` 做热更新。
 
-如果听不到说话，检查系统音量和浏览器是否允许语音。
+如果听不到说话，检查系统音量和浏览器是否允许语音。卡片上的字不会改，喇叭会按普通话、慢一点的英文来读：狗会说「小狗」，数字一不会读成「幺」，字母歌按 A B C 一个一个念。
 
 ## 给宝宝用时
 

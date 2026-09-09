@@ -1,4 +1,16 @@
+"use client";
+
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
+import {
+  estimateSpeechMs,
+  pickVoice,
+  prepareSpeech,
+  speechPitch,
+  speechRate,
+  waitVoices,
+  type SpeakKind,
+  type SpeakLang,
+} from "./speech";
 
 const FREQ: Record<string, number> = {
   G3: 196.0,
@@ -19,11 +31,14 @@ const FREQ: Record<string, number> = {
 
 export type LineInfo = {
   text: string;
-  lang?: "zh-CN" | "en-US";
+  lang?: SpeakLang;
   kind?: "verse" | "fun" | "story";
 };
 
 type PlayToken = number;
+
+const synth =
+  typeof window !== "undefined" && "speechSynthesis" in window ? window.speechSynthesis : null;
 
 class ToyPlayer {
   private ctx: AudioContext | null = null;
@@ -31,6 +46,12 @@ class ToyPlayer {
   private token: PlayToken = 0;
   private volume = 0.82;
   private oscillators: OscillatorNode[] = [];
+  private timers: number[] = [];
+  private voices: SpeechSynthesisVoice[] = [];
+  private zhVoice: SpeechSynthesisVoice | null = null;
+  private enVoice: SpeechSynthesisVoice | null = null;
+  private watchdog: number | null = null;
+  private voicesHooked = false;
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -51,16 +72,26 @@ class ToyPlayer {
     if (this.ctx.state === "suspended") {
       await this.ctx.resume();
     }
-    this.warmVoices();
+    this.voices = await waitVoices(synth);
+    this.refreshVoices();
+    if (synth && !this.voicesHooked) {
+      this.voicesHooked = true;
+      synth.addEventListener("voiceschanged", () => {
+        this.voices = synth.getVoices();
+        this.refreshVoices();
+      });
+    }
   }
 
   setVolume(v: number) {
     this.volume = v;
-    if (this.master) this.master.gain.value = v;
+    if (this.master && this.ctx) {
+      this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.04);
+    }
   }
 
   tap() {
-    if (!this.ctx || !this.master) return;
+    if (!this.ctx || !this.master || this.volume <= 0.02) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -77,7 +108,9 @@ class ToyPlayer {
 
   stop() {
     this.token += 1;
-    window.speechSynthesis?.cancel();
+    this.clearWatchdog();
+    this.clearTimers();
+    synth?.cancel();
     for (const osc of this.oscillators) {
       try {
         osc.stop();
@@ -90,120 +123,158 @@ class ToyPlayer {
 
   async playSong(song: Song) {
     const t = this.begin();
+    await this.wait(140, t);
+    this.startWatchdog();
     this.emit({ text: song.title, lang: song.lyricLang });
+    const title = song.sayTitle ?? song.title;
+    await this.speak(title, song.lyricLang, t, "song");
+    if (!this.alive(t)) return;
     await this.playMelody(song.melody, t);
     if (!this.alive(t)) return;
     await this.wait(280, t);
-    for (const line of song.lyrics) {
+    for (let i = 0; i < song.lyrics.length; i++) {
       if (!this.alive(t)) return;
+      const line = song.lyrics[i]!;
       this.emit({ text: line, lang: song.lyricLang });
-      await this.speak(line, song.lyricLang, t);
+      await this.speak(song.sayLyrics?.[i] ?? line, song.lyricLang, t, "song");
       await this.wait(180, t);
     }
-    if (this.alive(t)) this.onEnded?.("item");
+    if (this.alive(t)) {
+      this.clearWatchdog();
+      this.onEnded?.("item");
+    }
   }
 
   async playLesson(card: Flashcard) {
     const t = this.begin();
+    await this.wait(140, t);
+    this.startWatchdog();
     this.onStep?.("zh");
     this.emit({ text: card.zh, lang: "zh-CN" });
-    await this.speak(card.zh, "zh-CN", t);
+    await this.speak(card.sayZh ?? card.zh, "zh-CN", t, "word");
     if (!this.alive(t)) return;
-    await this.wait(220, t);
+    await this.wait(240, t);
     this.onStep?.("en");
     this.emit({ text: card.en, lang: "en-US" });
-    await this.speak(card.en, "en-US", t);
+    await this.speak(card.sayEn ?? card.en, "en-US", t, "word");
     if (!this.alive(t)) return;
     if (card.cry) {
-      await this.wait(180, t);
+      await this.wait(200, t);
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      await this.speak(card.cry, "zh-CN", t);
+      await this.speak(card.sayCry ?? card.cry, "zh-CN", t, "cry");
       if (!this.alive(t)) return;
       if (card.sound) await this.playAnimalSound(card.sound, t);
     }
-    if (this.alive(t)) this.onEnded?.("item");
+    if (this.alive(t)) {
+      this.clearWatchdog();
+      this.onEnded?.("item");
+    }
   }
 
   async playCry(card: Flashcard) {
     const t = this.begin();
+    await this.wait(120, t);
+    this.startWatchdog();
     if (card.cry) {
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      await this.speak(card.cry, "zh-CN", t);
+      await this.speak(card.sayCry ?? card.cry, "zh-CN", t, "cry");
       if (!this.alive(t)) return;
       if (card.sound) await this.playAnimalSound(card.sound, t);
     } else {
       this.onStep?.("zh");
       this.emit({ text: card.zh, lang: "zh-CN" });
-      await this.speak(card.zh, "zh-CN", t);
+      await this.speak(card.sayZh ?? card.zh, "zh-CN", t, "word");
       if (!this.alive(t)) return;
+      await this.wait(180, t);
       this.onStep?.("en");
       this.emit({ text: card.en, lang: "en-US" });
-      await this.speak(card.en, "en-US", t);
+      await this.speak(card.sayEn ?? card.en, "en-US", t, "word");
     }
-    if (this.alive(t)) this.onEnded?.("tap");
+    if (this.alive(t)) {
+      this.clearWatchdog();
+      this.onEnded?.("tap");
+    }
   }
 
   async playStory(story: Story) {
     const t = this.begin();
+    await this.wait(140, t);
+    this.startWatchdog();
     this.emit({ text: story.title, lang: "zh-CN" });
     await this.chime(t);
-    await this.speak(story.title, "zh-CN", t);
+    await this.speak(story.sayTitle ?? story.title, "zh-CN", t, "story");
     if (!this.alive(t)) return;
     await this.wait(320, t);
-    for (const line of story.lines) {
+    for (let i = 0; i < story.lines.length; i++) {
       if (!this.alive(t)) return;
+      const line = story.lines[i]!;
       this.emit({ text: line, lang: "zh-CN", kind: "story" });
-      await this.speak(line, "zh-CN", t);
+      await this.speak(story.sayLines?.[i] ?? line, "zh-CN", t, "story");
       await this.wait(280, t);
     }
     if (this.alive(t)) {
       await this.chime(t);
+      this.clearWatchdog();
       this.onEnded?.("item");
     }
   }
 
   async playPoem(poem: Poem) {
     const t = this.begin();
+    await this.wait(140, t);
+    this.startWatchdog();
     this.emit({ text: poem.title, lang: "zh-CN", kind: "verse" });
     await this.chime(t);
-    await this.speak(`${poem.title}，${poem.author}`, "zh-CN", t);
+    await this.speak(poem.sayTitle ?? poem.title, "zh-CN", t, "verse");
     if (!this.alive(t)) return;
-    await this.wait(280, t);
-    for (const verse of poem.verses) {
+    await this.wait(160, t);
+    await this.speak(poem.sayAuthor ?? poem.author, "zh-CN", t, "word");
+    if (!this.alive(t)) return;
+    await this.wait(320, t);
+    for (let i = 0; i < poem.verses.length; i++) {
       if (!this.alive(t)) return;
+      const verse = poem.verses[i]!;
       this.emit({ text: verse, lang: "zh-CN", kind: "verse" });
-      await this.speak(verse, "zh-CN", t);
-      await this.wait(320, t);
+      await this.speak(poem.sayVerses?.[i] ?? verse, "zh-CN", t, "verse");
+      await this.wait(360, t);
     }
     if (!this.alive(t)) return;
-    await this.wait(400, t);
+    await this.wait(420, t);
     for (const line of poem.fun) {
       if (!this.alive(t)) return;
       this.emit({ text: line, lang: "zh-CN", kind: "fun" });
-      await this.speak(line, "zh-CN", t);
+      await this.speak(line, "zh-CN", t, "fun");
       await this.wait(260, t);
     }
-    if (this.alive(t)) this.onEnded?.("item");
+    if (this.alive(t)) {
+      this.clearWatchdog();
+      this.onEnded?.("item");
+    }
   }
 
   async sayGoodnight() {
     const t = this.begin();
+    await this.wait(120, t);
+    this.startWatchdog();
     this.emit({ text: "该睡觉啦", lang: "zh-CN" });
-    await this.speak("宝宝，该睡觉啦", "zh-CN", t);
+    await this.speak("宝宝，该睡觉啦", "zh-CN", t, "care");
+    if (this.alive(t)) this.clearWatchdog();
   }
 
   async sayLine(text: string) {
     const t = this.begin();
+    await this.wait(120, t);
+    this.startWatchdog();
     this.emit({ text, lang: "zh-CN" });
-    await this.speak(text, "zh-CN", t);
+    await this.speak(text, "zh-CN", t, "care");
+    if (this.alive(t)) this.clearWatchdog();
   }
 
   private begin() {
     this.stop();
-    const t = this.token;
-    return t;
+    return this.token;
   }
 
   private alive(t: PlayToken) {
@@ -214,57 +285,95 @@ class ToyPlayer {
     this.onLine?.(info);
   }
 
-  private warmVoices() {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.getVoices();
+  private refreshVoices() {
+    this.zhVoice = pickVoice(this.voices, "zh-CN");
+    this.enVoice = pickVoice(this.voices, "en-US");
   }
 
-  private pickVoice(lang: string) {
-    const voices = window.speechSynthesis?.getVoices() ?? [];
-    const prefix = lang.slice(0, 2).toLowerCase();
-    return (
-      voices.find((v) => v.lang.toLowerCase() === lang.toLowerCase()) ||
-      voices.find((v) => v.lang.toLowerCase().startsWith(prefix)) ||
-      null
-    );
+  private clearTimers() {
+    for (const id of this.timers) window.clearTimeout(id);
+    this.timers = [];
   }
 
-  private speak(text: string, lang: "zh-CN" | "en-US", t: PlayToken) {
+  private clearWatchdog() {
+    if (this.watchdog != null) {
+      window.clearInterval(this.watchdog);
+      this.watchdog = null;
+    }
+  }
+
+  /** Chrome often stalls SpeechSynthesis after ~15s unless it is poked. */
+  private startWatchdog() {
+    this.clearWatchdog();
+    if (!synth) return;
+    this.watchdog = window.setInterval(() => {
+      if (!synth.speaking) return;
+      try {
+        synth.pause();
+        synth.resume();
+      } catch {
+        /* ignore */
+      }
+    }, 9000);
+  }
+
+  private speak(text: string, lang: SpeakLang, t: PlayToken, kind?: SpeakKind) {
     return new Promise<void>((resolve) => {
       if (!this.alive(t)) {
         resolve();
         return;
       }
-      if (!window.speechSynthesis) {
-        void this.wait(1400, t).then(() => resolve());
+      const spoken = prepareSpeech(text, lang, kind);
+      if (!spoken) {
+        resolve();
         return;
       }
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang;
-      u.rate = lang.startsWith("zh") ? 0.78 : 0.82;
-      u.pitch = 1.08;
-      u.volume = Math.min(1, this.volume + 0.1);
-      const voice = this.pickVoice(lang);
-      if (voice) u.voice = voice;
+      if (this.volume <= 0.02 || !synth) {
+        void this.wait(Math.min(1400, 200 + spoken.length * 24), t).then(() => resolve());
+        return;
+      }
+
+      const u = new SpeechSynthesisUtterance(spoken);
+      const voice = lang === "zh-CN" ? this.zhVoice : this.enVoice;
+      if (voice) {
+        u.voice = voice;
+        u.lang = voice.lang;
+      } else {
+        u.lang = lang;
+      }
+      const rate = speechRate(lang, kind);
+      u.rate = rate;
+      u.pitch = speechPitch(lang, kind);
+      u.volume = Math.min(1, Math.max(0.2, this.volume + 0.16));
+
+      let settled = false;
       const done = () => {
-        u.onend = null;
-        u.onerror = null;
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(safety);
         resolve();
       };
+      const safety = window.setTimeout(done, estimateSpeechMs(spoken, rate) + 1400);
+      this.timers.push(safety);
       u.onend = done;
       u.onerror = done;
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
+      try {
+        synth.resume();
+        synth.speak(u);
+      } catch {
+        done();
+      }
     });
   }
 
   private wait(ms: number, t: PlayToken) {
     return new Promise<void>((resolve) => {
-      const id = window.setTimeout(() => resolve(), ms);
       if (!this.alive(t)) {
-        window.clearTimeout(id);
         resolve();
+        return;
       }
+      const id = window.setTimeout(() => resolve(), ms);
+      this.timers.push(id);
     });
   }
 
@@ -278,12 +387,18 @@ class ToyPlayer {
 
   private playTone(freq: number, dur: number, t: PlayToken) {
     return new Promise<void>((resolve) => {
-      if (!this.ctx || !this.master || !this.alive(t)) {
+      if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) {
+        if (this.alive(t) && freq === 0) {
+          const id = window.setTimeout(() => resolve(), dur * 1000);
+          this.timers.push(id);
+          return;
+        }
         resolve();
         return;
       }
       if (freq === 0) {
-        window.setTimeout(() => resolve(), dur * 1000);
+        const id = window.setTimeout(() => resolve(), dur * 1000);
+        this.timers.push(id);
         return;
       }
       const now = this.ctx.currentTime;
@@ -321,7 +436,7 @@ class ToyPlayer {
 
   private async playAnimalSound(id: AnimalSoundId, t: PlayToken) {
     const fn = ANIMAL_SOUNDS[id];
-    if (!this.ctx || !this.master || !this.alive(t)) return;
+    if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
     await fn(this.ctx, this.master, (osc) => this.oscillators.push(osc));
   }
 }
