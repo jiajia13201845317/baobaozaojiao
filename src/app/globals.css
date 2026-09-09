@@ -181,6 +181,11 @@ html.night {
   font-family: var(--font-rounded), Fredoka, sans-serif;
 }
 
+.page-shell {
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
 .ink {
   color: var(--ink);
 }
@@ -302,6 +307,7 @@ html.night {
   align-items: center;
   gap: 0.85rem;
   width: 100%;
+  min-height: 5.4rem;
   padding: 0.45rem 0.7rem 0.45rem 0.45rem;
   border-radius: 1.7rem;
   background: var(--card-bg);
@@ -349,6 +355,8 @@ html.night {
 }
 
 .welcome-page {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
   background:
     radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--mist) 70%, transparent), transparent 40%),
     radial-gradient(circle at 86% 16%, color-mix(in srgb, var(--lilac) 55%, transparent), transparent 36%),

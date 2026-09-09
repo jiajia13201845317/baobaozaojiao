@@ -931,3 +931,20 @@ export function itemsFor(id: CategoryId) {
   if (id === "numbers") return numberCards;
   return stories;
 }
+
+export function playlist(id: CategoryId) {
+  return isLesson(id) ? cardsFor(id) : itemsFor(id);
+}
+
+export function siblingId(category: CategoryId, itemId: string, dir: -1 | 1) {
+  const list = playlist(category);
+  const index = list.findIndex((item) => item.id === itemId);
+  if (index < 0 || list.length < 2) return null;
+  return list[(index + dir + list.length) % list.length]!.id;
+}
+
+export function itemPlace(category: CategoryId, itemId: string) {
+  const list = playlist(category);
+  const index = list.findIndex((item) => item.id === itemId);
+  return { index, total: list.length };
+}

@@ -11,6 +11,8 @@ export function FlashcardPlayer({
   card,
   step,
   playing,
+  index,
+  total,
   hasPrev,
   hasNext,
   onBack,
@@ -24,6 +26,8 @@ export function FlashcardPlayer({
   card: Flashcard;
   step: LessonStep | null;
   playing: boolean;
+  index: number;
+  total: number;
   hasPrev: boolean;
   hasNext: boolean;
   onBack: () => void;
@@ -35,9 +39,10 @@ export function FlashcardPlayer({
 }) {
   const cat = getCategory(category);
   const showSound = Boolean(card.cry);
+  const unit = category === "animals" ? "只" : "张";
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -53,6 +58,11 @@ export function FlashcardPlayer({
           className="relative flex flex-1 flex-col items-center justify-center px-4 pt-5 pb-3"
           aria-label={card.cry ? `点${card.zh}，听${card.cry}` : `点${card.zh}，再听一遍`}
         >
+          {total > 1 && (
+            <p className="ink-soft mb-2 text-sm font-bold">
+              第 {index + 1} {unit} / 共 {total} {unit}
+            </p>
+          )}
           <div className="relative grid h-[46vw] max-h-72 w-[46vw] max-w-72 place-items-center sm:h-72 sm:w-72">
             {playing && (
               <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
@@ -78,7 +88,7 @@ export function FlashcardPlayer({
           />
           <WordChip
             label={card.en}
-            hint="English"
+            hint="英文"
             active={step === "en"}
             tone="var(--ink)"
             bg="var(--mist)"
@@ -98,13 +108,13 @@ export function FlashcardPlayer({
       <div className="mt-5 grid grid-cols-3 gap-2">
         <button type="button" onClick={onPrev} disabled={!hasPrev} className="nav-pill">
           <ChevronLeft className="size-5" />
-          上一张
+          {category === "animals" ? "上一只" : "上一张"}
         </button>
         <button type="button" onClick={onReplayAll} className="nav-pill nav-pill-strong">
-          再听名字
+          再听一遍
         </button>
         <button type="button" onClick={onNext} disabled={!hasNext} className="nav-pill">
-          下一张
+          {category === "animals" ? "下一只" : "下一张"}
           <ChevronRight className="size-5" />
         </button>
       </div>
@@ -130,7 +140,7 @@ function WordChip({
       className={`min-w-24 rounded-2xl px-4 py-2 text-center ${active ? "scale-105 shadow-[0_4px_0_var(--shadow)]" : "opacity-75"}`}
       style={{ background: bg, color: tone }}
     >
-      <span className="block text-[10px] font-bold tracking-wider uppercase">{hint}</span>
+      <span className="block text-[10px] font-bold tracking-wider">{hint}</span>
       <span className="block text-2xl font-black leading-tight">{label}</span>
     </span>
   );

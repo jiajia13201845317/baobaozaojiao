@@ -15,7 +15,9 @@ import {
   getCategory,
   getWorld,
   isLesson,
+  itemPlace,
   poems,
+  siblingId,
   storiesFor,
   worlds,
   zhSongs,
@@ -26,7 +28,7 @@ import {
   type Story,
   type WorldId,
 } from "@/lib/content";
-import { readLastPlay, titleFor, writeLastPlay, type LastPlay } from "@/lib/progress";
+import { readLastPlay, readVolumeIndex, titleFor, writeLastPlay, writeVolumeIndex, type LastPlay } from "@/lib/progress";
 
 type View =
   | { name: "welcome" }
@@ -50,6 +52,7 @@ export function ToyApp() {
   const [step, setStep] = useState<LessonStep | null>(null);
   const [playing, setPlaying] = useState(false);
   const [volumeIndex, setVolumeIndex] = useState(2);
+  const [volumeReady, setVolumeReady] = useState(false);
   const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
   const { night, toggleNight } = useNightMode();
 
@@ -67,6 +70,8 @@ export function ToyApp() {
 
   useEffect(() => {
     setLastPlay(readLastPlay());
+    setVolumeIndex(readVolumeIndex(2));
+    setVolumeReady(true);
     const go = new URLSearchParams(window.location.search).get("go");
     if (go === "home") {
       setView({ name: "home" });
@@ -83,19 +88,15 @@ export function ToyApp() {
 
   useEffect(() => {
     toyPlayer.setVolume(VOLUME_STEPS[volumeIndex]);
-  }, [volumeIndex]);
-
-  const start = useCallback(async () => {
-    await toyPlayer.unlock();
-    setView({ name: "home" });
-  }, []);
+    if (volumeReady) writeVolumeIndex(volumeIndex);
+  }, [volumeIndex, volumeReady]);
 
   const playItem = useCallback(async (category: CategoryId, itemId: string, world?: WorldId) => {
     await toyPlayer.unlock();
     setLine(null);
     setStep(null);
     setPlaying(true);
-    const last = { category, itemId, title: titleFor(category, itemId) };
+    const last = { category, itemId, title: titleFor(category, itemId), world };
     writeLastPlay(last);
     setLastPlay(last);
     setView({ name: "player", category, itemId, world });
@@ -117,6 +118,10 @@ export function ToyApp() {
     const story = storiesFor(category).find((s) => s.id === itemId);
     if (story) await toyPlayer.playStory(story);
   }, []);
+
+  const start = useCallback(async () => {
+    await playItem("animals", "dog");
+  }, [playItem]);
 
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
     await toyPlayer.unlock();
@@ -173,7 +178,7 @@ export function ToyApp() {
           volume={tools}
           lastPlay={lastPlay}
           onPlayDog={() => void playItem("animals", "dog")}
-          onContinue={(item) => void playItem(item.category, item.itemId)}
+          onContinue={(item) => void playItem(item.category, item.itemId, item.world)}
           onOpenWorld={goWorld}
         />
       )}
@@ -211,6 +216,14 @@ export function ToyApp() {
           onBack={() => goLibrary(view.category, view.world)}
           onStop={stop}
           onReplay={() => void playItem(view.category, view.itemId, view.world)}
+          onPrev={() => {
+            const id = siblingId(view.category, view.itemId, -1);
+            if (id) void playItem(view.category, id, view.world);
+          }}
+          onNext={() => {
+            const id = siblingId(view.category, view.itemId, 1);
+            if (id) void playItem(view.category, id, view.world);
+          }}
           volume={tools}
         />
       )}
@@ -254,7 +267,7 @@ function Home({
   const showContinue = Boolean(lastPlay && !(lastPlay.category === "animals" && lastPlay.itemId === "dog"));
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-[var(--bg)] shadow-[0_8px_18px_var(--shadow)]">
@@ -264,13 +277,23 @@ function Home({
             <h1 className="ink truncate text-[26px] font-black leading-tight">
               宝宝，{greeting()}
             </h1>
-            <p className="ink-soft truncate text-sm font-bold">今天先听小狗叫</p>
+            <p className="ink-soft truncate text-sm font-bold">想听就点最大的卡片</p>
           </div>
         </div>
         {volume}
       </header>
 
-      <button type="button" onClick={onPlayDog} className="hero-tile mt-5 text-left">
+      {showContinue && lastPlay && (
+        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip mt-5">
+          <PlayBadge className="h-9 w-9" />
+          <span className="min-w-0 text-left">
+            <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
+            <span className="ink block truncate text-[17px] font-black">{lastPlay.title}</span>
+          </span>
+        </button>
+      )}
+
+      <button type="button" onClick={onPlayDog} className={`hero-tile text-left ${showContinue ? "mt-3" : "mt-5"}`}>
         <span className="hero-tile-inner">
           <span className="hero-tile-art">
             <CoverImage src="/art/hero-dog.png" alt="小狗" />
@@ -287,18 +310,8 @@ function Home({
         </span>
       </button>
 
-      {showContinue && lastPlay && (
-        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip">
-          <PlayBadge className="h-9 w-9" />
-          <span className="min-w-0 text-left">
-            <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
-            <span className="ink block truncate text-[17px] font-black">{lastPlay.title}</span>
-          </span>
-        </button>
-      )}
-
-      <p className="ink mt-7 text-lg font-black">再去别的房间</p>
-      <p className="ink-soft mb-3 text-sm font-bold">一次只进一扇门</p>
+      <p className="ink mt-7 text-lg font-black">还想听什么</p>
+      <p className="ink-soft mb-3 text-sm font-bold">进一扇门就好</p>
       <div className="flex flex-col gap-3">
         {worlds.map((world) => (
           <button
@@ -340,7 +353,7 @@ function WorldGate({
   const rooms = world.rooms.map((id) => getCategory(id));
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -355,7 +368,7 @@ function WorldGate({
             <CoverImage src={world.hero} alt={world.title} />
           </span>
           <div>
-            <p className="ink-soft text-xs font-bold tracking-wider">选一个房间</p>
+            <p className="ink-soft text-xs font-bold tracking-wider">点一张，就开始听</p>
             <h1 className="ink text-2xl font-black">{world.title}</h1>
             <p className="ink-soft text-sm font-medium">{world.hint}</p>
           </div>
@@ -431,7 +444,7 @@ function Library({
   const taleItems = storiesFor(category);
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -460,6 +473,9 @@ function Library({
               <button type="button" onClick={() => onPlay(card.id)} className="island-card w-full text-left">
                 <span className="relative block aspect-square overflow-hidden">
                   <Portrait card={card} className="h-full w-full" />
+                  {category === "animals" && card.id === "dog" && (
+                    <span className="hero-tile-badge absolute left-2 top-2">先听</span>
+                  )}
                   <span className="absolute bottom-2 right-2">
                     <PlayBadge className="h-9 w-9" />
                   </span>
@@ -532,6 +548,7 @@ function LessonView({
   const index = list.findIndex((c) => c.id === itemId);
   const card = list[index];
   if (!card) return null;
+  const canFlip = list.length > 1;
 
   return (
     <FlashcardPlayer
@@ -539,11 +556,13 @@ function LessonView({
       card={card}
       step={step}
       playing={playing}
-      hasPrev={index > 0}
-      hasNext={index < list.length - 1}
+      index={index}
+      total={list.length}
+      hasPrev={canFlip}
+      hasNext={canFlip}
       onBack={onBack}
-      onPrev={() => index > 0 && onOpen(list[index - 1].id)}
-      onNext={() => index < list.length - 1 && onOpen(list[index + 1].id)}
+      onPrev={() => canFlip && onOpen(list[(index - 1 + list.length) % list.length]!.id)}
+      onNext={() => canFlip && onOpen(list[(index + 1) % list.length]!.id)}
       onTap={onTap}
       onReplayAll={onReplay}
       volume={volume}
@@ -559,6 +578,8 @@ function Player({
   onBack,
   onStop,
   onReplay,
+  onPrev,
+  onNext,
   volume,
 }: {
   category: CategoryId;
@@ -568,6 +589,8 @@ function Player({
   onBack: () => void;
   onStop: () => void;
   onReplay: () => void;
+  onPrev: () => void;
+  onNext: () => void;
   volume: ReactNode;
 }) {
   const cat = getCategory(category);
@@ -577,9 +600,10 @@ function Player({
   const poem = category === "poems" ? (item as Poem) : null;
   const story = category === "stories" || category === "tales" ? (item as Story) : null;
   const cover = ("image" in item && item.image) || cat.hero;
+  const place = itemPlace(category, itemId);
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -592,7 +616,9 @@ function Player({
           <div className={`relative h-36 w-36 overflow-hidden rounded-[2rem] bg-[var(--bg)] p-2 shadow-[0_10px_22px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}>
             <CoverImage src={cover} alt={item.title} />
           </div>
-          <p className="ink-mute mt-3 text-xs font-bold tracking-wider">{poem ? poem.author : cat.title}</p>
+          <p className="ink-mute mt-3 text-xs font-bold tracking-wider">
+            {place.total > 1 ? `${place.index + 1} / ${place.total}` : poem ? poem.author : cat.title}
+          </p>
           <h1 className="ink mt-1 text-3xl font-black">{item.title}</h1>
           {line?.kind === "fun" && (
             <p className="mt-2 rounded-full bg-[var(--bg)] px-3 py-1 text-xs font-black text-[var(--accent-deep)]">好玩的翻译</p>
@@ -604,7 +630,7 @@ function Player({
               </p>
             ) : (
               <p className="ink-mute text-base font-medium">
-                {poem ? "先背古诗，再听好玩的话" : story?.subtitle ?? "再听一遍"}
+                {playing ? "正在听…" : poem ? "先背古诗，再听好玩的话" : story?.subtitle ?? "听完啦，再听一遍或下一首"}
               </p>
             )}
             {song && line && <p className="ink-mute mt-2 text-xs font-medium">{song.subtitle}</p>}
@@ -619,6 +645,16 @@ function Player({
           <RotateCcw className="size-7" />
         </button>
       </div>
+      {place.total > 1 && (
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onPrev} className="nav-pill">
+            上一首
+          </button>
+          <button type="button" onClick={onNext} className="nav-pill">
+            下一首
+          </button>
+        </div>
+      )}
     </main>
   );
 }

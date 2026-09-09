@@ -37,9 +37,8 @@ export function Welcome({
           </button>
 
           <div className="welcome-stack">
-            <p className="welcome-kicker">XIAO GUAI GUAI</p>
             <h1 className="welcome-title">宝宝听听</h1>
-            <p className="welcome-sub">点一下，小狗先叫给你听</p>
+            <p className="welcome-sub">点一下，小狗马上叫</p>
 
             <div className="welcome-hero">
               <span className="welcome-hero-glow" />
@@ -60,7 +59,7 @@ export function Welcome({
               <PlayBadge className="h-12 w-12" />
               <span>开始听</span>
             </button>
-            <p className="welcome-hint">大人先点一下，喇叭才会出声</p>
+            <p className="welcome-hint">这一下会出声，请先调好音量</p>
           </div>
         </div>
         <div className="machine-chin" aria-hidden>
