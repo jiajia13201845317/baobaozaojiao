@@ -64,13 +64,13 @@ export function CozyBackdrop() {
       <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[var(--mist)]/50 blur-3xl" />
       <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[var(--lilac)]/45 blur-3xl" />
       <svg
-        className="absolute inset-x-0 bottom-0 h-40 w-full"
+        className="cozy-land absolute inset-x-0 bottom-0 h-40 w-full"
         viewBox="0 0 390 160"
         preserveAspectRatio="xMidYMax slice"
         aria-hidden
       >
-        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="var(--beige)" />
-        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="var(--apricot)" />
+        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="#8FDE7A" />
+        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="#FFD2A8" />
       </svg>
     </div>
   );

@@ -51,24 +51,8 @@
 }
 
 :root {
-  --background: #f7f4ec;
-  --foreground: #4a4a4a;
-  --ink: #4a4a4a;
-  --ink-soft: #6b6560;
-  --ink-mute: #5e5850;
-  --bg: #f7f4ec;
-  --bg-2: #f5f3ee;
-  --surface: #f5f3ee;
-  --card-bg: #f7f4ec;
-  --apricot: #e8d4c0;
-  --beige: #ede6d9;
-  --sage: #d8e6d4;
-  --mist: #d4dfe8;
-  --lilac: #e4dce8;
-  --accent: #b87a5c;
-  --accent-deep: #8f5d45;
-  --on-accent: #f7f4ec;
-  --shadow: rgba(90, 78, 64, 0.14);
+  --background: #fff7ee;
+  --foreground: #3d2e28;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -99,27 +83,48 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --ink: #3d2e28;
+  --ink-soft: #7a5c4e;
+  --ink-mute: #8a6e60;
+  --bg: #fff7ee;
+  --bg-2: #fff1e2;
+  --surface: #fffdf8;
+  --card-bg: #fffdf8;
+  --apricot: #ffd2a8;
+  --beige: #ffe7c4;
+  --sage: #c8f2b4;
+  --mist: #c5e8ff;
+  --lilac: #e8d6ff;
+  --brand: #ff7a45;
+  --brand-deep: #ef5a28;
+  --on-brand: #fffdf8;
+  --accent-deep: #ef5a28;
+  --on-accent: #fffdf8;
+  --shadow: rgba(200, 90, 50, 0.16);
 }
 
 html.night {
-  --background: #2a241e;
-  --foreground: #e6ded2;
-  --ink: #e6ded2;
-  --ink-soft: #c9c0b4;
-  --ink-mute: #a3988c;
-  --bg: #2a241e;
-  --bg-2: #322c26;
-  --surface: #3a332c;
-  --card-bg: #3f372f;
-  --apricot: #4a3c32;
-  --beige: #3e362e;
-  --sage: #334038;
-  --mist: #2e3840;
-  --lilac: #3a3340;
-  --accent: #d4a07a;
-  --accent-deep: #b88460;
-  --on-accent: #2a241e;
-  --shadow: rgba(0, 0, 0, 0.35);
+  --background: #2a221c;
+  --foreground: #f3e6d4;
+  --ink: #f3e6d4;
+  --ink-soft: #d4c0ae;
+  --ink-mute: #b8a090;
+  --bg: #2a221c;
+  --bg-2: #342a24;
+  --surface: #3d322b;
+  --card-bg: #42362e;
+  --apricot: #5a4032;
+  --beige: #4a3a30;
+  --sage: #334438;
+  --mist: #2c3a44;
+  --lilac: #3c3344;
+  --brand: #ff8a5c;
+  --brand-deep: #f06a3a;
+  --on-brand: #2a221c;
+  --accent-deep: #ff8a5c;
+  --on-accent: #2a221c;
+  --shadow: rgba(0, 0, 0, 0.4);
 }
 
 .dark {
@@ -230,7 +235,7 @@ html.night {
   padding: 0.4rem;
   background: linear-gradient(160deg, var(--apricot) 0%, var(--beige) 100%);
   box-shadow:
-    0 8px 0 color-mix(in srgb, var(--accent) 35%, var(--beige)),
+    0 8px 0 color-mix(in srgb, var(--brand) 35%, var(--beige)),
     0 16px 26px var(--shadow);
   transition: transform 180ms ease, box-shadow 180ms ease;
   -webkit-tap-highlight-color: transparent;
@@ -239,7 +244,7 @@ html.night {
 .hero-tile:active {
   transform: translateY(5px);
   box-shadow:
-    0 3px 0 color-mix(in srgb, var(--accent) 35%, var(--beige)),
+    0 3px 0 color-mix(in srgb, var(--brand) 35%, var(--beige)),
     0 8px 14px var(--shadow);
 }
 
@@ -311,7 +316,7 @@ html.night {
   border-radius: 2.7rem;
   padding: 0.85rem 0.7rem 0.55rem;
   background:
-    linear-gradient(180deg, var(--beige) 0%, var(--apricot) 60%, color-mix(in srgb, var(--accent) 28%, var(--apricot)) 100%);
+    linear-gradient(180deg, #ffe3b8 0%, #ffc48a 62%, #ff9a62 100%);
   box-shadow:
     0 12px 0 color-mix(in srgb, var(--accent-deep) 40%, var(--beige)),
     0 22px 32px var(--shadow),
@@ -368,53 +373,119 @@ html.night {
     inset 0 1px 0 color-mix(in srgb, var(--bg) 80%, white);
 }
 
-.friend-bubble {
-  position: absolute;
-  z-index: 3;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--bg);
-  padding: 0.18rem;
-  box-shadow:
-    0 6px 0 color-mix(in srgb, var(--accent) 18%, var(--beige)),
-    0 10px 16px var(--shadow);
-  animation: bob 6s ease-in-out infinite;
+.welcome-sky {
+  background: linear-gradient(180deg, #9fd6ff 0%, #d6f0ff 22%, #fff4d8 52%, #ffd7a8 100%);
 }
 
-.friend-bubble img {
-  border-radius: 999px;
+html.night .welcome-sky {
+  background: linear-gradient(180deg, #243040 0%, #2a221c 42%, #3d322b 100%);
 }
 
-.friend-bubble-tag {
+html.night .welcome-land,
+html.night .cozy-land {
+  opacity: 0.28;
+}
+
+html.night .machine-shell {
+  background: linear-gradient(180deg, #5a4638 0%, #4a342c 62%, #3d2a24 100%);
+}
+
+.welcome-night {
   position: absolute;
-  right: -0.15rem;
-  bottom: -0.1rem;
+  right: 0.7rem;
+  top: 0.7rem;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 999px;
-  background: var(--bg);
-  padding: 0.05rem 0.35rem;
-  font-size: 0.62rem;
+  background: color-mix(in srgb, var(--surface) 88%, white);
+  color: var(--ink);
+  box-shadow: 0 4px 10px var(--shadow);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.welcome-stack {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.1rem 1.1rem 0.9rem;
+  text-align: center;
+}
+
+.welcome-kicker {
+  font-family: var(--font-rounded), Fredoka, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: #c45c2a;
+}
+
+html.night .welcome-kicker {
+  color: #ffb088;
+}
+
+.welcome-title {
+  margin-top: 0.15rem;
+  font-size: clamp(2.1rem, 8vw, 2.7rem);
   font-weight: 900;
-  color: var(--accent-deep);
-  box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 20%, var(--beige));
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.welcome-sub {
+  margin-top: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink-soft);
 }
 
 .welcome-hero {
   position: relative;
-  height: 11rem;
-  width: 11rem;
+  height: 8.6rem;
+  width: 8.6rem;
+  margin-top: 0.85rem;
   overflow: hidden;
   border-radius: 999px;
-  background: var(--bg);
-  padding: 0.35rem;
+  background: #fffdf8;
+  padding: 0.28rem;
   box-shadow:
-    0 10px 0 color-mix(in srgb, var(--accent) 22%, var(--beige)),
-    0 16px 24px var(--shadow);
+    0 8px 0 color-mix(in srgb, var(--brand) 28%, #ffe7c4),
+    0 14px 22px var(--shadow);
 }
 
 @media (min-width: 640px) {
   .welcome-hero {
-    height: 12rem;
-    width: 12rem;
+    height: 10rem;
+    width: 10rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .welcome-hero {
+    height: 7.1rem;
+    width: 7.1rem;
+    margin-top: 0.5rem;
+  }
+
+  .welcome-friends {
+    margin: 0.5rem 0 0.7rem;
+  }
+
+  .welcome-friend {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  .toy-start {
+    height: 4.1rem;
+    font-size: 1.45rem;
   }
 }
 
@@ -424,33 +495,59 @@ html.night {
 
 .welcome-hero-glow {
   position: absolute;
-  inset: -14%;
+  inset: -16%;
   z-index: -1;
   border-radius: 999px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--apricot) 70%, transparent) 0%, transparent 72%);
+  background: radial-gradient(circle, rgba(255, 210, 110, 0.7) 0%, transparent 72%);
   animation: pulse-soft 2.2s ease-in-out infinite;
 }
 
-.sparkle {
-  position: absolute;
-  height: 0.7rem;
-  width: 0.7rem;
+.welcome-bubble {
+  margin-top: 0.55rem;
   border-radius: 999px;
-  background: #f0e6d0;
-  box-shadow: 0 0 10px 4px color-mix(in srgb, var(--apricot) 55%, transparent);
-  animation: twinkle 1.8s ease-in-out infinite;
+  background: #fffdf8;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: var(--brand-deep);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand) 22%, #ffe7c4);
 }
 
-.welcome-sign {
-  border-radius: 1.6rem;
-  background:
-    linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%);
-  padding: 0.7rem 1rem 0.85rem;
-  text-align: center;
-  box-shadow:
-    0 8px 0 color-mix(in srgb, var(--accent) 22%, var(--beige)),
-    0 14px 20px var(--shadow),
-    inset 0 2px 0 color-mix(in srgb, var(--bg) 80%, white);
+.welcome-friends {
+  display: flex;
+  justify-content: center;
+  gap: 0.55rem;
+  margin: 0.85rem 0 1rem;
+}
+
+.welcome-friend {
+  position: relative;
+  height: 3.5rem;
+  width: 3.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: 0.15rem;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 16%, #ffe7c4);
+}
+
+.welcome-friend span {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.05rem;
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: 0 0.3rem;
+  font-size: 0.58rem;
+  font-weight: 900;
+  color: var(--brand-deep);
+}
+
+.welcome-hint {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-soft);
 }
 
 .toy-start {
@@ -460,12 +557,12 @@ html.night {
   height: 4.5rem;
   padding: 0 1.5rem 0 0.65rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 80%);
-  color: var(--on-accent);
+  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 80%);
+  color: var(--on-brand);
   font-size: 1.6rem;
   font-weight: 900;
   box-shadow:
-    0 8px 0 color-mix(in srgb, var(--accent-deep) 80%, #4a3228),
+    0 8px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
     0 14px 22px var(--shadow);
   -webkit-tap-highlight-color: transparent;
 }
@@ -473,7 +570,7 @@ html.night {
 .toy-start:active {
   transform: translateY(5px);
   box-shadow:
-    0 3px 0 color-mix(in srgb, var(--accent-deep) 80%, #4a3228),
+    0 3px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
     0 8px 12px var(--shadow);
 }
 
@@ -484,12 +581,12 @@ html.night {
   height: 4.4rem;
   padding: 0 1.6rem 0 0.7rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 80%);
-  color: var(--on-accent);
+  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 80%);
+  color: var(--on-brand);
   font-size: 1.55rem;
   font-weight: 900;
   box-shadow:
-    0 8px 0 color-mix(in srgb, var(--accent-deep) 80%, #4a3228),
+    0 8px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
     0 14px 22px var(--shadow);
   -webkit-tap-highlight-color: transparent;
 }
@@ -497,7 +594,7 @@ html.night {
 .candy-btn:active {
   transform: translateY(5px);
   box-shadow:
-    0 3px 0 color-mix(in srgb, var(--accent-deep) 80%, #4a3228),
+    0 3px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
     0 8px 12px var(--shadow);
 }
 
@@ -565,9 +662,9 @@ html.night {
 }
 
 .nav-pill-strong {
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
-  color: var(--on-accent);
-  box-shadow: 0 6px 0 color-mix(in srgb, var(--accent-deep) 80%, #4a3228), 0 10px 16px var(--shadow);
+  background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+  color: var(--on-brand);
+  box-shadow: 0 6px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228), 0 10px 16px var(--shadow);
 }
 
 @keyframes float {

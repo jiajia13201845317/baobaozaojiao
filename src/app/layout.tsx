@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F7F4EC",
+  themeColor: "#FFF7EE",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col font-sans">
         <noscript>
-          <p className="bg-[#F7F4EC] p-6 text-center text-base font-bold text-[#4A4A4A]">
+            <p className="bg-[#FFF7EE] p-6 text-center text-base font-bold text-[#3D2E28]">
             打开宝宝听听需要浏览器允许 JavaScript。
           </p>
         </noscript>

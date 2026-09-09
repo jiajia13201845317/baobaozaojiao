@@ -284,7 +284,7 @@ function greeting() {
 function SectionLabel({ title, hint }: { title: string; hint: string }) {
   return (
     <div className="mt-7 mb-3 flex items-baseline gap-2">
-      <span className="h-4 w-1.5 rounded-full bg-[var(--accent)]" />
+      <span className="h-4 w-1.5 rounded-full bg-[var(--brand)]" />
       <h2 className="ink text-lg font-black">{title}</h2>
       <span className="ink-soft text-xs font-bold">{hint}</span>
     </div>
