@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, Pause, RotateCcw, Volume1, Volume2, VolumeX } from "lucide-react";
 import {
   Balloon,
+  CozyBackdrop,
   ItemArt,
   Mascot,
   PlayBadge,
@@ -130,9 +131,15 @@ export function ToyApp() {
 
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden">
-      <WorldBackdrop />
-      <Balloon color="#FF6B4A" className="pointer-events-none absolute left-[8%] top-16 h-16 w-10 animate-[float_7s_ease-in-out_infinite] opacity-90" />
-      <Balloon color="#5B7CFF" className="pointer-events-none absolute right-[10%] top-24 h-14 w-9 animate-[float_9s_ease-in-out_infinite_reverse] opacity-80" />
+      {view.name === "welcome" ? (
+        <>
+          <WorldBackdrop />
+          <Balloon color="#FF6B4A" className="pointer-events-none absolute left-[8%] top-16 h-16 w-10 animate-[float_7s_ease-in-out_infinite] opacity-90" />
+          <Balloon color="#5B7CFF" className="pointer-events-none absolute right-[10%] top-24 h-14 w-9 animate-[float_9s_ease-in-out_infinite_reverse] opacity-80" />
+        </>
+      ) : (
+        <CozyBackdrop />
+      )}
 
       {view.name === "welcome" && <Welcome onStart={start} />}
       {view.name === "home" && <Home volume={volumeChip} onOpen={goLibrary} />}
@@ -219,54 +226,78 @@ function Home({
   const listen = categories.filter((c) => c.group === "listen");
 
   return (
-    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-5 sm:px-6">
+    <main className="relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
       <header className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-white shadow-[0_8px_20px_rgba(42,39,64,0.12)]">
-            <Mascot pose="wave" className="h-12 w-12" />
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white shadow-[0_10px_22px_rgba(42,39,64,0.14)]">
+            <Mascot pose="wave" className="h-14 w-14" />
           </div>
-          <div>
-            <p className="font-rounded text-xs font-semibold tracking-wider text-[#5B7CFF]">
-              XIAO GUAI GUAI
-            </p>
-            <h1 className="text-2xl font-black text-[#2A2740]">今天听什么？</h1>
+          <div className="min-w-0">
+            <h1 className="truncate text-[26px] font-black leading-tight text-[#4A3228]">
+              宝宝，{greeting()}
+            </h1>
+            <p className="truncate text-sm font-bold text-[#9A7460]">小乖乖在等你一起听</p>
           </div>
         </div>
         {volume}
       </header>
 
-      <button type="button" onClick={() => onOpen(featured.id)} className="island-card mt-5 text-left">
-        <span className="flex items-center gap-4 bg-[#E4F8DC] px-4 py-4">
-          <span className="grid h-32 w-32 shrink-0 place-items-center rounded-[2rem] bg-white p-2 shadow-sm sm:h-36 sm:w-36">
-            <CoverImage src={featured.hero} alt="狗" />
+      <button type="button" onClick={() => onOpen(featured.id)} className="hero-tile mt-4 text-left">
+        <span className="hero-tile-inner">
+          <span className="hero-tile-art">
+            <CoverImage src={featured.hero} alt="小狗" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-bold tracking-wide text-[#249A40]">{featured.place}</span>
-            <span className="mt-1 block text-2xl font-black leading-tight text-[#2A2740]">{featured.title}</span>
-            <span className="mt-2 block text-sm font-bold text-[#4A3228]">
+            <span className="hero-tile-badge">今天先听这个</span>
+            <span className="mt-1.5 block text-[26px] font-black leading-tight text-[#4A3228]">
+              {featured.title}
+            </span>
+            <span className="mt-1 block text-[15px] font-bold text-[#7A5644]">
               狗 → dog → 汪汪汪
             </span>
-            <span className="mt-3 inline-flex">
-              <PlayBadge className="h-11 w-11" />
+            <span className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-sm">
+              <PlayBadge className="h-8 w-8" />
+              <span className="pr-1 text-sm font-black text-[#E24A2C]">点一下就叫</span>
             </span>
           </span>
         </span>
       </button>
 
-      <p className="mt-6 mb-2 text-sm font-black text-[#2A2740]/70">认一认</p>
-      <div className="grid grid-cols-2 gap-3">
+      <SectionLabel title="认一认" hint="跟着说说看" />
+      <div className="grid grid-cols-2 gap-3.5">
         {learn.map((cat) => (
           <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
         ))}
       </div>
 
-      <p className="mt-6 mb-2 text-sm font-black text-[#2A2740]/70">听一听</p>
-      <div className="grid grid-cols-2 gap-3">
+      <SectionLabel title="听一听" hint="歌谣和故事" />
+      <div className="grid grid-cols-2 gap-3.5">
         {listen.map((cat) => (
           <RoomButton key={cat.id} cat={cat} onOpen={onOpen} />
         ))}
       </div>
+
+      <p className="mt-8 text-center text-xs font-bold text-[#9A7460]/70">
+        陪宝宝一起听，效果最好
+      </p>
     </main>
+  );
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 11) return "早上好";
+  if (h < 18) return "下午好";
+  return "晚上好";
+}
+
+function SectionLabel({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="mt-7 mb-3 flex items-baseline gap-2">
+      <span className="h-4 w-1.5 rounded-full bg-[#FF8A5B]" />
+      <h2 className="text-lg font-black text-[#4A3228]">{title}</h2>
+      <span className="text-xs font-bold text-[#9A7460]">{hint}</span>
+    </div>
   );
 }
 
@@ -278,16 +309,25 @@ function RoomButton({
   onOpen: (id: CategoryId) => void;
 }) {
   return (
-    <button type="button" onClick={() => onOpen(cat.id)} className="island-card text-left">
-      <span className="relative block">
-        <RoomHero src={cat.hero} tint={cat.tint} alt={cat.title} />
-        <span className="absolute bottom-2 right-2">
-          <PlayBadge className="h-9 w-9" />
+    <button
+      type="button"
+      onClick={() => onOpen(cat.id)}
+      className="room-tile text-left"
+      style={{ ["--room-shadow" as string]: cat.shadow }}
+    >
+      <span className="block rounded-[1.7rem] bg-white p-2.5">
+        <span className="relative block overflow-hidden rounded-[1.3rem]">
+          <RoomHero src={cat.hero} tint={cat.tint} alt={cat.title} />
         </span>
-      </span>
-      <span className="block bg-white px-3 py-2.5">
-        <span className="block text-[11px] font-bold tracking-wide text-[#8A84A3]">{cat.place}</span>
-        <span className="mt-0.5 block text-[17px] font-black leading-tight text-[#2A2740]">{cat.title}</span>
+        <span className="mt-2 flex items-center justify-between gap-1 px-1 pb-0.5">
+          <span className="min-w-0">
+            <span className="block truncate text-[17px] font-black leading-tight text-[#4A3228]">
+              {cat.title}
+            </span>
+            <span className="block truncate text-[11px] font-bold text-[#9A7460]">{cat.place}</span>
+          </span>
+          <PlayBadge className="h-8 w-8 shrink-0" />
+        </span>
       </span>
     </button>
   );

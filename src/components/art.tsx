@@ -51,6 +51,31 @@ export function WorldBackdrop({ mood = "day" }: { mood?: "day" | "dusk" | "night
   );
 }
 
+export function CozyBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, #FFE9CF 0%, #FFF3E2 34%, #FFF8EE 100%)",
+        }}
+      />
+      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[#FFC98A]/40 blur-3xl" />
+      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[#FFB3C7]/35 blur-3xl" />
+      <svg
+        className="absolute inset-x-0 bottom-0 h-40 w-full"
+        viewBox="0 0 390 160"
+        preserveAspectRatio="xMidYMax slice"
+        aria-hidden
+      >
+        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="#FFE2BE" />
+        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="#FFD3A6" />
+      </svg>
+    </div>
+  );
+}
+
 function Face({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${scale})`}>

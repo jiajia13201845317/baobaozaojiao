@@ -175,6 +175,77 @@
   box-shadow: 0 8px 16px rgba(42, 39, 64, 0.12);
 }
 
+.hero-tile {
+  display: block;
+  border-radius: 2rem;
+  padding: 0.4rem;
+  background: linear-gradient(160deg, #ffd9a8 0%, #ffb98b 100%);
+  box-shadow:
+    0 12px 0 #f0a06a,
+    0 22px 32px rgba(196, 116, 62, 0.24);
+  transition: transform 130ms ease, box-shadow 130ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hero-tile:active {
+  transform: translateY(7px);
+  box-shadow:
+    0 5px 0 #f0a06a,
+    0 10px 18px rgba(196, 116, 62, 0.2);
+}
+
+.hero-tile-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  border-radius: 1.7rem;
+  padding: 0.9rem 1rem 0.9rem 0.9rem;
+  background: linear-gradient(180deg, #fffdf8 0%, #fff3e2 100%);
+}
+
+.hero-tile-art {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 8.2rem;
+  height: 8.2rem;
+  padding: 0.4rem;
+  border-radius: 1.5rem;
+  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #fdf0dd 100%);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+.hero-tile-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  background: #ffe0cd;
+  color: #e24a2c;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.room-tile {
+  --room-shadow: #d0a271;
+  display: block;
+  border-radius: 1.9rem;
+  padding: 0.35rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fff1de 100%);
+  box-shadow:
+    0 9px 0 color-mix(in srgb, var(--room-shadow) 28%, #f3dcc2),
+    0 16px 26px rgba(154, 116, 96, 0.18);
+  transition: transform 130ms ease, box-shadow 130ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.room-tile:active {
+  transform: translateY(6px);
+  box-shadow:
+    0 3px 0 color-mix(in srgb, var(--room-shadow) 28%, #f3dcc2),
+    0 8px 14px rgba(154, 116, 96, 0.16);
+}
+
 .candy-btn {
   display: inline-flex;
   align-items: center;
