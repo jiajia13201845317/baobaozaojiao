@@ -2,16 +2,10 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ChevronLeft, Pause, RotateCcw, Volume1, Volume2, VolumeX } from "lucide-react";
-import {
-  Balloon,
-  CozyBackdrop,
-  ItemArt,
-  Mascot,
-  PlayBadge,
-  WorldBackdrop,
-} from "@/components/art";
+import { CozyBackdrop, ItemArt, Mascot, PlayBadge } from "@/components/art";
 import { CoverImage, Portrait, RoomHero } from "@/components/cover";
 import { FlashcardPlayer } from "@/components/flashcard";
+import { Welcome } from "@/components/welcome";
 import { toyPlayer, type LineInfo } from "@/lib/audio";
 import {
   cardsFor,
@@ -142,15 +136,7 @@ export function ToyApp() {
 
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden">
-      {view.name === "welcome" ? (
-        <>
-          <WorldBackdrop />
-          <Balloon color="#FF6B4A" className="pointer-events-none absolute left-[8%] top-16 h-16 w-10 animate-[float_7s_ease-in-out_infinite] opacity-90" />
-          <Balloon color="#5B7CFF" className="pointer-events-none absolute right-[10%] top-24 h-14 w-9 animate-[float_9s_ease-in-out_infinite_reverse] opacity-80" />
-        </>
-      ) : (
-        <CozyBackdrop />
-      )}
+      {view.name !== "welcome" && <CozyBackdrop />}
 
       {view.name === "welcome" && <Welcome onStart={start} />}
       {view.name === "home" && <Home volume={volumeChip} onOpen={goLibrary} />}
@@ -199,29 +185,6 @@ function VolumeChip({ index, onClick }: { index: number; onClick: () => void }) 
       <Icon className="size-5" />
       <span>{label}</span>
     </button>
-  );
-}
-
-function Welcome({ onStart }: { onStart: () => void }) {
-  return (
-    <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 pb-16 pt-10 text-center">
-      <div className="relative">
-        <div className="absolute inset-x-6 top-10 h-28 rounded-full bg-white/30 blur-2xl" />
-        <Mascot pose="wave" className="relative h-44 w-44 sm:h-52 sm:w-52" />
-      </div>
-      <div className="relative mt-1 rounded-[1.8rem] bg-white px-7 py-3 shadow-[0_12px_28px_rgba(42,39,64,0.14)]">
-        <p className="font-rounded text-xs font-bold tracking-[0.22em] text-[#5B7CFF]">XIAO GUAI GUAI</p>
-        <h1 className="text-4xl font-black tracking-tight text-[#2A2740] sm:text-5xl">宝宝听听</h1>
-      </div>
-      <p className="mt-3 max-w-[17rem] text-base font-semibold leading-relaxed text-[#2A2740]/75">
-        先听汪汪汪，再认眼睛和爸爸妈妈
-      </p>
-      <button type="button" onClick={onStart} className="candy-btn mt-8">
-        <PlayBadge className="h-12 w-12" />
-        <span>开始听</span>
-      </button>
-      <p className="mt-5 text-sm font-medium text-[#2A2740]/55">大人先点一下，喇叭才会出声</p>
-    </main>
   );
 }
 

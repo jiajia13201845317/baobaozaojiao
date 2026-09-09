@@ -246,6 +246,188 @@
     0 8px 14px rgba(154, 116, 96, 0.16);
 }
 
+.welcome-page {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 230, 150, 0.55), transparent 36%),
+    radial-gradient(circle at 86% 18%, rgba(255, 170, 190, 0.35), transparent 32%),
+    linear-gradient(180deg, #f7c48a 0%, #f0d2aa 40%, #e8b57a 100%);
+}
+
+.machine-shell {
+  position: relative;
+  display: flex;
+  width: min(100%, 28rem);
+  height: min(100dvh - 0.8rem, 54rem);
+  flex-direction: column;
+  border-radius: 2.7rem;
+  padding: 0.85rem 0.7rem 0.55rem;
+  background:
+    linear-gradient(180deg, #ffe0b8 0%, #f4b07a 55%, #e08952 100%);
+  box-shadow:
+    0 16px 0 #c56d38,
+    0 28px 40px rgba(140, 70, 30, 0.28),
+    inset 0 3px 0 rgba(255, 255, 255, 0.45);
+}
+
+.machine-lens {
+  position: absolute;
+  top: 0.38rem;
+  left: 50%;
+  z-index: 2;
+  height: 0.42rem;
+  width: 0.42rem;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: #5a3a28;
+  box-shadow: 0 0 0 3px #f0c090;
+}
+
+.machine-screen {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 2rem;
+  background: #7ec8ff;
+  box-shadow:
+    inset 0 0 0 5px #fff6ea,
+    inset 0 0 0 8px #f0c090;
+}
+
+.machine-chin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0 0.15rem;
+}
+
+.machine-dot {
+  height: 0.7rem;
+  width: 0.7rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(90, 50, 30, 0.25);
+}
+
+.machine-home {
+  height: 1.55rem;
+  width: 1.55rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8ee 0%, #f3d2b0 100%);
+  box-shadow:
+    0 3px 0 #c56d38,
+    inset 0 1px 0 white;
+}
+
+.friend-bubble {
+  position: absolute;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: 999px;
+  background: white;
+  padding: 0.18rem;
+  box-shadow:
+    0 8px 0 rgba(196, 116, 62, 0.22),
+    0 12px 18px rgba(90, 50, 30, 0.16);
+  animation: bob 2.4s ease-in-out infinite;
+}
+
+.friend-bubble img {
+  border-radius: 999px;
+}
+
+.friend-bubble-tag {
+  position: absolute;
+  right: -0.15rem;
+  bottom: -0.1rem;
+  border-radius: 999px;
+  background: #fff6ea;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: #c45c2a;
+  box-shadow: 0 2px 0 rgba(196, 116, 62, 0.2);
+}
+
+.welcome-hero {
+  position: relative;
+  height: 11rem;
+  width: 11rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: white;
+  padding: 0.35rem;
+  box-shadow:
+    0 14px 0 rgba(226, 74, 44, 0.18),
+    0 22px 28px rgba(90, 50, 30, 0.2);
+}
+
+@media (min-width: 640px) {
+  .welcome-hero {
+    height: 12rem;
+    width: 12rem;
+  }
+}
+
+.welcome-hero img {
+  border-radius: 999px;
+}
+
+.welcome-hero-glow {
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 230, 120, 0.85) 0%, rgba(255, 180, 80, 0) 70%);
+  animation: pulse-soft 2.2s ease-in-out infinite;
+}
+
+.welcome-sign {
+  border-radius: 1.6rem;
+  background:
+    linear-gradient(180deg, #fffdf6 0%, #ffe7c2 100%);
+  padding: 0.7rem 1rem 0.85rem;
+  text-align: center;
+  box-shadow:
+    0 10px 0 #e0a05a,
+    0 16px 22px rgba(140, 70, 30, 0.18),
+    inset 0 2px 0 white;
+}
+
+.toy-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  height: 4.5rem;
+  padding: 0 1.5rem 0 0.65rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff9a6a 0%, #ff5a38 72%);
+  color: white;
+  font-size: 1.6rem;
+  font-weight: 900;
+  box-shadow:
+    0 11px 0 #c83a20,
+    0 18px 26px rgba(200, 58, 32, 0.3);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toy-start:active {
+  transform: translateY(7px);
+  box-shadow:
+    0 4px 0 #c83a20,
+    0 8px 14px rgba(200, 58, 32, 0.22);
+}
+
+.sparkle {
+  position: absolute;
+  height: 0.7rem;
+  width: 0.7rem;
+  border-radius: 999px;
+  background: #fff6b0;
+  box-shadow: 0 0 10px 4px rgba(255, 246, 176, 0.7);
+  animation: twinkle 1.8s ease-in-out infinite;
+}
+
 .candy-btn {
   display: inline-flex;
   align-items: center;
@@ -387,5 +569,29 @@
   100% {
     transform: scale(1.2);
     opacity: 0;
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
   }
 }
