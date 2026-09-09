@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Settings2, Sun } from "lucide-react";
 import { CoverImage } from "@/components/cover";
 import { PlayBadge } from "@/components/art";
 
@@ -15,10 +15,12 @@ export function Welcome({
   onStart,
   night,
   onToggleNight,
+  onOpenParent,
 }: {
   onStart: () => void;
   night: boolean;
   onToggleNight: () => void;
+  onOpenParent: () => void;
 }) {
   return (
     <main className="welcome-page relative z-10 flex min-h-dvh flex-1 items-center justify-center p-2 sm:p-5">
@@ -27,17 +29,31 @@ export function Welcome({
         <div className="machine-screen" onClick={onStart} role="presentation">
           <PlayroomBackdrop />
 
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleNight();
-            }}
-            className="welcome-night"
-            aria-label={night ? "关掉夜间模式" : "打开夜间模式"}
-          >
-            {night ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
+          <div className="welcome-tools">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleNight();
+              }}
+              className="welcome-night"
+              aria-label={night ? "关掉夜间模式" : "打开夜间模式"}
+            >
+              {night ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenParent();
+              }}
+              className="welcome-night welcome-parent"
+              aria-label="家长设置"
+            >
+              <Settings2 className="size-4" />
+              家长
+            </button>
+          </div>
 
           <div className="welcome-stack">
             <p className="welcome-kicker">小乖乖早教机</p>

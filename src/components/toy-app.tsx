@@ -256,7 +256,7 @@ export function ToyApp() {
       )}
       <button type="button" onClick={() => setParentOpen(true)} className="glass-chip" aria-label="家长设置">
         <Settings2 className="size-5" />
-        <span className="hidden sm:inline">家长</span>
+        家长
       </button>
     </div>
   );
@@ -266,7 +266,12 @@ export function ToyApp() {
       {view.name !== "welcome" && <CozyBackdrop />}
 
       {view.name === "welcome" && (
-        <Welcome onStart={start} night={night} onToggleNight={toggleNight} />
+        <Welcome
+          onStart={start}
+          night={night}
+          onToggleNight={toggleNight}
+          onOpenParent={() => setParentOpen(true)}
+        />
       )}
       {view.name === "home" && (
         <Home

@@ -632,11 +632,17 @@ html.night .machine-shell::after {
   box-shadow: 0 4px 0 #2a1c16;
 }
 
-.welcome-night {
+.welcome-tools {
   position: absolute;
   right: 0.7rem;
   top: 0.7rem;
   z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.welcome-night {
   display: grid;
   place-items: center;
   width: 2.5rem;
@@ -646,6 +652,15 @@ html.night .machine-shell::after {
   color: var(--ink);
   box-shadow: 0 4px 10px var(--shadow);
   -webkit-tap-highlight-color: transparent;
+}
+
+.welcome-parent {
+  width: auto;
+  padding: 0 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  grid-auto-flow: column;
+  gap: 0.2rem;
 }
 
 .welcome-stack {
