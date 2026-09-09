@@ -83,6 +83,8 @@ export function ToyApp() {
   const modeRef = useRef(playMode);
   const playItemRef = useRef<(category: CategoryId, itemId: string, world?: WorldId) => Promise<void>>(async () => {});
   const sleepTimer = useRef<number | null>(null);
+  const playGen = useRef(0);
+  const holdRef = useRef(false);
   viewRef.current = view;
   modeRef.current = playMode;
 
@@ -91,16 +93,21 @@ export function ToyApp() {
     toyPlayer.onStep = (next) => setStep(next);
     toyPlayer.onEnded = (kind) => {
       setPlaying(false);
-      if (kind === "tap") return;
+      if (kind === "tap" || holdRef.current) return;
       const current = viewRef.current;
       if (current.name !== "player") return;
       if (modeRef.current === "once") return;
-      if (modeRef.current === "loop") {
-        void playItemRef.current(current.category, current.itemId, current.world);
-        return;
-      }
-      const next = siblingId(current.category, current.itemId, 1);
-      if (next) void playItemRef.current(current.category, next, current.world);
+      const gen = playGen.current;
+      const advance = () => {
+        if (holdRef.current || playGen.current !== gen) return;
+        if (modeRef.current === "loop") {
+          void playItemRef.current(current.category, current.itemId, current.world);
+          return;
+        }
+        const next = siblingId(current.category, current.itemId, 1);
+        if (next) void playItemRef.current(current.category, next, current.world);
+      };
+      window.setTimeout(advance, 80);
     };
     return () => {
       toyPlayer.onLine = null;
@@ -175,7 +182,10 @@ export function ToyApp() {
     remainingLabel === null ? null : remainingLabel <= 0 ? "马上停" : `${remainingLabel}分`;
 
   const playItem = useCallback(async (category: CategoryId, itemId: string, world?: WorldId) => {
+    const gen = ++playGen.current;
+    holdRef.current = false;
     await toyPlayer.unlock();
+    if (gen !== playGen.current) return;
     toyPlayer.tap();
     writeHasPlayed();
     setLine(null);
@@ -188,21 +198,21 @@ export function ToyApp() {
     armSleep(sleepMinutes);
     if (isLesson(category)) {
       const card = cardsFor(category).find((c) => c.id === itemId);
-      if (card) await toyPlayer.playLesson(card);
+      if (card && gen === playGen.current) await toyPlayer.playLesson(card);
       return;
     }
     if (category === "zh-songs" || category === "en-songs") {
       const song = (category === "zh-songs" ? zhSongs : enSongs).find((s) => s.id === itemId);
-      if (song) await toyPlayer.playSong(song);
+      if (song && gen === playGen.current) await toyPlayer.playSong(song);
       return;
     }
     if (category === "poems") {
       const poem = poems.find((s) => s.id === itemId);
-      if (poem) await toyPlayer.playPoem(poem);
+      if (poem && gen === playGen.current) await toyPlayer.playPoem(poem);
       return;
     }
     const story = storiesFor(category).find((s) => s.id === itemId);
-    if (story) await toyPlayer.playStory(story);
+    if (story && gen === playGen.current) await toyPlayer.playStory(story);
   }, [armSleep, sleepMinutes]);
 
   playItemRef.current = playItem;
@@ -218,6 +228,8 @@ export function ToyApp() {
   }, []);
 
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
+    playGen.current += 1;
+    holdRef.current = true;
     await toyPlayer.unlock();
     toyPlayer.tap();
     setPlaying(true);
@@ -227,6 +239,8 @@ export function ToyApp() {
   }, [armSleep, sleepMinutes]);
 
   const stop = useCallback(() => {
+    playGen.current += 1;
+    holdRef.current = true;
     toyPlayer.stop();
     setPlaying(false);
   }, []);

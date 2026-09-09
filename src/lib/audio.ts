@@ -166,10 +166,8 @@ class ToyPlayer {
       if (!this.alive(t)) return;
       if (card.sound) await this.playAnimalSound(card.sound, t);
     }
-    if (this.alive(t)) {
-      this.clearWatchdog();
-      this.onEnded?.("item");
-    }
+    this.clearWatchdog();
+    if (this.alive(t)) this.onEnded?.("item");
   }
 
   async playCry(card: Flashcard) {
@@ -192,10 +190,8 @@ class ToyPlayer {
       this.emit({ text: card.en, lang: "en-US" });
       await this.speak(card.sayEn ?? card.en, "en-US", t, "word");
     }
-    if (this.alive(t)) {
-      this.clearWatchdog();
-      this.onEnded?.("tap");
-    }
+    this.clearWatchdog();
+    if (this.alive(t)) this.onEnded?.("tap");
   }
 
   async playStory(story: Story) {
