@@ -126,6 +126,10 @@ export function ToyApp() {
       setView({ name: "welcome" });
       return;
     }
+    if (go === "fables") {
+      setView({ name: "library", category: "stories" });
+      return;
+    }
     if (go && worlds.some((w) => w.id === go)) {
       setView({ name: "world", world: go as WorldId });
       return;
