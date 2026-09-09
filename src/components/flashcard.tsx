@@ -55,7 +55,7 @@ export function FlashcardPlayer({
   const unit = category === "animals" ? "只" : "张";
 
   return (
-    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full flex-1 flex-col px-3 pb-5">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -68,7 +68,7 @@ export function FlashcardPlayer({
         <button
           type="button"
           onClick={onTap}
-          className="relative flex flex-1 flex-col items-center justify-center px-4 pt-5 pb-3"
+          className="relative flex flex-1 flex-col items-center justify-center px-3 pt-3 pb-2"
           aria-label={card.cry ? `点${card.zh}，听${card.cry}` : `点${card.zh}，再听一遍`}
         >
           {total > 1 && (
@@ -77,7 +77,7 @@ export function FlashcardPlayer({
               {playing ? <span className="now-dot"> · 正在听</span> : null}
             </p>
           )}
-          <div className="relative grid h-[46vw] max-h-72 w-[46vw] max-w-72 place-items-center sm:h-72 sm:w-72">
+          <div className="relative grid h-[var(--hero)] w-[var(--hero)] place-items-center">
             {playing && (
               <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
             )}
@@ -87,7 +87,7 @@ export function FlashcardPlayer({
               <Portrait card={card} className="h-full w-full" />
             </div>
           </div>
-          <p className="ink-soft mt-4 text-sm font-bold">
+          <p className="ink-soft mt-2 text-sm font-bold">
             {card.cry ? `点${card.zh}，再听 ${card.cry}` : `点图片，再听 ${card.zh}`}
           </p>
           <ProgressDots total={total} index={index} />

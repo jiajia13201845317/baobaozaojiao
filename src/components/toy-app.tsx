@@ -411,26 +411,25 @@ function Home({
     .join(" · ");
 
   return (
-    <main className="page-shell home-playroom relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+    <main className="page-shell home-playroom relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
       <section className="home-banner">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="home-brand">小乖乖早教机</p>
-            <h1 className="ink truncate text-[28px] font-black leading-tight">
+            <h1 className="ink truncate text-[22px] font-black leading-tight">
               宝宝，{greeting()}
             </h1>
-            <p className="ink-soft mt-1 truncate text-sm font-bold">{homeHint()}</p>
+            <p className="ink-soft mt-0.5 truncate text-xs font-bold">{homeHint()}</p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             {volume}
             <span className="home-mascot-wrap">
-              <Mascot pose="wave" className="h-[4.6rem] w-[4.6rem]" />
+              <Mascot pose="wave" className="h-12 w-12" />
             </span>
           </div>
         </div>
         <div className="home-pills">
           <span className="candy-pill">{status}</span>
-          <span className="candy-pill candy-pill-soft">右上角家长</span>
         </div>
       </section>
       <CareStrip care={care} onTalk={onTalk} />
@@ -446,21 +445,23 @@ function Home({
       )}
 
       <button type="button" onClick={onPlayDog} className="hero-poster">
-        <span className="hero-tile-badge">先听这个</span>
         <span className="hero-poster-art">
           <CoverImage src="/art/hero-dog.png" alt="小狗" />
         </span>
-        <span className="ink mt-2 block text-[30px] font-black leading-none">小狗汪汪汪</span>
-        <span className="ink-soft mt-1 block text-[15px] font-bold">狗 → dog → 汪汪汪</span>
-        <span className="hero-poster-cta">
-          <PlayBadge className="h-9 w-9" />
-          点一下就叫
+        <span className="min-w-0 flex-1">
+          <span className="hero-tile-badge">先听这个</span>
+          <span className="ink mt-1 block text-[20px] font-black leading-tight">小狗汪汪汪</span>
+          <span className="ink-soft mt-0.5 block text-[13px] font-bold">狗 → dog → 汪汪汪</span>
+          <span className="hero-poster-cta">
+            <PlayBadge className="h-7 w-7" />
+            点一下就叫
+          </span>
         </span>
       </button>
 
-      <p className="ink mt-7 text-lg font-black">还想进哪一扇门</p>
-      <p className="ink-soft mb-3 text-sm font-bold">绿的认、粉的唱、紫的听故事</p>
-      <div className="flex flex-col gap-3.5">
+      <p className="ink mt-4 text-base font-black">还想进哪一扇门</p>
+      <p className="ink-soft mb-2 text-xs font-bold">绿的认、粉的唱、紫的听故事</p>
+      <div className="flex flex-col gap-2.5">
         {worlds.map((world) => (
           <button
             key={world.id}
@@ -476,15 +477,15 @@ function Home({
               <CoverImage src={world.hero} alt={world.title} />
             </span>
             <span className="min-w-0 flex-1 text-left">
-              <span className="ink block text-[24px] font-black leading-tight">{world.title}</span>
-              <span className="ink-soft mt-0.5 block text-sm font-bold">{world.hint}</span>
+              <span className="ink block text-[18px] font-black leading-tight">{world.title}</span>
+              <span className="ink-soft mt-0.5 block text-xs font-bold">{world.hint}</span>
             </span>
-            <PlayBadge className="h-11 w-11 shrink-0" />
+            <PlayBadge className="h-8 w-8 shrink-0" />
           </button>
         ))}
       </div>
 
-      <p className="ink-soft mt-8 text-center text-sm font-bold">陪着听一遍，宝宝会跟着张嘴</p>
+      <p className="ink-soft mt-5 text-center text-xs font-bold">陪着听一遍，宝宝会跟着张嘴</p>
     </main>
   );
 }
@@ -506,7 +507,7 @@ function WorldGate({
   const rooms = world.rooms.map((id) => getCategory(id));
 
   return (
-    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col overflow-y-auto px-4 pb-12 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -517,7 +518,7 @@ function WorldGate({
 
       <section className="island-card mt-4 overflow-hidden">
         <div className="flex items-center gap-3 px-3 py-3" style={{ background: world.tint }}>
-          <span className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-[var(--bg)] p-2">
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--bg)] p-1.5">
             <CoverImage src={world.hero} alt={world.title} />
           </span>
           <div className="min-w-0 flex-1">
@@ -612,7 +613,7 @@ function Library({
   const unit = category === "animals" ? "只" : lesson ? "张" : "首";
 
   return (
-    <main className="page-shell relative z-10 mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-y-auto px-4 pb-10 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -623,7 +624,7 @@ function Library({
 
       <section className="island-card mt-4 overflow-hidden">
         <div className="flex items-center gap-3 px-3 py-3" style={{ background: cat.tint }}>
-          <span className="grid h-24 w-24 shrink-0 place-items-center rounded-3xl bg-[var(--bg)] p-2">
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--bg)] p-1.5">
             <CoverImage src={cat.hero} alt={cat.title} />
           </span>
           <div>
@@ -788,7 +789,7 @@ function Player({
   const place = itemPlace(category, itemId);
 
   return (
-    <main className="page-shell relative z-10 mx-auto flex w-full max-w-xl flex-1 flex-col px-4 pb-8 pt-4 sm:px-6">
+    <main className="page-shell relative z-10 mx-auto flex w-full flex-1 flex-col px-3 pb-5">
       <header className="flex items-center justify-between gap-2">
         <button type="button" onClick={onBack} className="glass-chip">
           <ChevronLeft className="size-5" />
@@ -797,11 +798,11 @@ function Player({
         {volume}
       </header>
       <section className="island-card relative mt-4 flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col items-center px-5 py-6 text-center" style={{ background: cat.tint }}>
+        <div className="flex flex-1 flex-col items-center px-3 py-4 text-center" style={{ background: cat.tint }}>
           <button
             type="button"
             onClick={() => (playing ? onStop() : onReplay())}
-            className={`cover-hit relative h-36 w-36 overflow-hidden rounded-[2rem] bg-[var(--bg)] p-2 shadow-[0_10px_22px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
+            className={`cover-hit relative h-[var(--hero)] w-[var(--hero)] overflow-hidden rounded-[1.5rem] bg-[var(--bg)] p-1.5 shadow-[0_8px_16px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
             aria-label={playing ? "点图停下" : "点图再听"}
           >
             <CoverImage src={cover} alt={item.title} />
@@ -813,7 +814,7 @@ function Player({
             {place.total > 1 ? `${place.index + 1} / ${place.total}` : poem ? poem.author : cat.title}
             {playing ? " · 正在听" : ""}
           </p>
-          <h1 className="ink mt-1 text-3xl font-black">{item.title}</h1>
+          <h1 className="ink mt-1 text-2xl font-black">{item.title}</h1>
           <p className="ink-soft mt-1 text-xs font-bold">
             点图{playing ? "停下" : "再听"} · {PLAY_MODE_LABEL[playMode]}
           </p>
@@ -823,7 +824,7 @@ function Player({
           )}
           <div className="story-page mt-4 w-full max-w-md">
             {line ? (
-              <p className="ink text-xl font-bold leading-relaxed" lang={line.lang}>
+              <p className="ink text-lg font-bold leading-relaxed" lang={line.lang}>
                 {line.text}
               </p>
             ) : (

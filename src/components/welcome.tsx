@@ -29,7 +29,7 @@ export function Welcome({
   const care = useCare(night);
 
   return (
-    <main className="welcome-page relative z-10 flex min-h-dvh flex-1 items-center justify-center p-2 sm:p-5">
+    <main className="welcome-page relative z-10 flex min-h-dvh flex-1 items-center justify-center">
       <div className="machine-shell">
         <div className="machine-lens" aria-hidden />
         <div className="machine-screen" onClick={onStart} role="presentation">
@@ -63,11 +63,10 @@ export function Welcome({
           </div>
 
           <div className="welcome-stack">
-            <p className="welcome-kicker">小乖乖早教机</p>
-            <h1 className="welcome-title">宝宝听听</h1>
-            <p className="welcome-sub">
-              {care.weatherLine} · {care.dressLine} · {care.mealLine}
-            </p>
+            <div className="welcome-head">
+              <p className="welcome-kicker">小乖乖早教机</p>
+              <h1 className="welcome-title">宝宝听听</h1>
+            </div>
 
             <div className="welcome-hero">
               <span className="welcome-hero-glow" />
@@ -88,10 +87,10 @@ export function Welcome({
             </div>
 
             <button type="button" onClick={(event) => { event.stopPropagation(); onStart(); }} className="toy-start">
-              <PlayBadge className="h-12 w-12" />
+              <PlayBadge className="h-9 w-9" />
               <span>开始听</span>
             </button>
-            <p className="welcome-hint">点太阳问天气，点衣服和碗会说话</p>
+            <p className="welcome-hint">点太阳、衣服或小碗，会说话</p>
           </div>
         </div>
         <div className="machine-chin" aria-hidden>

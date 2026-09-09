@@ -102,6 +102,11 @@
   --accent-deep: #ef5a28;
   --on-accent: #fffdf8;
   --shadow: rgba(200, 90, 50, 0.16);
+  --phone: 24.5rem;
+  --hero: clamp(5.2rem, 28vmin, 7rem);
+  --title: clamp(1.5rem, 6.2vw, 2rem);
+  --door: clamp(3.5rem, 17vw, 4.2rem);
+  --btn-h: clamp(3.3rem, 11vw, 4rem);
 }
 
 html.night {
@@ -182,8 +187,15 @@ html.night {
 }
 
 .page-shell {
-  padding-top: max(1rem, env(safe-area-inset-top));
-  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: var(--phone);
+  padding-top: max(0.7rem, env(safe-area-inset-top));
+  padding-bottom: max(1.1rem, env(safe-area-inset-bottom));
+}
+
+.phone-col {
+  width: 100%;
+  max-width: var(--phone);
 }
 
 .ink {
@@ -201,9 +213,9 @@ html.night {
 .glass-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  height: 2.75rem;
-  padding: 0 0.95rem;
+  gap: 0.28rem;
+  height: 2.35rem;
+  padding: 0 0.7rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--surface) 88%, white);
   color: var(--ink);
@@ -235,8 +247,8 @@ html.night {
 }
 
 .home-banner {
-  border-radius: 2rem;
-  padding: 1rem 1rem 1.05rem;
+  border-radius: 1.5rem;
+  padding: 0.75rem 0.8rem 0.8rem;
   background: linear-gradient(160deg, #ffd4b4 0%, #ffb07a 52%, #ffe27a 100%);
   box-shadow:
     0 8px 0 #ff8a5c,
@@ -254,8 +266,8 @@ html.night {
 .home-mascot-wrap {
   display: grid;
   place-items: center;
-  width: 4.8rem;
-  height: 4.8rem;
+  width: 3.4rem;
+  height: 3.4rem;
   border-radius: 999px;
   background: #fffdf8;
   box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 28%, #ffe7c4);
@@ -264,8 +276,8 @@ html.night {
 .home-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.85rem;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
 }
 
 .candy-pill {
@@ -284,17 +296,17 @@ html.night {
 
 .hero-poster {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   width: 100%;
-  margin-top: 1rem;
-  padding: 0.95rem 1rem 1.15rem;
-  border-radius: 2.1rem;
+  margin-top: 0.7rem;
+  padding: 0.55rem 0.7rem 0.55rem 0.55rem;
+  border-radius: 1.6rem;
   background: linear-gradient(180deg, #ffe27a 0%, #ffb36a 100%);
   box-shadow:
-    0 10px 0 #ef5a28,
-    0 18px 28px var(--shadow);
-  text-align: center;
+    0 7px 0 #ef5a28,
+    0 12px 20px var(--shadow);
+  text-align: left;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -308,10 +320,10 @@ html.night {
 .hero-poster-art {
   display: grid;
   place-items: center;
-  width: 9.4rem;
-  height: 9.4rem;
-  margin: 0.55rem 0 0.15rem;
-  padding: 0.28rem;
+  width: 5.4rem;
+  height: 5.4rem;
+  margin: 0 0.7rem 0 0;
+  padding: 0.18rem;
   border-radius: 999px;
   background: #fffdf8;
   box-shadow:
@@ -322,9 +334,9 @@ html.night {
 .hero-poster-cta {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-top: 0.75rem;
-  padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+  padding: 0.15rem 0.55rem 0.15rem 0.15rem;
   border-radius: 999px;
   background: #fffdf8;
   color: var(--accent-deep);
@@ -335,11 +347,11 @@ html.night {
 .world-slab {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.6rem;
   width: 100%;
-  min-height: 6.3rem;
-  padding: 0.5rem 0.75rem 0.5rem 0.5rem;
-  border-radius: 1.85rem;
+  min-height: 4.5rem;
+  padding: 0.35rem 0.55rem 0.35rem 0.35rem;
+  border-radius: 1.35rem;
   background: var(--door-tint, var(--sage));
   box-shadow:
     0 8px 0 var(--room-shadow, var(--beige)),
@@ -357,8 +369,8 @@ html.night {
 .world-slab-art {
   display: grid;
   place-items: center;
-  width: 5.3rem;
-  height: 5.3rem;
+  width: var(--door);
+  height: var(--door);
   flex-shrink: 0;
   padding: 0.25rem;
   border-radius: 1.4rem;
@@ -368,8 +380,8 @@ html.night {
 html.night .home-banner,
 html.night .hero-poster {
   box-shadow:
-    0 8px 0 #8a4030,
-    0 16px 26px var(--shadow);
+    0 6px 0 #8a4030,
+    0 12px 18px var(--shadow);
 }
 
 html.night .home-banner {
@@ -505,8 +517,7 @@ html.night .home-brand {
 }
 
 .welcome-page {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding: 0;
   background:
     radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--mist) 70%, transparent), transparent 40%),
     radial-gradient(circle at 86% 16%, color-mix(in srgb, var(--lilac) 55%, transparent), transparent 36%),
@@ -524,11 +535,12 @@ html.night .cozy-sky {
 .machine-shell {
   position: relative;
   display: flex;
-  width: min(100%, 28rem);
-  height: min(100dvh - 0.8rem, 54rem);
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   flex-direction: column;
-  border-radius: 2.7rem;
-  padding: 0.85rem 0.7rem 0.55rem;
+  border-radius: 0;
+  padding: 0.45rem 0.4rem 0.3rem;
   background:
     linear-gradient(180deg, #ffe3b8 0%, #ffc48a 62%, #ff9a62 100%);
   box-shadow:
@@ -539,14 +551,7 @@ html.night .cozy-sky {
 
 .machine-shell::before,
 .machine-shell::after {
-  content: "";
-  position: absolute;
-  top: 2.2rem;
-  z-index: 3;
-  width: 1.15rem;
-  height: 2.4rem;
-  background: linear-gradient(180deg, #ffb27a 0%, #ff8a5c 100%);
-  box-shadow: 0 4px 0 #c45c2a;
+  display: none;
 }
 
 .machine-shell::before {
@@ -577,7 +582,7 @@ html.night .cozy-sky {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  border-radius: 2rem;
+  border-radius: 1.4rem;
   background: var(--mist);
   box-shadow:
     inset 0 0 0 5px var(--bg),
@@ -588,8 +593,8 @@ html.night .cozy-sky {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.7rem;
-  padding: 0.55rem 0 0.15rem;
+  gap: 0.55rem;
+  padding: 0.35rem 0 0.05rem;
 }
 
 .machine-dot {
@@ -639,8 +644,8 @@ html.night .welcome-sky {
 }
 
 .sky-face {
-  width: 4.4rem;
-  height: 4.4rem;
+  width: 3.3rem;
+  height: 3.3rem;
   filter: drop-shadow(0 6px 0 rgba(255, 210, 110, 0.35));
 }
 
@@ -661,17 +666,19 @@ html.night .welcome-sky {
 .care-toys {
   display: flex;
   justify-content: center;
-  gap: 0.7rem;
-  margin-top: 0.65rem;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
 }
 
 .care-toy {
   display: flex;
-  min-width: 7.4rem;
+  min-width: 0;
+  flex: 1;
+  max-width: 8.2rem;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.35rem 0.55rem 0.45rem;
+  gap: 0.08rem;
+  padding: 0.25rem 0.4rem 0.3rem;
   border-radius: 1.3rem;
   background: #fffdf8;
   color: var(--ink);
@@ -686,16 +693,16 @@ html.night .welcome-sky {
 }
 
 .care-icon {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 1.85rem;
+  height: 1.85rem;
 }
 
 .care-strip {
   display: flex;
-  gap: 0.45rem;
+  gap: 0.35rem;
   overflow-x: auto;
-  margin-top: 0.85rem;
-  padding-bottom: 0.15rem;
+  margin-top: 0.6rem;
+  padding-bottom: 0.1rem;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -829,8 +836,8 @@ html.night .machine-shell::after {
   height: 100%;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 3.1rem 1rem 0.8rem;
+  justify-content: space-between;
+  padding: 2.4rem 0.7rem 0.45rem;
   text-align: center;
 }
 
@@ -847,8 +854,8 @@ html.night .welcome-kicker {
 }
 
 .welcome-title {
-  margin-top: 0.15rem;
-  font-size: clamp(2.1rem, 8vw, 2.7rem);
+  margin-top: 0.05rem;
+  font-size: var(--title);
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -865,9 +872,9 @@ html.night .welcome-kicker {
 
 .welcome-hero {
   position: relative;
-  height: 8.6rem;
-  width: 8.6rem;
-  margin-top: 0.7rem;
+  height: var(--hero);
+  width: var(--hero);
+  margin-top: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
   background: #fffdf8;
@@ -877,32 +884,50 @@ html.night .welcome-kicker {
     0 14px 22px var(--shadow);
 }
 
-@media (min-width: 640px) {
-  .welcome-hero {
-    height: 10rem;
-    width: 10rem;
-  }
-}
-
-@media (max-height: 700px) {
-  .welcome-hero {
-    height: 7.1rem;
-    width: 7.1rem;
-    margin-top: 0.5rem;
+@media (max-height: 620px) {
+  .welcome-hint,
+  .welcome-kicker {
+    display: none;
   }
 
   .welcome-friends {
-    margin: 0.5rem 0 0.7rem;
+    margin: 0.15rem 0;
+  }
+}
+
+@media (min-width: 430px) {
+  .welcome-page {
+    padding: 0.45rem;
   }
 
-  .welcome-friend {
-    height: 3rem;
-    width: 3rem;
+  .machine-shell {
+    width: min(100%, var(--phone));
+    height: min(100dvh - 0.9rem, 44rem);
+    border-radius: 2.1rem;
+    padding: 0.55rem 0.45rem 0.35rem;
   }
 
-  .toy-start {
-    height: 4.1rem;
-    font-size: 1.45rem;
+  .machine-shell::before,
+  .machine-shell::after {
+    display: block;
+    content: "";
+    position: absolute;
+    top: 1.8rem;
+    z-index: 3;
+    width: 0.95rem;
+    height: 2rem;
+    background: linear-gradient(180deg, #ffb27a 0%, #ff8a5c 100%);
+    box-shadow: 0 4px 0 #c45c2a;
+  }
+
+  .machine-shell::before {
+    left: -0.35rem;
+    border-radius: 1rem 0.35rem 0.35rem 1rem;
+  }
+
+  .machine-shell::after {
+    right: -0.35rem;
+    border-radius: 0.35rem 1rem 1rem 0.35rem;
   }
 }
 
@@ -920,7 +945,7 @@ html.night .welcome-kicker {
 }
 
 .welcome-bubble {
-  margin-top: 0.55rem;
+  margin-top: 0.3rem;
   border-radius: 999px;
   background: #fffdf8;
   padding: 0.2rem 0.75rem;
@@ -933,19 +958,35 @@ html.night .welcome-kicker {
 .welcome-friends {
   display: flex;
   justify-content: center;
-  gap: 0.55rem;
-  margin: 0.85rem 0 1rem;
+  gap: 0.4rem;
+  margin: 0.35rem 0 0.4rem;
 }
 
 .welcome-friend {
   position: relative;
-  height: 3.5rem;
-  width: 3.5rem;
+  height: 2.7rem;
+  width: 2.7rem;
   overflow: hidden;
   border-radius: 999px;
   background: #fffdf8;
   padding: 0.15rem;
   box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 16%, #ffe7c4);
+}
+
+.welcome-friend:nth-child(1) {
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+.welcome-friend:nth-child(2) {
+  animation: bob 3.4s ease-in-out 0.15s infinite;
+}
+
+.welcome-friend:nth-child(3) {
+  animation: bob 3.1s ease-in-out 0.3s infinite;
+}
+
+.welcome-friend:nth-child(4) {
+  animation: bob 3.5s ease-in-out 0.08s infinite;
 }
 
 .welcome-friend span {
@@ -961,8 +1002,8 @@ html.night .welcome-kicker {
 }
 
 .welcome-hint {
-  margin-top: 0.55rem;
-  font-size: 0.72rem;
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: var(--ink-soft);
 }
@@ -970,13 +1011,13 @@ html.night .welcome-kicker {
 .toy-start {
   display: inline-flex;
   align-items: center;
-  gap: 0.65rem;
-  height: 4.5rem;
-  padding: 0 1.5rem 0 0.65rem;
+  gap: 0.45rem;
+  height: var(--btn-h);
+  padding: 0 1.1rem 0 0.4rem;
   border-radius: 999px;
   background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 80%);
   color: var(--on-brand);
-  font-size: 1.6rem;
+  font-size: clamp(1.2rem, 5vw, 1.45rem);
   font-weight: 900;
   box-shadow:
     0 8px 0 color-mix(in srgb, var(--brand-deep) 80%, #4a3228),
@@ -1016,8 +1057,8 @@ html.night .welcome-kicker {
 }
 
 .story-page {
-  min-height: 6.5rem;
-  padding: 1.15rem 1.2rem;
+  min-height: 4.2rem;
+  padding: 0.7rem 0.8rem;
   border-radius: 1.4rem;
   background:
     linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%);
@@ -1029,8 +1070,8 @@ html.night .welcome-kicker {
 .control-round {
   display: grid;
   place-items: center;
-  width: 4.6rem;
-  height: 4.6rem;
+  width: 3.7rem;
+  height: 3.7rem;
   border-radius: 999px;
   color: var(--on-accent);
   -webkit-tap-highlight-color: transparent;
@@ -1060,7 +1101,7 @@ html.night .welcome-kicker {
   align-items: center;
   justify-content: center;
   gap: 0.15rem;
-  height: 3.4rem;
+  height: 2.85rem;
   border-radius: 1.2rem;
   background: color-mix(in srgb, var(--surface) 90%, white);
   color: var(--ink);
@@ -1185,9 +1226,9 @@ html.night .welcome-kicker {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.4rem;
   width: 100%;
-  height: 3.4rem;
+  height: 2.8rem;
   border-radius: 0 0 1.6rem 1.6rem;
   background: color-mix(in srgb, var(--brand) 16%, var(--bg));
   color: var(--accent-deep);
