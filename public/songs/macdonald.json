@@ -1,0 +1,30 @@
+{
+  "id": "macdonald",
+  "title": "Old MacDonald",
+  "cues": [
+    {
+      "at": 0.35,
+      "text": "Old MacDonald"
+    },
+    {
+      "at": 2.61,
+      "text": "Old Mac Donald had a farm, Eee, I, Eee, I, Oh."
+    },
+    {
+      "at": 9.4,
+      "text": "And on that farm he had a cow, Eee, I, Eee, I, Oh."
+    },
+    {
+      "at": 16.34,
+      "text": "With a moo, moo here, and a moo, moo there."
+    },
+    {
+      "at": 20.86,
+      "text": "Here a moo, there a moo, everywhere a moo, moo."
+    },
+    {
+      "at": 25.71,
+      "text": "Old Mac Donald had a farm, Eee, I, Eee, I, Oh."
+    }
+  ]
+}

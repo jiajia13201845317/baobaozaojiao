@@ -94,6 +94,7 @@ export type Song = {
   sayLyrics?: string[];
   lyricLang: "zh-CN" | "en-US";
   melody: Note[];
+  track?: string;
 };
 
 export type Animal = Flashcard;
@@ -306,6 +307,7 @@ export const zhSongs: Song[] = [
     color: "#FFE0D4",
     accent: "#E56B4A",
     lyricLang: "zh-CN",
+    track: "/songs/bunny.mp3",
     lyrics: [
       "小兔子乖乖，把门开开。",
       "快点儿开开，我要进来。",
@@ -327,6 +329,7 @@ export const zhSongs: Song[] = [
     color: "#FFE7C2",
     accent: "#E0892C",
     lyricLang: "zh-CN",
+    track: "/songs/tigers.mp3",
     lyrics: [
       "两只老虎，两只老虎。",
       "跑得快，跑得快。",
@@ -358,6 +361,7 @@ export const zhSongs: Song[] = [
     color: "#FFF3B0",
     accent: "#D4A017",
     lyricLang: "zh-CN",
+    track: "/songs/stars-zh.mp3",
     lyrics: [
       "一闪一闪亮晶晶，满天都是小星星。",
       "挂在天上放光明，好像许多小眼睛。",
@@ -386,6 +390,7 @@ export const zhSongs: Song[] = [
     color: "#D9F0C8",
     accent: "#5AAA4A",
     lyricLang: "zh-CN",
+    track: "/songs/ducks.mp3",
     lyrics: [
       "门前大桥下，游过一群鸭。",
       "快来快来数一数，二四六七八。",
@@ -415,6 +420,7 @@ export const zhSongs: Song[] = [
     color: "#FFD8B8",
     accent: "#E07030",
     lyricLang: "zh-CN",
+    track: "/songs/radish.mp3",
     lyrics: [
       "拔萝卜，拔萝卜，嘿哟嘿哟拔萝卜。",
       "嘿哟嘿哟拔不动。",
@@ -441,6 +447,7 @@ export const zhSongs: Song[] = [
     color: "#F8D0E4",
     accent: "#D45A8A",
     lyricLang: "zh-CN",
+    track: "/songs/friends.mp3",
     lyrics: [
       "找呀找呀找朋友，找到一个好朋友。",
       "敬个礼呀握握手，你是我的好朋友。",
@@ -466,6 +473,7 @@ export const enSongs: Song[] = [
     color: "#E8F0FF",
     accent: "#4A7FD4",
     lyricLang: "en-US",
+    track: "/songs/twinkle.mp3",
     lyrics: [
       "Twinkle, twinkle, little star.",
       "How I wonder what you are.",
@@ -492,6 +500,7 @@ export const enSongs: Song[] = [
     color: "#D4F4F0",
     accent: "#2A9B8F",
     lyricLang: "en-US",
+    track: "/songs/abc.mp3",
     lyrics: [
       "A B C D E F G.",
       "H I J K L M N O P.",
@@ -526,6 +535,7 @@ export const enSongs: Song[] = [
     color: "#E8F6C8",
     accent: "#6A9A2A",
     lyricLang: "en-US",
+    track: "/songs/macdonald.mp3",
     lyrics: [
       "Old MacDonald had a farm, E I E I O.",
       "And on that farm he had a cow, E I E I O.",
@@ -555,6 +565,7 @@ export const enSongs: Song[] = [
     color: "#E6E0FF",
     accent: "#6B5BB5",
     lyricLang: "en-US",
+    track: "/songs/spider.mp3",
     lyrics: [
       "The itsy bitsy spider climbed up the water spout.",
       "Down came the rain and washed the spider out.",
@@ -577,6 +588,7 @@ export const enSongs: Song[] = [
     color: "#F4F0E8",
     accent: "#8A7A6A",
     lyricLang: "en-US",
+    track: "/songs/lamb.mp3",
     lyrics: [
       "Mary had a little lamb, little lamb, little lamb.",
       "Mary had a little lamb, its fleece was white as snow.",
@@ -599,6 +611,7 @@ export const enSongs: Song[] = [
     color: "#C8EEF8",
     accent: "#2A88B0",
     lyricLang: "en-US",
+    track: "/songs/boat.mp3",
     lyrics: [
       "Row, row, row your boat.",
       "Gently down the stream.",

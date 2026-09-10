@@ -1,0 +1,4 @@
+Nursery-rhyme arrangements recorded for 宝宝听听.
+Piano, music box, harp and pad: FluidR3 GM (Frank Wen).
+Vocals: neural child voices, generated for this project.
+Melodies are traditional / public-domain nursery rhymes.

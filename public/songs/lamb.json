@@ -1,0 +1,26 @@
+{
+  "id": "lamb",
+  "title": "Mary Had a Little Lamb",
+  "cues": [
+    {
+      "at": 0.35,
+      "text": "Mary Had a Little Lamb"
+    },
+    {
+      "at": 2.61,
+      "text": "Mary had a little lamb, little lamb, little lamb."
+    },
+    {
+      "at": 7.68,
+      "text": "Mary had a little lamb, its fleece was white as snow."
+    },
+    {
+      "at": 12.86,
+      "text": "And everywhere that Mary went, Mary went, Mary went."
+    },
+    {
+      "at": 18.77,
+      "text": "Everywhere that Mary went, the lamb was sure to go."
+    }
+  ]
+}

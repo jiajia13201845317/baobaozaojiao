@@ -55,6 +55,8 @@ class ToyPlayer {
   private buffers = new Map<string, AudioBuffer>();
   private sources: AudioBufferSourceNode[] = [];
   private pending: Array<() => void> = [];
+  private media: HTMLAudioElement | null = null;
+  private mediaNode: MediaElementAudioSourceNode | null = null;
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -92,6 +94,7 @@ class ToyPlayer {
     if (this.master && this.ctx) {
       this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.04);
     }
+    if (this.media && !this.mediaNode) this.media.volume = v;
   }
 
   tap() {
@@ -114,6 +117,17 @@ class ToyPlayer {
     this.token += 1;
     this.clearWatchdog();
     this.clearTimers();
+    if (this.media) {
+      this.media.ontimeupdate = null;
+      this.media.onended = null;
+      this.media.onerror = null;
+      try {
+        this.media.pause();
+        this.media.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+    }
     const flush = this.pending.splice(0);
     for (const done of flush) done();
     synth?.cancel();
@@ -139,6 +153,7 @@ class ToyPlayer {
     const t = this.begin();
     const started = Date.now();
     await this.ensureRunning();
+    if (song.track && (await this.playRecordedSong(song, t))) return;
     this.startWatchdog();
     this.emit({ text: song.title, lang: song.lyricLang });
     await this.playMelody(song.melody, t, 0.36);
@@ -164,6 +179,83 @@ class ToyPlayer {
       this.clearWatchdog();
       this.onEnded?.("item");
     }
+  }
+
+  private ensureMedia() {
+    if (!this.ctx || !this.master) return null;
+    if (!this.media) {
+      const audio = new Audio();
+      audio.preload = "auto";
+      audio.crossOrigin = "anonymous";
+      try {
+        this.mediaNode = this.ctx.createMediaElementSource(audio);
+        this.mediaNode.connect(this.master);
+        audio.volume = 1;
+      } catch {
+        audio.volume = this.volume;
+      }
+      this.media = audio;
+    }
+    return this.media;
+  }
+
+  private async loadCues(song: Song) {
+    const fallback = [
+      { at: 0.3, text: song.title },
+      ...song.lyrics.map((text, index) => ({ at: 2.4 + index * 4.2, text })),
+    ];
+    if (!song.track) return fallback;
+    try {
+      const res = await fetch(song.track.replace(/\.mp3$/, ".json"));
+      if (!res.ok) return fallback;
+      const data = (await res.json()) as { cues?: Array<{ at: number; text: string }> };
+      return data.cues?.length ? data.cues : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  private async playRecordedSong(song: Song, t: PlayToken) {
+    const audio = this.ensureMedia();
+    if (!audio || !song.track || !this.alive(t)) return false;
+    const cues = await this.loadCues(song);
+    if (!this.alive(t)) return true;
+    this.emit({ text: song.title, lang: song.lyricLang });
+    audio.src = song.track;
+    try {
+      audio.load();
+    } catch {
+      /* ignore */
+    }
+    let cueAt = 0;
+    audio.ontimeupdate = () => {
+      if (!this.alive(t)) return;
+      const now = audio.currentTime;
+      while (cueAt < cues.length && now >= cues[cueAt]!.at) {
+        this.emit({ text: cues[cueAt]!.text, lang: song.lyricLang });
+        cueAt += 1;
+      }
+    };
+    try {
+      await audio.play();
+    } catch {
+      return false;
+    }
+    if (!this.alive(t)) return true;
+    await new Promise<void>((resolve) => {
+      const done = () => {
+        audio.ontimeupdate = null;
+        audio.onended = null;
+        audio.onerror = null;
+        this.pending = this.pending.filter((fn) => fn !== done);
+        resolve();
+      };
+      this.pending.push(done);
+      audio.onended = done;
+      audio.onerror = done;
+    });
+    if (this.alive(t)) this.onEnded?.("item");
+    return true;
   }
 
   async playLesson(card: Flashcard) {
