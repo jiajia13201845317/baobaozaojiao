@@ -1,10 +1,13 @@
 "use client";
 
-import { Moon, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X } from "lucide-react";
+import { Moon, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X, Music2 } from "lucide-react";
 import { PartyEgg } from "@/components/art";
 import {
+  MUSIC_SOURCE_HINT,
+  MUSIC_SOURCE_LABEL,
   PLAY_MODE_HINT,
   PLAY_MODE_LABEL,
+  type MusicSource,
   type PlayMode,
 } from "@/lib/progress";
 
@@ -21,24 +24,28 @@ export function ParentPanel({
   night,
   volumeIndex,
   playMode,
+  musicSource,
   sleepMinutes,
   remainingLabel,
   onClose,
   onToggleNight,
   onCycleVolume,
   onCycleMode,
+  onCycleSource,
   onSleepMinutes,
 }: {
   open: boolean;
   night: boolean;
   volumeIndex: number;
   playMode: PlayMode;
+  musicSource: MusicSource;
   sleepMinutes: number;
   remainingLabel?: string | null;
   onClose: () => void;
   onToggleNight: () => void;
   onCycleVolume: () => void;
   onCycleMode: () => void;
+  onCycleSource: () => void;
   onSleepMinutes: (minutes: number) => void;
 }) {
   if (!open) return null;
@@ -75,6 +82,15 @@ export function ParentPanel({
             <span className="ink-soft text-sm font-bold">{night ? "屏幕暗一点，不怕晃眼" : "白天亮亮的"}</span>
           </span>
           <span className="parent-pill">{night ? "白天" : "夜里"}</span>
+        </button>
+
+        <button type="button" onClick={onCycleSource} className="parent-row">
+          <Music2 className="size-5" />
+          <span className="flex-1 text-left">
+            <span className="ink block font-black">儿歌音源</span>
+            <span className="ink-soft text-sm font-bold">{MUSIC_SOURCE_HINT[musicSource]}</span>
+          </span>
+          <span className="parent-pill parent-pill-on">{MUSIC_SOURCE_LABEL[musicSource]}</span>
         </button>
 
         <button type="button" onClick={onCycleMode} className="parent-row">

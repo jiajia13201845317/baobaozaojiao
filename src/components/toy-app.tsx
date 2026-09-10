@@ -32,19 +32,24 @@ import {
   type WorldId,
 } from "@/lib/content";
 import {
+  cycleMusicSource,
   cyclePlayMode,
+  MUSIC_SOURCE_LABEL,
   PLAY_MODE_LABEL,
   readLastPlay,
+  readMusicSource,
   readPlayMode,
   readSleepMinutes,
   readVolumeIndex,
   titleFor,
   writeHasPlayed,
   writeLastPlay,
+  writeMusicSource,
   writePlayMode,
   writeSleepMinutes,
   writeVolumeIndex,
   type LastPlay,
+  type MusicSource,
   type PlayMode,
 } from "@/lib/progress";
 
@@ -84,6 +89,7 @@ export function ToyApp() {
   const [volumeReady, setVolumeReady] = useState(false);
   const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
   const [playMode, setPlayMode] = useState<PlayMode>("chain");
+  const [musicSource, setMusicSource] = useState<MusicSource>("netease");
   const [sleepMinutes, setSleepMinutes] = useState(0);
   const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
   const [nowTick, setNowTick] = useState(0);
@@ -148,8 +154,13 @@ export function ToyApp() {
     setVolumeIndex(readVolumeIndex(2));
     setPlayMode(readPlayMode());
     setSleepMinutes(readSleepMinutes());
+    const params = new URLSearchParams(window.location.search);
+    const source = params.get("source");
+    const nextSource = source === "local" || source === "netease" ? source : readMusicSource();
+    setMusicSource(nextSource);
+    writeMusicSource(nextSource);
     setVolumeReady(true);
-    const go = new URLSearchParams(window.location.search).get("go");
+    const go = params.get("go");
     if (go === "home") {
       setView({ name: "home" });
       return;
@@ -176,6 +187,10 @@ export function ToyApp() {
     toyPlayer.setVolume(VOLUME_STEPS[volumeIndex]);
     if (volumeReady) writeVolumeIndex(volumeIndex);
   }, [volumeIndex, volumeReady]);
+
+  useEffect(() => {
+    toyPlayer.setSource(musicSource);
+  }, [musicSource]);
 
   const armSleep = useCallback((minutes: number) => {
     if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
@@ -413,6 +428,7 @@ export function ToyApp() {
           }}
           volume={tools}
           playMode={playMode}
+          musicSource={musicSource}
         />
       )}
 
@@ -421,6 +437,7 @@ export function ToyApp() {
         night={night}
         volumeIndex={volumeIndex}
         playMode={playMode}
+        musicSource={musicSource}
         sleepMinutes={sleepMinutes}
         remainingLabel={remainingText}
         onClose={() => setParentOpen(false)}
@@ -430,6 +447,13 @@ export function ToyApp() {
           setPlayMode((mode) => {
             const next = cyclePlayMode(mode);
             writePlayMode(next);
+            return next;
+          });
+        }}
+        onCycleSource={() => {
+          setMusicSource((source) => {
+            const next = cycleMusicSource(source);
+            writeMusicSource(next);
             return next;
           });
         }}
@@ -824,6 +848,7 @@ function Player({
   onNext,
   volume,
   playMode,
+  musicSource,
 }: {
   category: CategoryId;
   itemId: string;
@@ -836,6 +861,7 @@ function Player({
   onNext: () => void;
   volume: ReactNode;
   playMode: PlayMode;
+  musicSource: MusicSource;
 }) {
   const ignoreStopUntil = useRef(0);
   const allow = useTapQuiet(itemId, 1400);
@@ -884,9 +910,12 @@ function Player({
           <h1 className="ink mt-1 text-2xl font-black">{item.title}</h1>
           <p className="ink-soft mt-1 text-xs font-bold">
             点图{playing ? "停下" : "再听"}
-            {song?.track ? " · 完整录音" : ""} · {PLAY_MODE_LABEL[playMode]}
+            {song ? ` · ${MUSIC_SOURCE_LABEL[musicSource]}` : ""} · {PLAY_MODE_LABEL[playMode]}
           </p>
           <ProgressDots total={place.total} index={place.index} />
+          {song && musicSource === "netease" && (
+            <div id="bao-netease-slot" className="netease-slot" hidden={!playing} />
+          )}
           {line?.kind === "fun" && (
             <p className="mt-2 rounded-full bg-[var(--bg)] px-3 py-1 text-xs font-black text-[var(--accent-deep)]">好玩的翻译</p>
           )}

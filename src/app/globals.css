@@ -1584,6 +1584,27 @@ html.night .party-play-band {
   }
 }
 
+.netease-slot {
+  width: min(100%, 330px);
+  height: 86px;
+  margin: 0.85rem auto 0;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 4px 0 rgba(40, 90, 160, 0.1);
+}
+
+.netease-slot iframe {
+  display: block;
+  width: 330px;
+  height: 86px;
+  border: 0;
+}
+
+html.night .netease-slot {
+  background: #2a2830;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

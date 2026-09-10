@@ -6,6 +6,40 @@ const CHAIN_KEY = "bao-chain";
 const MODE_KEY = "bao-mode";
 const TIMER_KEY = "bao-timer";
 const SEEN_KEY = "bao-seen";
+const SOURCE_KEY = "bao-source";
+
+export type MusicSource = "netease" | "local";
+
+export const MUSIC_SOURCE_LABEL: Record<MusicSource, string> = {
+  netease: "网易云",
+  local: "本地录音",
+};
+
+export const MUSIC_SOURCE_HINT: Record<MusicSource, string> = {
+  netease: "用网易云官方外链播儿歌，音质是平台上的版本",
+  local: "用我们录好的钢琴和童声，不用联网",
+};
+
+export function readMusicSource(): MusicSource {
+  try {
+    if (localStorage.getItem(SOURCE_KEY) === "local") return "local";
+  } catch {
+    /* ignore */
+  }
+  return "netease";
+}
+
+export function writeMusicSource(source: MusicSource) {
+  try {
+    localStorage.setItem(SOURCE_KEY, source);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function cycleMusicSource(source: MusicSource): MusicSource {
+  return source === "netease" ? "local" : "netease";
+}
 
 export type PlayMode = "chain" | "loop" | "once";
 

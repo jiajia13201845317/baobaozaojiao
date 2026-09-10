@@ -1,6 +1,8 @@
 "use client";
 
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
+import { neteaseFor, neteasePlayerSrc } from "./netease";
+import type { MusicSource } from "./progress";
 import {
   estimateSpeechMs,
   pickVoice,
@@ -56,6 +58,8 @@ class ToyPlayer {
   private sources: AudioBufferSourceNode[] = [];
   private pending: Array<() => void> = [];
   private media: HTMLAudioElement | null = null;
+  private frame: HTMLIFrameElement | null = null;
+  private source: MusicSource = "netease";
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -86,6 +90,10 @@ class ToyPlayer {
         this.refreshVoices();
       });
     }
+  }
+
+  setSource(source: MusicSource) {
+    this.source = source;
   }
 
   setVolume(v: number) {
@@ -127,6 +135,9 @@ class ToyPlayer {
         /* ignore */
       }
     }
+    if (this.frame) {
+      this.frame.src = "about:blank";
+    }
     const flush = this.pending.splice(0);
     for (const done of flush) done();
     synth?.cancel();
@@ -152,6 +163,7 @@ class ToyPlayer {
     const t = this.begin();
     const started = Date.now();
     await this.ensureRunning();
+    if (this.source === "netease" && (await this.playNeteaseSong(song, t))) return;
     if (song.track && (await this.playRecordedSong(song, t))) return;
     this.startWatchdog();
     this.emit({ text: song.title, lang: song.lyricLang });
@@ -208,6 +220,59 @@ class ToyPlayer {
     } catch {
       return fallback;
     }
+  }
+
+  private async mountNeteaseFrame() {
+    const started = Date.now();
+    let slot = document.getElementById("bao-netease-slot");
+    while (!slot && Date.now() - started < 900) {
+      await this.wait(50, this.token);
+      slot = document.getElementById("bao-netease-slot");
+    }
+    if (!this.frame) {
+      const frame = document.createElement("iframe");
+      frame.setAttribute("allow", "autoplay; encrypted-media");
+      frame.setAttribute("frameborder", "no");
+      frame.title = "网易云音乐";
+      frame.dataset.baoNetease = "1";
+      this.frame = frame;
+    }
+    const host = slot ?? document.body;
+    if (this.frame.parentElement !== host) host.appendChild(this.frame);
+    return this.frame;
+  }
+
+  private async playNeteaseSong(song: Song, t: PlayToken) {
+    const info = neteaseFor(song.id);
+    if (!info || !this.alive(t)) return false;
+    this.emit({ text: song.title, lang: song.lyricLang });
+    const frame = await this.mountNeteaseFrame();
+    if (!this.alive(t)) return true;
+    frame.src = neteasePlayerSrc(info.id, true);
+    const cues = [
+      { at: 0.4, text: song.title },
+      ...song.lyrics.map((text, index) => ({
+        at: 2.2 + index * Math.max(3.6, (info.ms / 1000 - 4) / Math.max(1, song.lyrics.length)),
+        text,
+      })),
+    ];
+    let cueAt = 0;
+    const begun = Date.now();
+    const apply = () => {
+      if (!this.alive(t)) return;
+      const now = (Date.now() - begun) / 1000;
+      while (cueAt < cues.length && now >= cues[cueAt]!.at) {
+        this.emit({ text: cues[cueAt]!.text, lang: song.lyricLang });
+        cueAt += 1;
+      }
+    };
+    apply();
+    const poll = window.setInterval(apply, 400);
+    this.timers.push(poll);
+    await this.wait(info.ms, t);
+    window.clearInterval(poll);
+    if (this.alive(t)) this.onEnded?.("item");
+    return true;
   }
 
   private async playRecordedSong(song: Song, t: PlayToken) {
