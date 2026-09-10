@@ -13,7 +13,7 @@ const page = await browser.newPage();
 page.setDefaultTimeout(20000);
 
 await page.evaluateOnNewDocument(() => {
-  localStorage.setItem("bao-mode", "once");
+  localStorage.setItem("bao-mode", "chain");
   localStorage.setItem("bao-vol", "2");
   window.__spoken = [];
   const origSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
@@ -34,20 +34,27 @@ await page.evaluateOnNewDocument(() => {
   };
 });
 
-await page.goto(`${BASE}/?night=0&go=zh-songs&v=song`, { waitUntil: "domcontentloaded" });
+await page.goto(`${BASE}/?night=0&go=zh-songs&v=holdsong`, { waitUntil: "domcontentloaded" });
 await page.waitForFunction(() => document.body.innerText.includes("小兔子乖乖"));
 await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小兔子乖乖"));
   btn?.click();
 });
+await page.waitForFunction(() =>
+  [...document.querySelectorAll("button")].some((b) => b.innerText.includes("下一首")),
+);
+await page.evaluate(() => {
+  const next = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("下一首"));
+  next?.click();
+});
 await page.waitForFunction(() => document.body.innerText.includes("正在听"));
-await new Promise((r) => setTimeout(r, 900));
+await new Promise((r) => setTimeout(r, 3200));
 const body = await page.evaluate(() => document.body.innerText);
 const spoken = await page.evaluate(() => window.__spoken);
 await browser.close();
 
-if (!body.includes("正在听") || !body.includes("小兔子乖乖")) {
-  console.error("FAIL song stopped after open\n", body.slice(0, 400));
+if (!body.includes("正在听") || !body.includes("小兔子乖乖") || body.includes("两只老虎")) {
+  console.error("FAIL song did not stay on 小兔子乖乖\n", body.slice(0, 400));
   process.exit(1);
 }
 console.log("PASS song stays playing", spoken.slice(0, 3).join(" | "));

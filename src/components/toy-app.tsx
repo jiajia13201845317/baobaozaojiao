@@ -122,7 +122,7 @@ export function ToyApp() {
       if (modeRef.current === "once") return;
       const gen = playGen.current;
       cancelAdvance();
-      const delay = isLesson(current.category) ? 2200 : 700;
+      const delay = 2400;
       advanceTimer.current = window.setTimeout(() => {
         advanceTimer.current = null;
         if (holdRef.current || pinRef.current || playGen.current !== gen) return;
@@ -219,6 +219,7 @@ export function ToyApp() {
       cancelAdvance();
     }
     const gen = ++playGen.current;
+    toyPlayer.stop();
     await toyPlayer.unlock();
     if (gen !== playGen.current || (source === "chain" && (holdRef.current || pinRef.current))) return;
     toyPlayer.tap();
@@ -838,6 +839,7 @@ function Player({
   playMode: PlayMode;
 }) {
   const ignoreStopUntil = useRef(0);
+  const allow = useTapQuiet(itemId);
   useEffect(() => {
     ignoreStopUntil.current = Date.now() + 700;
   }, [itemId]);
@@ -853,7 +855,7 @@ function Player({
   return (
     <main className="page-shell relative z-10 mx-auto flex w-full flex-1 flex-col px-3 pb-5">
       <header className="flex items-center justify-between gap-2">
-        <button type="button" onClick={onBack} className="glass-chip">
+        <button type="button" onClick={() => allow(onBack)} className="glass-chip">
           <ChevronLeft className="size-5" />
           {cat.place}
         </button>
@@ -903,19 +905,19 @@ function Player({
         </div>
       </section>
       <div className="mt-5 flex items-center justify-center gap-4">
-        <button type="button" onClick={onStop} disabled={!playing} className="control-round stop" aria-label="停下">
+        <button type="button" onClick={() => allow(onStop)} disabled={!playing} className="control-round stop" aria-label="停下">
           <Pause className="size-7 fill-current" />
         </button>
-        <button type="button" onClick={onReplay} className="control-round replay" aria-label="再听一遍">
+        <button type="button" onClick={() => allow(onReplay)} className="control-round replay" aria-label="再听一遍">
           <RotateCcw className="size-7" />
         </button>
       </div>
       {place.total > 1 && (
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" onClick={onPrev} className="nav-pill">
+          <button type="button" onClick={() => allow(onPrev)} className="nav-pill">
             上一首
           </button>
-          <button type="button" onClick={onNext} className="nav-pill">
+          <button type="button" onClick={() => allow(onNext)} className="nav-pill">
             下一首
           </button>
         </div>

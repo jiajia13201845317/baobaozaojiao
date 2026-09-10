@@ -137,6 +137,7 @@ class ToyPlayer {
 
   async playSong(song: Song) {
     const t = this.begin();
+    const started = Date.now();
     await this.ensureRunning();
     this.startWatchdog();
     this.emit({ text: song.title, lang: song.lyricLang });
@@ -156,6 +157,9 @@ class ToyPlayer {
     if (!this.alive(t)) return;
     this.emit({ text: song.title, lang: song.lyricLang });
     await this.playMelody(song.melody, t, 0.36);
+    if (!this.alive(t)) return;
+    const leftover = 4500 - (Date.now() - started);
+    if (leftover > 0) await this.wait(leftover, t);
     if (this.alive(t)) {
       this.clearWatchdog();
       this.onEnded?.("item");
@@ -356,6 +360,8 @@ class ToyPlayer {
       u.volume = Math.min(1, Math.max(0.2, this.volume + 0.16));
 
       let settled = false;
+      const startedAt = Date.now();
+      const budget = estimateSpeechMs(spoken, rate) + 400;
       const done = () => {
         if (settled) return;
         settled = true;
@@ -363,11 +369,21 @@ class ToyPlayer {
         this.pending = this.pending.filter((fn) => fn !== done);
         resolve();
       };
-      const safety = window.setTimeout(done, estimateSpeechMs(spoken, rate) + 1400);
+      const safety = window.setTimeout(done, budget + 1000);
       this.timers.push(safety);
       this.pending.push(done);
       u.onend = done;
-      u.onerror = done;
+      // Chrome often errors when a voice is missing; keep the line's duration
+      // so 连播 cannot skip past a song in a second.
+      u.onerror = () => {
+        const left = Math.max(0, budget - (Date.now() - startedAt));
+        if (left === 0) {
+          done();
+          return;
+        }
+        const id = window.setTimeout(done, left);
+        this.timers.push(id);
+      };
       try {
         synth.resume();
         synth.speak(u);
@@ -424,22 +440,21 @@ class ToyPlayer {
 
   private playTone(freq: number, dur: number, t: PlayToken, peak = 0.28) {
     return new Promise<void>((resolve) => {
+      let settled = false;
       const finish = () => {
+        if (settled) return;
+        settled = true;
         this.pending = this.pending.filter((fn) => fn !== finish);
         resolve();
       };
       this.pending.push(finish);
-      if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) {
-        if (this.alive(t) && freq === 0) {
-          const id = window.setTimeout(finish, dur * 1000);
-          this.timers.push(id);
-          return;
-        }
+      const hold = Math.max(40, Math.round(dur * 1000));
+      if (!this.alive(t)) {
         finish();
         return;
       }
-      if (freq === 0) {
-        const id = window.setTimeout(finish, dur * 1000);
+      if (!this.ctx || !this.master || this.volume <= 0.02 || freq === 0) {
+        const id = window.setTimeout(finish, hold);
         this.timers.push(id);
         return;
       }
@@ -466,8 +481,7 @@ class ToyPlayer {
       harm.start(now);
       osc.stop(now + dur);
       harm.stop(now + dur);
-      osc.onended = finish;
-      const safety = window.setTimeout(finish, Math.round(dur * 1000) + 80);
+      const safety = window.setTimeout(finish, hold);
       this.timers.push(safety);
     });
   }
