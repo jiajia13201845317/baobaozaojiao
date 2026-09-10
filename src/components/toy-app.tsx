@@ -823,6 +823,10 @@ function Player({
   volume: ReactNode;
   playMode: PlayMode;
 }) {
+  const ignoreStopUntil = useRef(0);
+  useEffect(() => {
+    ignoreStopUntil.current = Date.now() + 700;
+  }, [itemId]);
   const cat = getCategory(category);
   const item = listenItem(category, itemId);
   if (!item) return null;
@@ -845,7 +849,11 @@ function Player({
         <div className="party-play-band flex flex-1 flex-col items-center px-3 py-4 text-center">
           <button
             type="button"
-            onClick={() => (playing ? onStop() : onReplay())}
+            onClick={() => {
+              if (playing && Date.now() < ignoreStopUntil.current) return;
+              if (playing) onStop();
+              else onReplay();
+            }}
             className={`cover-hit party-cover relative h-[var(--hero)] w-[var(--hero)] overflow-hidden p-1.5 ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
             aria-label={playing ? "点图停下" : "点图再听"}
           >

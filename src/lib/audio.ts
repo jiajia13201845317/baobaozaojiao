@@ -54,6 +54,7 @@ class ToyPlayer {
   private voicesHooked = false;
   private buffers = new Map<string, AudioBuffer>();
   private sources: AudioBufferSourceNode[] = [];
+  private pending: Array<() => void> = [];
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -74,6 +75,7 @@ class ToyPlayer {
     if (this.ctx.state === "suspended") {
       await this.ctx.resume();
     }
+    this.primeSpeech();
     this.voices = await waitVoices(synth);
     this.refreshVoices();
     if (synth && !this.voicesHooked) {
@@ -112,6 +114,8 @@ class ToyPlayer {
     this.token += 1;
     this.clearWatchdog();
     this.clearTimers();
+    const flush = this.pending.splice(0);
+    for (const done of flush) done();
     synth?.cancel();
     for (const osc of this.oscillators) {
       try {
@@ -133,22 +137,25 @@ class ToyPlayer {
 
   async playSong(song: Song) {
     const t = this.begin();
-    await this.wait(140, t);
+    await this.ensureRunning();
     this.startWatchdog();
     this.emit({ text: song.title, lang: song.lyricLang });
+    await this.playMelody(song.melody, t, 0.36);
+    if (!this.alive(t)) return;
     const title = song.sayTitle ?? song.title;
     await this.speak(title, song.lyricLang, t, "song");
     if (!this.alive(t)) return;
-    await this.playMelody(song.melody, t);
-    if (!this.alive(t)) return;
-    await this.wait(280, t);
+    await this.wait(200, t);
     for (let i = 0; i < song.lyrics.length; i++) {
       if (!this.alive(t)) return;
       const line = song.lyrics[i]!;
       this.emit({ text: line, lang: song.lyricLang });
       await this.speak(song.sayLyrics?.[i] ?? line, song.lyricLang, t, "song");
-      await this.wait(180, t);
+      await this.wait(160, t);
     }
+    if (!this.alive(t)) return;
+    this.emit({ text: song.title, lang: song.lyricLang });
+    await this.playMelody(song.melody, t, 0.36);
     if (this.alive(t)) {
       this.clearWatchdog();
       this.onEnded?.("item");
@@ -353,10 +360,12 @@ class ToyPlayer {
         if (settled) return;
         settled = true;
         window.clearTimeout(safety);
+        this.pending = this.pending.filter((fn) => fn !== done);
         resolve();
       };
       const safety = window.setTimeout(done, estimateSpeechMs(spoken, rate) + 1400);
       this.timers.push(safety);
+      this.pending.push(done);
       u.onend = done;
       u.onerror = done;
       try {
@@ -374,32 +383,63 @@ class ToyPlayer {
         resolve();
         return;
       }
-      const id = window.setTimeout(() => resolve(), ms);
+      const done = () => resolve();
+      this.pending.push(done);
+      const id = window.setTimeout(() => {
+        this.pending = this.pending.filter((fn) => fn !== done);
+        resolve();
+      }, ms);
       this.timers.push(id);
     });
   }
 
-  private async playMelody(notes: Note[], t: PlayToken) {
-    const beat = 0.34;
-    for (const note of notes) {
-      if (!this.alive(t)) return;
-      await this.playTone(FREQ[note.n] ?? 0, note.d * beat, t);
+  private primeSpeech() {
+    if (!synth) return;
+    try {
+      synth.resume();
+    } catch {
+      /* ignore */
     }
   }
 
-  private playTone(freq: number, dur: number, t: PlayToken) {
+  private async ensureRunning() {
+    if (!this.ctx) return;
+    if (this.ctx.state === "suspended") {
+      try {
+        await this.ctx.resume();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  private async playMelody(notes: Note[], t: PlayToken, peak = 0.28) {
+    await this.ensureRunning();
+    const beat = 0.32;
+    for (const note of notes) {
+      if (!this.alive(t)) return;
+      await this.playTone(FREQ[note.n] ?? 0, note.d * beat, t, peak);
+    }
+  }
+
+  private playTone(freq: number, dur: number, t: PlayToken, peak = 0.28) {
     return new Promise<void>((resolve) => {
+      const finish = () => {
+        this.pending = this.pending.filter((fn) => fn !== finish);
+        resolve();
+      };
+      this.pending.push(finish);
       if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) {
         if (this.alive(t) && freq === 0) {
-          const id = window.setTimeout(() => resolve(), dur * 1000);
+          const id = window.setTimeout(finish, dur * 1000);
           this.timers.push(id);
           return;
         }
-        resolve();
+        finish();
         return;
       }
       if (freq === 0) {
-        const id = window.setTimeout(() => resolve(), dur * 1000);
+        const id = window.setTimeout(finish, dur * 1000);
         this.timers.push(id);
         return;
       }
@@ -413,10 +453,10 @@ class ToyPlayer {
       osc.frequency.setValueAtTime(freq, now);
       harm.frequency.setValueAtTime(freq * 2, now);
       filter.type = "lowpass";
-      filter.frequency.value = 1800;
+      filter.frequency.value = 2200;
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.92);
+      gain.gain.exponentialRampToValueAtTime(peak, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + dur * 0.9);
       osc.connect(filter);
       harm.connect(filter);
       filter.connect(gain);
@@ -426,7 +466,9 @@ class ToyPlayer {
       harm.start(now);
       osc.stop(now + dur);
       harm.stop(now + dur);
-      osc.onended = () => resolve();
+      osc.onended = finish;
+      const safety = window.setTimeout(finish, Math.round(dur * 1000) + 80);
+      this.timers.push(safety);
     });
   }
 
