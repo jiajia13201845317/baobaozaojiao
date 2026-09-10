@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Pause, RotateCcw } from "lucide-react";
 import { Portrait } from "@/components/cover";
 import type { CategoryId, Flashcard, LessonStep } from "@/lib/content";
 import { getCategory } from "@/lib/content";
+import type { MusicSource } from "@/lib/progress";
 
 export function ProgressDots({ total, index }: { total: number; index: number }) {
   if (total < 2) return null;
@@ -33,6 +34,7 @@ export function FlashcardPlayer({
   onStop,
   onReplayAll,
   volume,
+  musicSource = "local",
 }: {
   category: CategoryId;
   card: Flashcard;
@@ -49,6 +51,7 @@ export function FlashcardPlayer({
   onStop: () => void;
   onReplayAll: () => void;
   volume: ReactNode;
+  musicSource?: MusicSource;
 }) {
   const cat = getCategory(category);
   const showSound = Boolean(card.cry);
@@ -89,9 +92,16 @@ export function FlashcardPlayer({
             </div>
           </button>
           <p className="ink-soft mt-2 text-sm font-bold">
-            {card.cry ? `点${card.zh}，听真叫声` : `点图片，再听 ${card.zh}`}
+            {card.cry
+              ? musicSource === "netease"
+                ? `点${card.zh}，听网易云叫声`
+                : `点${card.zh}，听真叫声`
+              : `点图片，再听 ${card.zh}`}
           </p>
           <ProgressDots total={total} index={index} />
+          {card.cry && musicSource === "netease" && (
+            <div id="bao-netease-slot" className="netease-slot" hidden={step !== "sound" && !playing} />
+          )}
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 px-4 pb-5">
@@ -112,7 +122,7 @@ export function FlashcardPlayer({
           {showSound && (
             <WordChip
               label={card.cry!}
-              hint="真叫声"
+              hint={musicSource === "netease" ? "网易云" : "真叫声"}
               active={step === "sound"}
               tone="var(--ink)"
               bg="var(--sage)"

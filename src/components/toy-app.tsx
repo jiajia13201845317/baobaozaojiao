@@ -407,6 +407,7 @@ export function ToyApp() {
           onTap={() => void tapCard(view.category, view.itemId)}
           onStop={stop}
           onReplay={() => void playItem(view.category, view.itemId, view.world)}
+          musicSource={musicSource}
         />
       )}
       {view.name === "player" && !isLesson(view.category) && (
@@ -797,6 +798,7 @@ function LessonView({
   onTap,
   onStop,
   onReplay,
+  musicSource,
 }: {
   category: CategoryId;
   itemId: string;
@@ -808,6 +810,7 @@ function LessonView({
   onTap: () => void;
   onStop: () => void;
   onReplay: () => void;
+  musicSource: MusicSource;
 }) {
   const list = cardsFor(category);
   const index = list.findIndex((c) => c.id === itemId);
@@ -832,6 +835,7 @@ function LessonView({
       onStop={onStop}
       onReplayAll={onReplay}
       volume={volume}
+      musicSource={musicSource}
     />
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
-import { neteaseFor, neteasePlayerSrc } from "./netease";
+import { neteaseCryFor, neteaseFor, neteasePlayerSrc } from "./netease";
 import type { MusicSource } from "./progress";
 import {
   estimateSpeechMs,
@@ -135,9 +135,7 @@ class ToyPlayer {
         /* ignore */
       }
     }
-    if (this.frame) {
-      this.frame.src = "about:blank";
-    }
+    this.clearNetease();
     const flush = this.pending.splice(0);
     for (const done of flush) done();
     synth?.cancel();
@@ -240,6 +238,26 @@ class ToyPlayer {
     const host = slot ?? document.body;
     if (this.frame.parentElement !== host) host.appendChild(this.frame);
     return this.frame;
+  }
+
+  private clearNetease() {
+    if (this.frame) this.frame.src = "about:blank";
+  }
+
+  private async playNeteaseClip(id: string, ms: number, t: PlayToken) {
+    const frame = await this.mountNeteaseFrame();
+    if (!this.alive(t)) return true;
+    frame.src = neteasePlayerSrc(id, true);
+    await this.wait(ms, t);
+    if (this.alive(t)) this.clearNetease();
+    return this.alive(t);
+  }
+
+  private async playNeteaseCry(card: Flashcard, t: PlayToken) {
+    const info = card.sound ? neteaseCryFor(card.sound) : null;
+    if (!info || this.source !== "netease" || !this.alive(t)) return false;
+    await this.playNeteaseClip(info.id, info.ms, t);
+    return true;
   }
 
   private async playNeteaseSong(song: Song, t: PlayToken) {
@@ -365,7 +383,7 @@ class ToyPlayer {
       await this.wait(200, t);
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      if (card.sound) await this.playRecordedCry(card.sound, t);
+      if (!(await this.playNeteaseCry(card, t)) && card.sound) await this.playRecordedCry(card.sound, t);
     }
     this.clearWatchdog();
     if (this.alive(t)) this.onEnded?.("item");
@@ -378,7 +396,7 @@ class ToyPlayer {
     if (card.cry) {
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      if (card.sound) await this.playRecordedCry(card.sound, t);
+      if (!(await this.playNeteaseCry(card, t)) && card.sound) await this.playRecordedCry(card.sound, t);
     } else {
       this.onStep?.("zh");
       this.emit({ text: card.zh, lang: "zh-CN" });
