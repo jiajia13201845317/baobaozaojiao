@@ -34,7 +34,6 @@ import {
 import {
   cyclePlayMode,
   PLAY_MODE_LABEL,
-  readHasPlayed,
   readLastPlay,
   readPlayMode,
   readSleepMinutes,
@@ -58,11 +57,11 @@ type View =
 
 const VOLUME_STEPS = [0, 0.45, 0.82] as const;
 
-function useTapQuiet(key: string) {
+function useTapQuiet(key: string, ms = 700) {
   const until = useRef(0);
   useEffect(() => {
-    until.current = Date.now() + 700;
-  }, [key]);
+    until.current = Date.now() + ms;
+  }, [key, ms]);
   return (fn: () => void) => {
     if (Date.now() < until.current) return;
     fn();
@@ -98,6 +97,7 @@ export function ToyApp() {
   const holdRef = useRef(false);
   const pinRef = useRef<string | null>(null);
   const advanceTimer = useRef<number | null>(null);
+  const allowWelcome = useTapQuiet("welcome", 1000);
   viewRef.current = view;
   modeRef.current = playMode;
 
@@ -170,7 +170,6 @@ export function ToyApp() {
       setView({ name: "library", category: go as CategoryId });
       return;
     }
-    if (readHasPlayed()) setView({ name: "home" });
   }, []);
 
   useEffect(() => {
@@ -338,7 +337,7 @@ export function ToyApp() {
 
       {view.name === "welcome" && (
         <Welcome
-          onStart={start}
+          onStart={() => allowWelcome(() => void start())}
           night={night}
           onToggleNight={toggleNight}
           onOpenParent={() => setParentOpen(true)}

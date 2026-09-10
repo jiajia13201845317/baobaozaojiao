@@ -54,6 +54,7 @@ await page.evaluateOnNewDocument(() => {
 
 await page.goto(`${BASE}/?night=0&go=welcome&v=hold`, { waitUntil: "domcontentloaded" });
 await page.waitForFunction(() => document.body.innerText.includes("开始听"));
+await new Promise((r) => setTimeout(r, 1100));
 await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("开始听"));
   btn?.click();
