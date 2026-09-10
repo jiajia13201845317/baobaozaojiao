@@ -51,7 +51,7 @@
 }
 
 :root {
-  --background: #fff7ee;
+  --background: #f4f0e6;
   --foreground: #3d2e28;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -84,25 +84,32 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  --ink: #2a2748;
-  --ink-soft: #5a5680;
-  --ink-mute: #7a76a0;
-  --bg: #e8f7ff;
-  --bg-2: #d4f0ff;
-  --surface: #fffdf8;
-  --card-bg: #fffdf8;
-  --apricot: #ffd3f0;
-  --beige: #fff3b0;
-  --sage: #c4f5a8;
-  --mist: #b8f0ff;
-  --lilac: #e7d7ff;
-  --brand: #ff5ca8;
-  --brand-deep: #ff3d8a;
-  --on-brand: #fffdf8;
-  --accent-deep: #ff3d8a;
-  --on-accent: #fffdf8;
-  --shadow: rgba(40, 80, 140, 0.14);
-  --lift: 0 8px 0 rgba(40, 90, 160, 0.12), 0 16px 28px rgba(40, 90, 160, 0.12);
+  --ink: #3f3a58;
+  --ink-soft: #6a6580;
+  --ink-mute: #8a8498;
+  --bg: #f4f0e6;
+  --bg-2: #ebe4d4;
+  --surface: #fffaf3;
+  --card-bg: #fffaf3;
+  --apricot: #f0d4dc;
+  --beige: #f0e4b0;
+  --sage: #c5dcb0;
+  --mist: #d0e4ee;
+  --lilac: #ddd4ec;
+  --brand: #e392b0;
+  --brand-deep: #c87a96;
+  --on-brand: #fffaf3;
+  --accent-deep: #c87a96;
+  --on-accent: #fffaf3;
+  --candy-yellow: #f0d78a;
+  --candy-yellow-deep: #c9a84a;
+  --candy-pink: #e8b0c4;
+  --candy-pink-deep: #c87a96;
+  --candy-cyan: #9cc8dc;
+  --candy-cyan-deep: #6a9cb4;
+  --candy-mint: #a8d49a;
+  --shadow: rgba(70, 80, 90, 0.1);
+  --lift: 0 7px 0 rgba(90, 120, 140, 0.1), 0 14px 24px rgba(70, 90, 110, 0.08);
   --phone: 24.5rem;
   --hero: clamp(5.2rem, 28vmin, 7rem);
   --title: clamp(1.5rem, 6.2vw, 2rem);
@@ -111,27 +118,34 @@
 }
 
 html.night {
-  --background: #2a221c;
-  --foreground: #f3e6d4;
-  --ink: #f3e6d4;
-  --ink-soft: #d4c0ae;
-  --ink-mute: #b8a090;
-  --bg: #2a221c;
-  --bg-2: #342a24;
-  --surface: #3d322b;
-  --card-bg: #42362e;
-  --apricot: #5a4032;
-  --beige: #4a3a30;
-  --sage: #334438;
-  --mist: #2c3a44;
-  --lilac: #3c3344;
-  --brand: #ff8a5c;
-  --brand-deep: #f06a3a;
-  --on-brand: #2a221c;
-  --accent-deep: #ff8a5c;
-  --on-accent: #2a221c;
-  --shadow: rgba(0, 0, 0, 0.28);
-  --lift: 0 10px 28px rgba(0, 0, 0, 0.28);
+  --background: #2c2a30;
+  --foreground: #ebe4d8;
+  --ink: #ebe4d8;
+  --ink-soft: #c8c0b4;
+  --ink-mute: #a8a098;
+  --bg: #2c2a30;
+  --bg-2: #36323a;
+  --surface: #3c3840;
+  --card-bg: #403c44;
+  --apricot: #4a3c42;
+  --beige: #443e38;
+  --sage: #384238;
+  --mist: #343c44;
+  --lilac: #3c3844;
+  --brand: #d4a090;
+  --brand-deep: #c48878;
+  --on-brand: #2c2a30;
+  --accent-deep: #d4a090;
+  --on-accent: #2c2a30;
+  --candy-yellow: #c8b070;
+  --candy-yellow-deep: #a89050;
+  --candy-pink: #c090a0;
+  --candy-pink-deep: #a07080;
+  --candy-cyan: #7a9cb0;
+  --candy-cyan-deep: #5a7c90;
+  --candy-mint: #7aa070;
+  --shadow: rgba(0, 0, 0, 0.22);
+  --lift: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
 
 .dark {
@@ -235,14 +249,14 @@ html.night {
   overflow: hidden;
   border-radius: 1.6rem;
   background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
-  box-shadow: 0 7px 0 #7ad4ff, 0 14px 20px rgba(40, 90, 160, 0.14);
+  box-shadow: 0 7px 0 var(--candy-cyan), 0 14px 20px rgba(40, 90, 160, 0.14);
   transition: transform 160ms ease, box-shadow 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .island-card:active {
   transform: translateY(4px);
-  box-shadow: 0 3px 0 #7ad4ff, 0 8px 12px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 3px 0 var(--candy-cyan), 0 8px 12px rgba(40, 90, 160, 0.12);
 }
 
 .home-banner {
@@ -476,7 +490,7 @@ html.night .home-brand {
 }
 
 .room-tile {
-  --room-shadow: #6fcc62;
+  --room-shadow: var(--candy-mint);
   display: block;
   border-radius: 1.6rem;
   padding: 0.22rem;
@@ -500,12 +514,12 @@ html.night .home-brand {
 
 .party-sky,
 .cozy-sky {
-  background: linear-gradient(180deg, #5ec8ff 0%, #b8f0ff 28%, #fff6a8 58%, #8fe06a 100%);
+  background: linear-gradient(180deg, #9cc8dc 0%, #d8ebf2 28%, #f3e8c0 58%, #b8d4a0 100%);
 }
 
 html.night .party-sky,
 html.night .cozy-sky {
-  background: linear-gradient(180deg, #1a2458 0%, #2a1a48 42%, #1e3040 100%);
+  background: linear-gradient(180deg, #2a2834 0%, #322c38 42%, #2c3034 100%);
 }
 
 .machine-shell {
@@ -517,7 +531,7 @@ html.night .cozy-sky {
   flex-direction: column;
   border-radius: 0;
   padding: 0.5rem 0.45rem 0.35rem;
-  background: linear-gradient(180deg, #7ad4ff 0%, #ff8ad4 55%, #ffe566 100%);
+  background: linear-gradient(180deg, var(--candy-cyan) 0%, var(--candy-pink) 55%, var(--candy-yellow) 100%);
   box-shadow: none;
 }
 
@@ -558,7 +572,7 @@ html.night .cozy-sky {
   background: var(--mist);
   box-shadow:
     inset 0 0 0 5px #fffdf8,
-    inset 0 0 0 9px #ff8ad4;
+    inset 0 0 0 9px var(--candy-pink);
 }
 
 .machine-chin {
@@ -587,7 +601,7 @@ html.night .cozy-sky {
 }
 
 .welcome-sky {
-  background: linear-gradient(180deg, #5ec8ff 0%, #d6f6ff 22%, #fff6a8 52%, #9be36a 100%);
+  background: linear-gradient(180deg, #9cc8dc 0%, #e4eef2 22%, #f3e8c0 52%, #b8d4a0 100%);
 }
 
 .welcome-sky.sky-cloud {
@@ -600,7 +614,7 @@ html.night .cozy-sky {
 
 .welcome-sky.sky-night,
 html.night .welcome-sky {
-  background: linear-gradient(180deg, #243040 0%, #2a221c 42%, #3d322b 100%);
+  background: linear-gradient(180deg, #2c2a34 0%, #322e34 42%, #363230 100%);
 }
 
 .sky-buddy {
@@ -718,7 +732,7 @@ html.night .welcome-sky {
   height: 1.15rem;
   translate: -50% 0;
   border-radius: 1rem 1rem 0.3rem 0.3rem;
-  background: #ff8a5c;
+  background: #e0a888;
   box-shadow: 0 2px 0 #c45c2a;
 }
 
@@ -818,11 +832,11 @@ html.night .machine-shell::after {
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.28em;
-  color: #ff3d8a;
+  color: var(--candy-pink-deep);
 }
 
 html.night .welcome-kicker {
-  color: #ffb088;
+  color: #d4b090;
 }
 
 .welcome-title {
@@ -850,9 +864,9 @@ html.night .welcome-kicker {
   margin-top: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
-  background: radial-gradient(circle at 40% 30%, #fffef6 0%, #c8f2a8 100%);
+  background: radial-gradient(circle at 40% 30%, #fffaf3 0%, #c5dcb0 100%);
   padding: 0.22rem;
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75), 0 6px 0 #5ed15a, 0 14px 24px rgba(40, 90, 160, 0.16);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.7), 0 6px 0 var(--candy-mint), 0 14px 24px rgba(70, 90, 110, 0.1);
 }
 
 @media (max-height: 620px) {
@@ -888,7 +902,7 @@ html.night .welcome-kicker {
     z-index: 3;
     width: 0.95rem;
     height: 2rem;
-    background: linear-gradient(180deg, #ffb27a 0%, #ff8a5c 100%);
+    background: linear-gradient(180deg, #e8c4a0 0%, #d4a078 100%);
     box-shadow: 0 4px 0 #c45c2a;
   }
 
@@ -924,7 +938,7 @@ html.night .welcome-kicker {
   font-size: 0.74rem;
   font-weight: 800;
   color: var(--brand-deep);
-  box-shadow: 0 4px 0 #ff8ad4, 0 8px 12px rgba(255, 61, 138, 0.16);
+  box-shadow: 0 4px 0 var(--candy-pink), 0 8px 12px rgba(200, 122, 150, 0.14);
 }
 
 .welcome-friends {
@@ -942,7 +956,7 @@ html.night .welcome-kicker {
   border-radius: 999px;
   background: linear-gradient(180deg, #ffffff 0%, #e8f7ff 100%);
   padding: 0.12rem;
-  box-shadow: 0 4px 0 #7ad4ff, 0 8px 10px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 4px 0 var(--candy-cyan), 0 8px 10px rgba(40, 90, 160, 0.12);
 }
 
 .welcome-friend:nth-child(1) {
@@ -987,11 +1001,11 @@ html.night .welcome-kicker {
   height: var(--btn-h);
   padding: 0 1.15rem 0 0.4rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe566 0%, #ffb000 90%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-yellow-deep) 90%);
   color: #2a2748;
   font-size: clamp(1.15rem, 4.8vw, 1.35rem);
   font-weight: 900;
-  box-shadow: 0 6px 0 #e09a00, 0 12px 24px rgba(255, 61, 138, 0.28);
+  box-shadow: 0 6px 0 var(--candy-yellow-deep), 0 12px 24px rgba(200, 122, 150, 0.16);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1042,8 +1056,8 @@ html.night .welcome-kicker {
 }
 
 .control-round.stop {
-  background: linear-gradient(180deg, #ff8ad4 0%, #ff3d8a 100%);
-  box-shadow: 0 5px 0 #d01868, 0 10px 16px rgba(255, 61, 138, 0.22);
+  background: linear-gradient(180deg, var(--candy-pink) 0%, var(--candy-pink-deep) 100%);
+  box-shadow: 0 5px 0 var(--candy-pink-deep), 0 10px 16px rgba(200, 122, 150, 0.16);
 }
 
 .control-round.stop:disabled {
@@ -1053,8 +1067,8 @@ html.night .welcome-kicker {
 }
 
 .control-round.replay {
-  background: linear-gradient(180deg, #7ad4ff 0%, #3aa0e8 100%);
-  box-shadow: 0 5px 0 #1e7ec0, 0 10px 16px rgba(40, 90, 160, 0.18);
+  background: linear-gradient(180deg, var(--candy-cyan) 0%, var(--candy-cyan-deep) 100%);
+  box-shadow: 0 5px 0 var(--candy-cyan-deep), 0 10px 16px rgba(70, 90, 110, 0.12);
 }
 
 .control-round:active:not(:disabled) {
@@ -1068,11 +1082,11 @@ html.night .welcome-kicker {
   gap: 0.15rem;
   height: 2.85rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-yellow-deep) 100%);
   color: #2a2748;
   font-size: 0.86rem;
   font-weight: 800;
-  box-shadow: 0 4px 0 #e09a00, 0 8px 12px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 4px 0 var(--candy-yellow-deep), 0 8px 12px rgba(40, 90, 160, 0.12);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1111,7 +1125,7 @@ html.night .welcome-kicker {
   border-radius: 2rem 2rem 0 0;
   background: linear-gradient(180deg, #fff6d8 0%, #ffffff 18%, #e8f7ff 100%);
   padding: 1.15rem 1.1rem max(1.5rem, env(safe-area-inset-bottom));
-  box-shadow: 0 -8px 0 #ff8ad4, 0 -16px 32px rgba(255, 61, 138, 0.16);
+  box-shadow: 0 -8px 0 var(--candy-pink), 0 -16px 32px rgba(200, 122, 150, 0.14);
 }
 
 .parent-row {
@@ -1125,14 +1139,14 @@ html.night .welcome-kicker {
   background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
   color: var(--ink);
   text-align: left;
-  box-shadow: 0 5px 0 #7ad4ff, 0 10px 14px rgba(40, 90, 160, 0.1);
+  box-shadow: 0 5px 0 var(--candy-cyan), 0 10px 14px rgba(40, 90, 160, 0.1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .parent-pill {
   border-radius: 999px;
   padding: 0.28rem 0.65rem;
-  background: linear-gradient(180deg, #fff4c8 0%, #ffe566 100%);
+  background: linear-gradient(180deg, #fff4c8 0%, var(--candy-yellow) 100%);
   color: #2a2748;
   font-size: 0.75rem;
   font-weight: 800;
@@ -1141,9 +1155,9 @@ html.night .welcome-kicker {
 }
 
 .parent-pill-on {
-  background: linear-gradient(180deg, #ff8ad4 0%, #ff3d8a 100%);
+  background: linear-gradient(180deg, var(--candy-pink) 0%, var(--candy-pink-deep) 100%);
   color: #fffdf8;
-  box-shadow: 0 2px 0 #d01868;
+  box-shadow: 0 2px 0 var(--candy-pink-deep);
 }
 
 .dots {
@@ -1163,9 +1177,9 @@ html.night .welcome-kicker {
 }
 
 .dot.on {
-  background: linear-gradient(180deg, #ffe566 0%, #ff8ad4 100%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-pink) 100%);
   transform: scale(1.2);
-  box-shadow: 0 2px 0 #ff3d8a;
+  box-shadow: 0 2px 0 var(--candy-pink-deep);
 }
 
 .now-dot {
@@ -1199,7 +1213,7 @@ html.night .welcome-kicker {
   width: 100%;
   height: 2.9rem;
   border-radius: 0 0 1.6rem 1.6rem;
-  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-yellow-deep) 100%);
   color: #2a2748;
   font-size: 1rem;
   font-weight: 900;
@@ -1209,7 +1223,7 @@ html.night .welcome-kicker {
 
 .playall-btn.mt-4 {
   border-radius: 1.4rem;
-  box-shadow: 0 5px 0 #e09a00, 0 10px 14px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 5px 0 var(--candy-yellow-deep), 0 10px 14px rgba(40, 90, 160, 0.12);
 }
 
 .playall-btn:active {
@@ -1230,7 +1244,7 @@ html.night .welcome-kicker {
   width: 3.4rem;
   height: 3.4rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #fffef6 0%, #ffe566 100%);
+  background: linear-gradient(180deg, #fffef6 0%, var(--candy-yellow) 100%);
   box-shadow: 0 5px 0 #f0c14e, 0 10px 16px rgba(40, 90, 160, 0.16);
 }
 
@@ -1258,7 +1272,7 @@ html.night .welcome-kicker {
   padding: 0.55rem 0.75rem;
   border-radius: 1.3rem;
   background: linear-gradient(180deg, #ffffff 0%, #e8f7ff 100%);
-  box-shadow: 0 5px 0 #7ad4ff, 0 12px 18px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 5px 0 var(--candy-cyan), 0 12px 18px rgba(40, 90, 160, 0.12);
 }
 
 .party-stage {
@@ -1269,8 +1283,8 @@ html.night .welcome-kicker {
   margin-top: 0.9rem;
   padding: 0.7rem 0.8rem 0.7rem 0.65rem;
   border-radius: 1.7rem;
-  background: linear-gradient(160deg, #ffe566 0%, #ff8ad4 58%, #7ad4ff 100%);
-  box-shadow: 0 8px 0 #ff3d8a, 0 16px 24px rgba(255, 61, 138, 0.22);
+  background: linear-gradient(160deg, var(--candy-yellow) 0%, var(--candy-pink) 58%, var(--candy-cyan) 100%);
+  box-shadow: 0 8px 0 var(--candy-pink-deep), 0 16px 24px rgba(200, 122, 150, 0.16);
   text-align: left;
 }
 
@@ -1288,8 +1302,8 @@ html.night .welcome-kicker {
   margin-right: 0.75rem;
   padding: 0.2rem;
   border-radius: 999px;
-  background: radial-gradient(circle at 40% 30%, #fffef6 0%, #c8f2a8 100%);
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 0 #5ed15a;
+  background: radial-gradient(circle at 40% 30%, #fffaf3 0%, #c5dcb0 100%);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.7), 0 4px 0 var(--candy-mint);
 }
 
 .party-badge {
@@ -1297,7 +1311,7 @@ html.night .welcome-kicker {
   border-radius: 999px;
   padding: 0.12rem 0.55rem;
   background: #fffdf8;
-  color: #ff3d8a;
+  color: var(--candy-pink-deep);
   font-size: 0.66rem;
   font-weight: 800;
 }
@@ -1320,14 +1334,14 @@ html.night .welcome-kicker {
   padding: 0.15rem 0.6rem 0.15rem 0.15rem;
   border-radius: 999px;
   background: #fffdf8;
-  color: #ff3d8a;
+  color: var(--candy-pink-deep);
   font-size: 0.95rem;
   font-weight: 900;
 }
 
 .party-label {
   margin: 1.1rem 0.2rem 0.55rem;
-  color: #ff3d8a;
+  color: var(--candy-pink-deep);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -1346,11 +1360,11 @@ html.night .welcome-kicker {
 }
 
 .party-gate.gate-0 {
-  box-shadow: 0 6px 0 #6fcc62, 0 12px 18px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 6px 0 var(--candy-mint), 0 12px 18px rgba(70, 90, 110, 0.1);
 }
 
 .party-gate.gate-1 {
-  box-shadow: 0 6px 0 #ff8a6a, 0 12px 18px rgba(40, 90, 160, 0.12);
+  box-shadow: 0 6px 0 #e0a888, 0 12px 18px rgba(70, 90, 110, 0.1);
 }
 
 .party-gate.gate-2 {
@@ -1375,11 +1389,11 @@ html.night .welcome-kicker {
   width: 2.1rem;
   height: 2.1rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-yellow-deep) 100%);
   color: #2a2748;
   font-size: 0.85rem;
   font-weight: 900;
-  box-shadow: 0 3px 0 #e09a00;
+  box-shadow: 0 3px 0 var(--candy-yellow-deep);
 }
 
 html.night .party-stage {
@@ -1437,12 +1451,12 @@ html.night .care-toy {
 
 .party-hero-band,
 .party-play-band {
-  background: linear-gradient(160deg, #b8f0ff 0%, #ffe8f4 58%, #fff6c8 100%);
+  background: linear-gradient(160deg, #d8ebf2 0%, #f0dde4 58%, #f3e8c0 100%);
 }
 
 html.night .party-hero-band,
 html.night .party-play-band {
-  background: linear-gradient(160deg, #2a4060 0%, #5a2a48 58%, #5a4630 100%);
+  background: linear-gradient(160deg, #343c48 0%, #443844 58%, #403830 100%);
 }
 
 .party-word {
@@ -1455,13 +1469,13 @@ html.night .party-play-band {
 
 .party-word.on {
   transform: scale(1.06);
-  box-shadow: 0 5px 0 #ff3d8a;
+  box-shadow: 0 5px 0 var(--candy-pink-deep);
 }
 
 .party-cover {
   border-radius: 2rem;
-  background: radial-gradient(circle at 40% 30%, #fffef6 0%, #c8f2a8 100%);
-  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75), 0 5px 0 #5ed15a;
+  background: radial-gradient(circle at 40% 30%, #fffaf3 0%, #c5dcb0 100%);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.7), 0 5px 0 var(--candy-mint);
 }
 
 .care-chip {
@@ -1470,7 +1484,7 @@ html.night .party-play-band {
 }
 
 .welcome-friend.welcome-egg {
-  background: linear-gradient(180deg, #fffef6 0%, #ffe566 100%);
+  background: linear-gradient(180deg, #fffef6 0%, var(--candy-yellow) 100%);
 }
 
 .cover-hit {
@@ -1490,9 +1504,9 @@ html.night .party-play-band {
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  background: linear-gradient(180deg, var(--candy-yellow) 0%, var(--candy-yellow-deep) 100%);
   color: #2a2748;
-  box-shadow: 0 3px 0 #e09a00;
+  box-shadow: 0 3px 0 var(--candy-yellow-deep);
 }
 
 @keyframes float {
