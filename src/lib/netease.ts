@@ -14,20 +14,20 @@ export const NETEASE_TRACK: Record<string, { id: string; ms: number }> = {
   boat: { id: "28707960", ms: 53000 },
 };
 
-/** Short baby-friendly animal clips on NetEase. Played via official outchain only. */
+/** Soft cartoon nursery clips — not wildlife SFX. Official outchain only. */
 export const NETEASE_CRY: Record<string, { id: string; ms: number }> = {
-  dog: { id: "5266517", ms: 8000 },
-  cat: { id: "2604258111", ms: 8000 },
-  chick: { id: "2604258106", ms: 8000 },
-  duck: { id: "2604258118", ms: 8000 },
-  cow: { id: "2604258113", ms: 8000 },
-  sheep: { id: "2604258117", ms: 8000 },
-  pig: { id: "2604257128", ms: 8000 },
-  bird: { id: "3431764325", ms: 8000 },
-  frog: { id: "2604257123", ms: 8000 },
-  horse: { id: "2604258109", ms: 8000 },
-  lion: { id: "2604257124", ms: 8000 },
-  elephant: { id: "3397157443", ms: 8000 },
+  dog: { id: "2628348090", ms: 12000 },
+  cat: { id: "2620036575", ms: 12000 },
+  chick: { id: "3359659300", ms: 12000 },
+  duck: { id: "3364582988", ms: 12000 },
+  cow: { id: "2651524134", ms: 12000 },
+  sheep: { id: "1299844750", ms: 12000 },
+  pig: { id: "3359658503", ms: 12000 },
+  bird: { id: "2719642120", ms: 12000 },
+  frog: { id: "2613667349", ms: 12000 },
+  horse: { id: "5240736", ms: 12000 },
+  lion: { id: "2620036579", ms: 12000 },
+  elephant: { id: "28710563", ms: 12000 },
 };
 
 export function neteaseFor(songId: string) {

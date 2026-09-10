@@ -532,8 +532,8 @@ function Home({
         </span>
         <span className="min-w-0 flex-1 text-left">
           <span className="party-badge">派对开场</span>
-          <span className="party-stage-title">小狗真的会叫</span>
-          <span className="ink-soft mt-0.5 block text-[13px] font-bold">狗 → dog → 听真叫声</span>
+          <span className="party-stage-title">小狗软软地叫</span>
+          <span className="ink-soft mt-0.5 block text-[13px] font-bold">狗 → dog → 动画片汪汪</span>
           <span className="party-cta">
             <PlayBadge className="h-7 w-7" />
             点一下就叫

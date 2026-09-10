@@ -80,7 +80,7 @@ export function FlashcardPlayer({
             onPointerDown={onTap}
             onClick={onTap}
             className="relative grid h-[var(--hero)] w-[var(--hero)] place-items-center"
-            aria-label={card.cry ? `点${card.zh}，听真叫声` : `点${card.zh}，再听一遍`}
+            aria-label={card.cry ? `点${card.zh}，听软软的叫声` : `点${card.zh}，再听一遍`}
           >
             {playing && (
               <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
@@ -94,8 +94,8 @@ export function FlashcardPlayer({
           <p className="ink-soft mt-2 text-sm font-bold">
             {card.cry
               ? musicSource === "netease"
-                ? `点${card.zh}，听网易云叫声`
-                : `点${card.zh}，听真叫声`
+                ? `点${card.zh}，听动画片叫声`
+                : `点${card.zh}，听软软的叫声`
               : `点图片，再听 ${card.zh}`}
           </p>
           <ProgressDots total={total} index={index} />
@@ -122,7 +122,7 @@ export function FlashcardPlayer({
           {showSound && (
             <WordChip
               label={card.cry!}
-              hint={musicSource === "netease" ? "网易云" : "真叫声"}
+              hint={musicSource === "netease" ? "动画片" : "软软叫"}
               active={step === "sound"}
               tone="var(--ink)"
               bg="var(--sage)"

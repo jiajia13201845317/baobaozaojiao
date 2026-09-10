@@ -16,8 +16,8 @@ export const MUSIC_SOURCE_LABEL: Record<MusicSource, string> = {
 };
 
 export const MUSIC_SOURCE_HINT: Record<MusicSource, string> = {
-  netease: "儿歌和动物叫声走网易云官方外链，听平台上的成片",
-  local: "用本地录音，不用联网",
+  netease: "儿歌和动物叫声走网易云官方外链，听软软的卡通成片",
+  local: "用本地软软的合成音，不用联网",
 };
 
 export function readMusicSource(): MusicSource {

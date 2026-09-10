@@ -18,9 +18,9 @@ await page.evaluateOnNewDocument(() => {
 });
 
 await page.goto(`${BASE}/?night=0&go=home&v=home`, { waitUntil: "domcontentloaded" });
-await page.waitForFunction(() => document.body.innerText.includes("小狗真的会叫"));
+await page.waitForFunction(() => document.body.innerText.includes("小狗软软地叫"));
 await page.evaluate(() => {
-  const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小狗真的会叫"));
+  const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小狗软软地叫"));
   btn?.click();
 });
 await new Promise((r) => setTimeout(r, 250));
@@ -33,7 +33,7 @@ if (!body.includes("认一认") || body.includes("第 1 只")) {
 
 await new Promise((r) => setTimeout(r, 550));
 await page.evaluate(() => {
-  const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小狗真的会叫"));
+  const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小狗软软地叫"));
   btn?.click();
 });
 await page.waitForFunction(() => document.body.innerText.includes("汪汪汪") || document.body.innerText.includes("点狗"));

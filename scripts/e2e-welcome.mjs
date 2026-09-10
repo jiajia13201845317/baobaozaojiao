@@ -26,7 +26,7 @@ await page.evaluate(() => {
 });
 await new Promise((r) => setTimeout(r, 250));
 let body = await page.evaluate(() => document.body.innerText);
-if (!body.includes("开始听") || body.includes("小狗真的会叫") || body.includes("汪汪汪")) {
+  if (!body.includes("开始听") || body.includes("小狗软软地叫") || body.includes("汪汪汪")) {
   console.error("FAIL welcome jumped on first tap\n", body.slice(0, 400));
   await browser.close();
   process.exit(1);

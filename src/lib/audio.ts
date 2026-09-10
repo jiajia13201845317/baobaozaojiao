@@ -740,7 +740,7 @@ type SoundFn = (
 
 function env(gain: GainNode, now: number, peak: number, dur: number) {
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(peak, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(peak, now + 0.08);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
 }
 
@@ -782,169 +782,169 @@ function toneSweep(
 const ANIMAL_SOUNDS: Record<AnimalSoundId, SoundFn> = {
   cat: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 820,
-      to: 320,
-      dur: 0.42,
-      peak: 0.18,
-      filter: 900,
+      type: "sine",
+      from: 880,
+      to: 620,
+      dur: 0.38,
+      peak: 0.1,
+      filter: 820,
     });
-    await new Promise((r) => setTimeout(r, 90));
+    await new Promise((r) => setTimeout(r, 140));
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 760,
-      to: 300,
-      dur: 0.36,
-      peak: 0.16,
-      filter: 850,
+      type: "sine",
+      from: 820,
+      to: 560,
+      dur: 0.34,
+      peak: 0.09,
+      filter: 760,
     });
   },
   dog: async (ctx, dest, track) => {
     for (let i = 0; i < 2; i++) {
       await toneSweep(ctx, dest, track, {
-        type: "square",
-        from: 180,
-        to: 110,
-        dur: 0.16,
-        peak: 0.22,
-        filter: 220,
+        type: "triangle",
+        from: 320,
+        to: 210,
+        dur: 0.2,
+        peak: 0.11,
+        filter: 300,
       });
-      await new Promise((r) => setTimeout(r, 120));
+      await new Promise((r) => setTimeout(r, 160));
     }
   },
   chick: async (ctx, dest, track) => {
     for (let i = 0; i < 3; i++) {
       await toneSweep(ctx, dest, track, {
-        type: "square",
-        from: 1400,
-        to: 1100,
-        dur: 0.09,
-        peak: 0.1,
-        filter: 1600,
+        type: "sine",
+        from: 1320,
+        to: 1560,
+        dur: 0.1,
+        peak: 0.07,
+        filter: 1480,
       });
-      await new Promise((r) => setTimeout(r, 80));
+      await new Promise((r) => setTimeout(r, 100));
     }
   },
   duck: async (ctx, dest, track) => {
     for (let i = 0; i < 2; i++) {
       await toneSweep(ctx, dest, track, {
-        type: "sawtooth",
-        from: 380,
-        to: 220,
-        dur: 0.2,
-        peak: 0.2,
-        filter: 420,
+        type: "triangle",
+        from: 420,
+        to: 300,
+        dur: 0.22,
+        peak: 0.1,
+        filter: 380,
       });
-      await new Promise((r) => setTimeout(r, 110));
+      await new Promise((r) => setTimeout(r, 140));
     }
   },
   cow: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 160,
-      to: 95,
-      dur: 0.85,
-      peak: 0.28,
-      filter: 180,
+      type: "sine",
+      from: 220,
+      to: 150,
+      dur: 0.72,
+      peak: 0.12,
+      filter: 200,
     });
   },
   sheep: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 420,
-      to: 280,
-      dur: 0.28,
-      peak: 0.18,
-      filter: 500,
+      type: "sine",
+      from: 480,
+      to: 340,
+      dur: 0.3,
+      peak: 0.1,
+      filter: 440,
     });
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 360,
-      to: 240,
-      dur: 0.32,
-      peak: 0.16,
-      filter: 420,
+      type: "sine",
+      from: 400,
+      to: 300,
+      dur: 0.28,
+      peak: 0.08,
+      filter: 360,
     });
   },
   pig: async (ctx, dest, track) => {
     for (let i = 0; i < 3; i++) {
       await toneSweep(ctx, dest, track, {
-        type: "square",
-        from: 260,
-        to: 180,
-        dur: 0.12,
-        peak: 0.16,
-        filter: 300,
+        type: "triangle",
+        from: 300,
+        to: 230,
+        dur: 0.14,
+        peak: 0.09,
+        filter: 280,
       });
-      await new Promise((r) => setTimeout(r, 70));
+      await new Promise((r) => setTimeout(r, 90));
     }
   },
   bird: async (ctx, dest, track) => {
     for (const [from, to] of [
-      [1800, 2400],
-      [2000, 2600],
-      [1700, 2200],
+      [1320, 1680],
+      [1480, 1760],
+      [1260, 1540],
     ] as const) {
       await toneSweep(ctx, dest, track, {
         type: "sine",
         from,
         to,
-        dur: 0.12,
-        peak: 0.14,
+        dur: 0.14,
+        peak: 0.08,
         filter: from,
       });
-      await new Promise((r) => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 80));
     }
   },
   frog: async (ctx, dest, track) => {
     for (let i = 0; i < 2; i++) {
       await toneSweep(ctx, dest, track, {
-        type: "square",
-        from: 220,
-        to: 140,
-        dur: 0.14,
-        peak: 0.2,
-        filter: 260,
+        type: "triangle",
+        from: 340,
+        to: 240,
+        dur: 0.16,
+        peak: 0.1,
+        filter: 300,
       });
-      await new Promise((r) => setTimeout(r, 160));
+      await new Promise((r) => setTimeout(r, 180));
     }
   },
   horse: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 520,
-      to: 280,
-      dur: 0.45,
-      peak: 0.18,
+      type: "sine",
+      from: 560,
+      to: 380,
+      dur: 0.4,
+      peak: 0.1,
       filter: 480,
     });
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 400,
-      to: 220,
-      dur: 0.35,
-      peak: 0.14,
-      filter: 360,
+      type: "sine",
+      from: 440,
+      to: 300,
+      dur: 0.32,
+      peak: 0.08,
+      filter: 380,
     });
   },
   lion: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
-      type: "sawtooth",
-      from: 140,
-      to: 70,
-      dur: 1.05,
-      peak: 0.3,
-      filter: 160,
+      type: "sine",
+      from: 240,
+      to: 160,
+      dur: 0.7,
+      peak: 0.12,
+      filter: 220,
     });
   },
   elephant: async (ctx, dest, track) => {
     await toneSweep(ctx, dest, track, {
       type: "sine",
-      from: 280,
-      to: 90,
-      dur: 0.9,
-      peak: 0.32,
-      filter: 200,
+      from: 320,
+      to: 180,
+      dur: 0.7,
+      peak: 0.12,
+      filter: 240,
     });
   },
 };
