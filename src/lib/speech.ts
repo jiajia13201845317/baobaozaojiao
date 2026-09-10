@@ -110,7 +110,7 @@ export function speechRate(lang: SpeakLang, kind?: SpeakKind) {
 }
 
 export function speechPitch(lang: SpeakLang, kind?: SpeakKind) {
-  if (kind === "cry") return 1.32;
+  if (kind === "cry") return 1.22;
   if (kind === "song") return lang === "en-US" ? 1.16 : 1.14;
   if (kind === "verse") return 1.08;
   if (kind === "fun" || kind === "care") return 1.12;

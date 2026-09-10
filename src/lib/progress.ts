@@ -16,8 +16,8 @@ export const MUSIC_SOURCE_LABEL: Record<MusicSource, string> = {
 };
 
 export const MUSIC_SOURCE_HINT: Record<MusicSource, string> = {
-  netease: "儿歌走网易云官方外链。动物叫声一直是动画片那种软软的拟声，不播真叫。",
-  local: "儿歌用本地钢琴加童声。动物叫声同样是软软的动画片拟声。",
+  netease: "儿歌走网易云官方外链。动物叫声在本机合成，像小动物，但很轻。",
+  local: "儿歌用本地钢琴加童声。动物叫声一样是轻轻的小动物声。",
 };
 
 export function readMusicSource(): MusicSource {

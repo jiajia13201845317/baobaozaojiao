@@ -1,5 +1,6 @@
 "use client";
 
+import { playAnimalVoice } from "./animal-voice";
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
 import { neteaseFor, neteasePlayerSrc } from "./netease";
 import type { MusicSource } from "./progress";
@@ -47,7 +48,7 @@ class ToyPlayer {
   private master: GainNode | null = null;
   private token: PlayToken = 0;
   private volume = 0.82;
-  private oscillators: OscillatorNode[] = [];
+  private oscillators: AudioScheduledSourceNode[] = [];
   private timers: number[] = [];
   private voices: SpeechSynthesisVoice[] = [];
   private zhVoice: SpeechSynthesisVoice | null = null;
@@ -672,127 +673,10 @@ class ToyPlayer {
   }
 
   private async playAnimalSound(id: AnimalSoundId, t: PlayToken) {
-    const fn = ANIMAL_SOUNDS[id];
-    if (!fn || !this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
-    await fn(this.ctx, this.master, (osc) => this.oscillators.push(osc));
+    if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
+    const ms = playAnimalVoice(this.ctx, this.master, id, (node) => this.oscillators.push(node));
+    await this.wait(ms + 60, t);
   }
 }
-
-type SoundFn = (
-  ctx: AudioContext,
-  dest: AudioNode,
-  track: (osc: OscillatorNode) => void
-) => Promise<void>;
-
-/** Soft cartoon 拟声 — high sine, rounded, never a zoo recording. */
-function cartoonChirp(
-  ctx: AudioContext,
-  dest: AudioNode,
-  track: (osc: OscillatorNode) => void,
-  opts: { from: number; to: number; dur: number; peak?: number },
-) {
-  const now = ctx.currentTime;
-  const osc = ctx.createOscillator();
-  const air = ctx.createOscillator();
-  const gain = ctx.createGain();
-  const airGain = ctx.createGain();
-  const filter = ctx.createBiquadFilter();
-  osc.type = "sine";
-  air.type = "sine";
-  osc.frequency.setValueAtTime(opts.from, now);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(80, opts.to), now + opts.dur);
-  air.frequency.setValueAtTime(opts.from * 2, now);
-  air.frequency.exponentialRampToValueAtTime(Math.max(120, opts.to * 2), now + opts.dur);
-  filter.type = "lowpass";
-  filter.frequency.value = 2200;
-  filter.Q.value = 0.6;
-  const peak = opts.peak ?? 0.07;
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(peak, now + 0.03);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + opts.dur);
-  airGain.gain.setValueAtTime(0.0001, now);
-  airGain.gain.exponentialRampToValueAtTime(peak * 0.28, now + 0.025);
-  airGain.gain.exponentialRampToValueAtTime(0.0001, now + opts.dur);
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(dest);
-  air.connect(airGain);
-  airGain.connect(dest);
-  track(osc);
-  track(air);
-  osc.start(now);
-  air.start(now);
-  osc.stop(now + opts.dur + 0.02);
-  air.stop(now + opts.dur + 0.02);
-  return new Promise<void>((resolve) => {
-    osc.onended = () => resolve();
-  });
-}
-
-function pause(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
-
-const ANIMAL_SOUNDS: Record<AnimalSoundId, SoundFn> = {
-  dog: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 640, to: 380, dur: 0.16, peak: 0.08 });
-    await pause(90);
-    await cartoonChirp(ctx, dest, track, { from: 600, to: 360, dur: 0.16, peak: 0.07 });
-  },
-  cat: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 860, to: 1120, dur: 0.12, peak: 0.06 });
-    await cartoonChirp(ctx, dest, track, { from: 1120, to: 720, dur: 0.22, peak: 0.055 });
-  },
-  chick: async (ctx, dest, track) => {
-    for (const from of [1280, 1340, 1220]) {
-      await cartoonChirp(ctx, dest, track, { from, to: from + 180, dur: 0.08, peak: 0.05 });
-      await pause(70);
-    }
-  },
-  duck: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 480, to: 340, dur: 0.14, peak: 0.07 });
-    await pause(80);
-    await cartoonChirp(ctx, dest, track, { from: 460, to: 320, dur: 0.14, peak: 0.06 });
-  },
-  cow: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 320, to: 210, dur: 0.42, peak: 0.07 });
-  },
-  sheep: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 680, to: 860, dur: 0.1, peak: 0.065 });
-    await cartoonChirp(ctx, dest, track, { from: 860, to: 480, dur: 0.2, peak: 0.055 });
-  },
-  pig: async (ctx, dest, track) => {
-    for (const from of [420, 400, 380]) {
-      await cartoonChirp(ctx, dest, track, { from, to: from - 90, dur: 0.11, peak: 0.06 });
-      await pause(60);
-    }
-  },
-  bird: async (ctx, dest, track) => {
-    for (const [from, to] of [
-      [1360, 1720],
-      [1500, 1240],
-      [1420, 1780],
-    ] as const) {
-      await cartoonChirp(ctx, dest, track, { from, to, dur: 0.11, peak: 0.05 });
-      await pause(60);
-    }
-  },
-  frog: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 400, to: 260, dur: 0.1, peak: 0.065 });
-    await pause(120);
-    await cartoonChirp(ctx, dest, track, { from: 380, to: 240, dur: 0.1, peak: 0.055 });
-  },
-  horse: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 520, to: 360, dur: 0.14, peak: 0.065 });
-    await pause(70);
-    await cartoonChirp(ctx, dest, track, { from: 500, to: 340, dur: 0.14, peak: 0.055 });
-  },
-  lion: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 360, to: 240, dur: 0.36, peak: 0.07 });
-  },
-  elephant: async (ctx, dest, track) => {
-    await cartoonChirp(ctx, dest, track, { from: 380, to: 240, dur: 0.34, peak: 0.065 });
-  },
-};
 
 export const toyPlayer = new ToyPlayer();

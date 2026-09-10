@@ -8,6 +8,7 @@
     "start": "node scripts/serve.mjs",
     "publish:web": "bash scripts/publish.sh",
     "render:songs": "python3 scripts/render-songs.py",
+    "check:cry": "node --experimental-strip-types --no-warnings scripts/check-cry.mjs",
     "lint": "eslint"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "node-web-audio-api": "^2.2.0",
     "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "typescript": "^5"
