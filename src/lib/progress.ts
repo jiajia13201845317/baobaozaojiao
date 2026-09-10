@@ -7,6 +7,7 @@ const MODE_KEY = "bao-mode";
 const TIMER_KEY = "bao-timer";
 const SEEN_KEY = "bao-seen";
 const SOURCE_KEY = "bao-source";
+const CRY_KEY = "bao-cry";
 
 export type MusicSource = "netease" | "local";
 
@@ -16,9 +17,42 @@ export const MUSIC_SOURCE_LABEL: Record<MusicSource, string> = {
 };
 
 export const MUSIC_SOURCE_HINT: Record<MusicSource, string> = {
-  netease: "儿歌走网易云官方外链。动物叫声在本机合成，像小动物，但很轻。",
-  local: "儿歌用本地钢琴加童声。动物叫声一样是轻轻的小动物声。",
+  netease: "儿歌走网易云官方外链，听正版成片。",
+  local: "儿歌用本地钢琴加童声，不用联网。",
 };
+
+export type CrySource = "real" | "soft";
+
+export const CRY_SOURCE_LABEL: Record<CrySource, string> = {
+  real: "真声",
+  soft: "拟声",
+};
+
+export const CRY_SOURCE_HINT: Record<CrySource, string> = {
+  real: "真动物录音，只留一声，压柔了：狗是小奶狗那一声汪。",
+  soft: "本机合成的软叫声，比真声还轻，宝宝更不容易被惊到。",
+};
+
+export function readCrySource(): CrySource {
+  try {
+    if (localStorage.getItem(CRY_KEY) === "soft") return "soft";
+  } catch {
+    /* ignore */
+  }
+  return "real";
+}
+
+export function writeCrySource(source: CrySource) {
+  try {
+    localStorage.setItem(CRY_KEY, source);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function cycleCrySource(source: CrySource): CrySource {
+  return source === "real" ? "soft" : "real";
+}
 
 export function readMusicSource(): MusicSource {
   try {

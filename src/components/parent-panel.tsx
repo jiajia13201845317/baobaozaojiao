@@ -1,12 +1,15 @@
 "use client";
 
-import { Moon, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X, Music2 } from "lucide-react";
+import { Moon, PawPrint, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X, Music2 } from "lucide-react";
 import { PartyEgg } from "@/components/art";
 import {
+  CRY_SOURCE_HINT,
+  CRY_SOURCE_LABEL,
   MUSIC_SOURCE_HINT,
   MUSIC_SOURCE_LABEL,
   PLAY_MODE_HINT,
   PLAY_MODE_LABEL,
+  type CrySource,
   type MusicSource,
   type PlayMode,
 } from "@/lib/progress";
@@ -25,6 +28,7 @@ export function ParentPanel({
   volumeIndex,
   playMode,
   musicSource,
+  crySource,
   sleepMinutes,
   remainingLabel,
   onClose,
@@ -32,6 +36,7 @@ export function ParentPanel({
   onCycleVolume,
   onCycleMode,
   onCycleSource,
+  onCycleCry,
   onSleepMinutes,
 }: {
   open: boolean;
@@ -39,6 +44,7 @@ export function ParentPanel({
   volumeIndex: number;
   playMode: PlayMode;
   musicSource: MusicSource;
+  crySource: CrySource;
   sleepMinutes: number;
   remainingLabel?: string | null;
   onClose: () => void;
@@ -46,6 +52,7 @@ export function ParentPanel({
   onCycleVolume: () => void;
   onCycleMode: () => void;
   onCycleSource: () => void;
+  onCycleCry: () => void;
   onSleepMinutes: (minutes: number) => void;
 }) {
   if (!open) return null;
@@ -64,7 +71,7 @@ export function ParentPanel({
             <X className="size-5" />
           </button>
         </div>
-        <p className="ink-soft mb-4 text-sm font-bold">宝宝拍大按钮，这些给大人调。音量、连播、定时都记在这台机器上。动物叫声像小奶狗、小奶猫，音量和高音都压过，不会突然一声吓到宝宝。</p>
+        <p className="ink-soft mb-4 text-sm font-bold">宝宝拍大按钮，这些给大人调。音量、连播、定时都记在这台机器上。觉得叫声还是有点吓人，就把「动物叫声」切成拟声。</p>
 
         <button type="button" onClick={onCycleVolume} className="parent-row">
           <VolumeIcon className="size-5" />
@@ -91,6 +98,15 @@ export function ParentPanel({
             <span className="ink-soft text-sm font-bold">{MUSIC_SOURCE_HINT[musicSource]}</span>
           </span>
           <span className="parent-pill parent-pill-on">{MUSIC_SOURCE_LABEL[musicSource]}</span>
+        </button>
+
+        <button type="button" onClick={onCycleCry} className="parent-row">
+          <PawPrint className="size-5" />
+          <span className="flex-1 text-left">
+            <span className="ink block font-black">动物叫声</span>
+            <span className="ink-soft text-sm font-bold">{CRY_SOURCE_HINT[crySource]}</span>
+          </span>
+          <span className="parent-pill parent-pill-on">{CRY_SOURCE_LABEL[crySource]}</span>
         </button>
 
         <button type="button" onClick={onCycleMode} className="parent-row">

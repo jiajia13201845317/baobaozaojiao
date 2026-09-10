@@ -32,22 +32,26 @@ import {
   type WorldId,
 } from "@/lib/content";
 import {
+  cycleCrySource,
   cycleMusicSource,
   cyclePlayMode,
   MUSIC_SOURCE_LABEL,
   PLAY_MODE_LABEL,
+  readCrySource,
   readLastPlay,
   readMusicSource,
   readPlayMode,
   readSleepMinutes,
   readVolumeIndex,
   titleFor,
+  writeCrySource,
   writeHasPlayed,
   writeLastPlay,
   writeMusicSource,
   writePlayMode,
   writeSleepMinutes,
   writeVolumeIndex,
+  type CrySource,
   type LastPlay,
   type MusicSource,
   type PlayMode,
@@ -90,6 +94,7 @@ export function ToyApp() {
   const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
   const [playMode, setPlayMode] = useState<PlayMode>("chain");
   const [musicSource, setMusicSource] = useState<MusicSource>("netease");
+  const [crySource, setCrySource] = useState<CrySource>("real");
   const [sleepMinutes, setSleepMinutes] = useState(0);
   const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
   const [nowTick, setNowTick] = useState(0);
@@ -159,6 +164,10 @@ export function ToyApp() {
     const nextSource = source === "local" || source === "netease" ? source : readMusicSource();
     setMusicSource(nextSource);
     writeMusicSource(nextSource);
+    const cry = params.get("cry");
+    const nextCry = cry === "soft" || cry === "real" ? cry : readCrySource();
+    setCrySource(nextCry);
+    writeCrySource(nextCry);
     setVolumeReady(true);
     const go = params.get("go");
     if (go === "home") {
@@ -191,6 +200,10 @@ export function ToyApp() {
   useEffect(() => {
     toyPlayer.setSource(musicSource);
   }, [musicSource]);
+
+  useEffect(() => {
+    toyPlayer.setCrySource(crySource);
+  }, [crySource]);
 
   const armSleep = useCallback((minutes: number) => {
     if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
@@ -438,6 +451,7 @@ export function ToyApp() {
         volumeIndex={volumeIndex}
         playMode={playMode}
         musicSource={musicSource}
+        crySource={crySource}
         sleepMinutes={sleepMinutes}
         remainingLabel={remainingText}
         onClose={() => setParentOpen(false)}
@@ -454,6 +468,13 @@ export function ToyApp() {
           setMusicSource((source) => {
             const next = cycleMusicSource(source);
             writeMusicSource(next);
+            return next;
+          });
+        }}
+        onCycleCry={() => {
+          setCrySource((source) => {
+            const next = cycleCrySource(source);
+            writeCrySource(next);
             return next;
           });
         }}

@@ -3,7 +3,7 @@
 import { playAnimalVoice } from "./animal-voice";
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
 import { neteaseFor, neteasePlayerSrc } from "./netease";
-import type { MusicSource } from "./progress";
+import type { CrySource, MusicSource } from "./progress";
 import {
   estimateSpeechMs,
   pickVoice,
@@ -55,10 +55,12 @@ class ToyPlayer {
   private enVoice: SpeechSynthesisVoice | null = null;
   private watchdog: number | null = null;
   private voicesHooked = false;
+  private cries = new Map<string, AudioBuffer>();
   private pending: Array<() => void> = [];
   private media: HTMLAudioElement | null = null;
   private frame: HTMLIFrameElement | null = null;
   private source: MusicSource = "netease";
+  private crySource: CrySource = "real";
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -93,6 +95,10 @@ class ToyPlayer {
 
   setSource(source: MusicSource) {
     this.source = source;
+  }
+
+  setCrySource(source: CrySource) {
+    this.crySource = source;
   }
 
   setVolume(v: number) {
@@ -672,10 +678,36 @@ class ToyPlayer {
     await this.playTone(783.99, 0.32, t);
   }
 
+  /** Real recording first; the synth voice covers offline and missing files. */
   private async playAnimalSound(id: AnimalSoundId, t: PlayToken) {
     if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
+    if (this.crySource === "real" && (await this.playRecordedCry(id, t))) return;
+    if (!this.alive(t)) return;
     const ms = playAnimalVoice(this.ctx, this.master, id, (node) => this.oscillators.push(node));
     await this.wait(ms + 60, t);
+  }
+
+  private async playRecordedCry(id: AnimalSoundId, t: PlayToken) {
+    if (!this.ctx || !this.master) return false;
+    let buf = this.cries.get(id);
+    if (!buf) {
+      try {
+        const res = await fetch(`/sfx/${id}.mp3`);
+        if (!res.ok) return false;
+        buf = await this.ctx.decodeAudioData(await res.arrayBuffer());
+        this.cries.set(id, buf);
+      } catch {
+        return false;
+      }
+    }
+    if (!this.alive(t) || !this.ctx || !this.master) return true;
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(this.master);
+    this.oscillators.push(src);
+    src.start();
+    await this.wait(Math.round(buf.duration * 1000) + 40, t);
+    return true;
   }
 }
 

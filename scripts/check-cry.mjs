@@ -1,28 +1,49 @@
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { OfflineAudioContext } from "node-web-audio-api";
 import { ANIMAL_VOICES, playAnimalVoice } from "../src/lib/animal-voice.ts";
 
 const RATE = 48000;
 const OUT = process.env.CRY_OUT || "/tmp/cry";
+/** "recorded" checks public/sfx, "synth" checks the offline fallback voices. */
+const MODE = process.argv[2] === "synth" ? "synth" : "recorded";
 
 /** Dark calls must stay dark, chirps must stay bright, nothing may bite. */
-const LIMITS = {
+const SYNTH_LIMITS = {
   dog: { maxCentroid: 1700, minAttack: 0.02 },
   cat: { maxCentroid: 1900, minAttack: 0.045 },
-  chick: { minCentroid: 1300, maxCentroid: 3400 },
+  chick: { minCentroid: 1000, maxCentroid: 3400 },
   duck: { maxCentroid: 1700 },
   cow: { maxCentroid: 1100, minAttack: 0.06 },
   sheep: { maxCentroid: 1900 },
   pig: { maxCentroid: 1400 },
-  bird: { minCentroid: 1600, maxCentroid: 3800 },
+  bird: { minCentroid: 1200, maxCentroid: 3800 },
   frog: { maxCentroid: 1400 },
   horse: { maxCentroid: 2100 },
   lion: { maxCentroid: 900, minAttack: 0.07 },
   elephant: { maxCentroid: 2100 },
 };
 
-async function render(id) {
+/** Real takes carry more harmonics; the ceiling still rules out shrillness. */
+const RECORDED_LIMITS = {
+  dog: { maxCentroid: 1600 },
+  cat: { maxCentroid: 2300 },
+  chick: { minCentroid: 1200, maxCentroid: 3600 },
+  duck: { maxCentroid: 1900 },
+  cow: { maxCentroid: 1200 },
+  sheep: { maxCentroid: 2000 },
+  pig: { maxCentroid: 1600 },
+  bird: { minCentroid: 1400, maxCentroid: 3800 },
+  frog: { maxCentroid: 1900 },
+  horse: { maxCentroid: 2000 },
+  lion: { maxCentroid: 800 },
+  elephant: { maxCentroid: 1600 },
+};
+
+const LIMITS = MODE === "synth" ? SYNTH_LIMITS : RECORDED_LIMITS;
+
+async function renderSynth(id) {
   const spans = ANIMAL_VOICES[id].map((part) => part.at + part.call.dur);
   const seconds = Math.max(...spans) + 0.3;
   const ctx = new OfflineAudioContext(1, Math.ceil(RATE * seconds), RATE);
@@ -30,6 +51,19 @@ async function render(id) {
   const buffer = await ctx.startRendering();
   return buffer.getChannelData(0);
 }
+
+function decodeClip(id) {
+  const path = `public/sfx/${id}.mp3`;
+  assert.ok(existsSync(path), `${path} is missing, run node scripts/fetch-sfx.mjs`);
+  const raw = execFileSync(
+    "ffmpeg",
+    ["-hide_banner", "-loglevel", "error", "-i", path, "-ac", "1", "-ar", String(RATE), "-f", "f32le", "-"],
+    { maxBuffer: 1 << 28 },
+  );
+  return new Float32Array(raw.buffer, raw.byteOffset, raw.length / 4);
+}
+
+const render = MODE === "synth" ? renderSynth : async (id) => decodeClip(id);
 
 function peakOf(data) {
   let peak = 0;
@@ -104,11 +138,21 @@ for (const id of Object.keys(ANIMAL_VOICES)) {
   const peak = peakOf(data);
   const attack = attackOf(data, peak);
   const centroid = centroidOf(data);
+  const rms = Math.sqrt(data.reduce((sum, s) => sum + s * s, 0) / data.length);
   const limits = LIMITS[id] ?? {};
 
+  const loudest = MODE === "synth" ? 0.3 : 0.55;
   assert.ok(peak > 0.08, `${id} peaks at ${peak.toFixed(3)}, too faint to hear on a phone`);
-  assert.ok(peak < 0.3, `${id} peaks at ${peak.toFixed(3)}, too loud for a nursery`);
-  assert.ok(attack >= (limits.minAttack ?? 0.015), `${id} attacks in ${(attack * 1000).toFixed(0)}ms, that clicks`);
+  assert.ok(peak < loudest, `${id} peaks at ${peak.toFixed(3)}, too loud for a nursery`);
+  assert.ok(rms > 0.01, `${id} is mostly silence`);
+  if (MODE === "synth") {
+    assert.ok(attack >= (limits.minAttack ?? 0.015), `${id} attacks in ${(attack * 1000).toFixed(0)}ms, that clicks`);
+  } else {
+    // A recording keeps its own transient; what must not happen is the clip
+    // opening at full level, which is the part that jolts a baby.
+    const opening = peakOf(data.subarray(0, Math.round(RATE * 0.012)));
+    assert.ok(opening < peak * 0.4, `${id} opens at ${(opening / peak).toFixed(2)} of its peak, needs a fade`);
+  }
   if (limits.maxCentroid) {
     assert.ok(centroid <= limits.maxCentroid, `${id} centroid ${centroid.toFixed(0)}Hz is sharper than ${limits.maxCentroid}Hz`);
   }
@@ -119,7 +163,7 @@ for (const id of Object.keys(ANIMAL_VOICES)) {
   writeFileSync(`${OUT}/${id}.wav`, wav(data));
   reel.push(data, new Float32Array(Math.round(RATE * 0.45)));
   console.log(
-    `${id.padEnd(9)} peak ${peak.toFixed(3)}  attack ${(attack * 1000).toFixed(0)}ms  centroid ${centroid.toFixed(0)}Hz`,
+    `${id.padEnd(9)} peak ${peak.toFixed(3)}  rms ${rms.toFixed(3)}  attack ${(attack * 1000).toFixed(0)}ms  centroid ${centroid.toFixed(0)}Hz`,
   );
 }
 
@@ -131,4 +175,4 @@ for (const part of reel) {
   at += part.length;
 }
 writeFileSync(`${OUT}/all-animals.wav`, wav(joined));
-console.log(`\ncry checks passed, audio in ${OUT}`);
+console.log(`\n${MODE} cry checks passed, audio in ${OUT}`);

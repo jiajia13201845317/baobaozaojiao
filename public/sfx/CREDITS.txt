@@ -1,14 +1,29 @@
-Animal cries are short recordings, not text-to-speech.
+Animal calls used for the 动物叫声 room.
+Source: Wikimedia Commons. Each clip is trimmed to one call, low-passed,
+faded in over 30ms and levelled down so it cannot startle a baby.
+Regenerate with: node scripts/fetch-sfx.mjs
 
-dog      Barking of a dog 2 — Amada44 — CC BY-SA 3.0 — Wikimedia Commons
-cat      Meow — Dcrosby — CC BY-SA 3.0 — Wikimedia Commons
-chick    Chickens demanding food — Wikimedia Commons
-duck     Mallard XC62258 — xeno-canto / Wikimedia Commons
-cow      Mudchute cow 1 — Wikimedia Commons
-sheep    Sheep bleating — Wikimedia Commons
-pig      Pig grunt - Erdie — Wikimedia Commons
-bird     Erithacus rubecula — Wikimedia Commons
-frog     Frogs croak calling chorus at night — Wikimedia Commons
-horse    Wiehern — Wikimedia Commons
-lion     Lion Roar — Mike Koenig — CC BY 3.0 — SoundBible
-elephant Elephant voice - trumpeting — Wikimedia Commons
+dog: Barking of a dog 2.ogg — Amada44 — CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Barking_of_a_dog_2.ogg
+cat: Meow of a pleading cat.oga — Heismark — Public domain
+  https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga
+chick: Rock-wren-chicks-begging.ogg — Department of Conservation — CC BY 4.0
+  https://commons.wikimedia.org/wiki/File:Rock-wren-chicks-begging.ogg
+duck: Pekin duck & mallard.ogg — WaderClub — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Pekin_duck_%26_mallard.ogg
+cow: Single Cow Moo.ogg — MichaeltheFox8621 — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Single_Cow_Moo.ogg
+sheep: Sheep bleat.ogg — Eviatar Bach — CC0
+  https://commons.wikimedia.org/wiki/File:Sheep_bleat.ogg
+pig: Pig grunt - Erdie.ogg — erdie — CC BY 3.0
+  https://commons.wikimedia.org/wiki/File:Pig_grunt_-_Erdie.ogg
+bird: Arremon abeillei - Black-capped Sparrow XC250490.mp3 — Niels Krabbe — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Arremon_abeillei_-_Black-capped_Sparrow_XC250490.mp3
+frog: Single Frog Croak.oga — MichaeltheFox8621 — CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Single_Frog_Croak.oga
+horse: Wiehern.ogg — Hü. — Public domain
+  https://commons.wikimedia.org/wiki/File:Wiehern.ogg
+lion: Lion raring-sound1TamilNadu178.ogg — த*உழவன் — Public domain
+  https://commons.wikimedia.org/wiki/File:Lion_raring-sound1TamilNadu178.ogg
+elephant: Elephant voice - trumpeting.ogg — தகவலுழவன் — CC0
+  https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg
