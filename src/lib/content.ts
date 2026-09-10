@@ -638,8 +638,8 @@ export const animals: Flashcard[] = [
   { id: "pig", zh: "猪", en: "Pig", sayZh: "小猪", sayEn: "pig", cry: "哼哼哼", sayCry: "哼，哼，哼", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
   { id: "bird", zh: "鸟", en: "Bird", sayZh: "小鸟", sayEn: "bird", cry: "啾啾啾", sayCry: "啾，啾，啾", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
   { id: "frog", zh: "青蛙", en: "Frog", sayZh: "青蛙", sayEn: "frog", cry: "呱呱呱", sayCry: "呱，呱，呱", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
-  { id: "horse", zh: "马", en: "Horse", sayZh: "小马", sayEn: "horse", cry: "嘶嘶嘶", sayCry: "嘶，嘶", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
-  { id: "lion", zh: "狮子", en: "Lion", sayZh: "狮子", sayEn: "lion", cry: "吼吼吼", sayCry: "吼，吼", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
+  { id: "horse", zh: "马", en: "Horse", sayZh: "小马", sayEn: "horse", cry: "咴咴咴", sayCry: "咴，咴，咴", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
+  { id: "lion", zh: "狮子", en: "Lion", sayZh: "小狮子", sayEn: "lion", cry: "哇呜哇呜", sayCry: "哇呜，哇呜", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
   { id: "elephant", zh: "大象", en: "Elephant", sayZh: "大象", sayEn: "elephant", cry: "嗷嗷嗷", sayCry: "嗷呜，嗷呜", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
 ];
 

@@ -1,7 +1,7 @@
 "use client";
 
 import type { AnimalSoundId, Flashcard, LessonStep, Note, Poem, Song, Story } from "./content";
-import { neteaseCryFor, neteaseFor, neteasePlayerSrc } from "./netease";
+import { neteaseFor, neteasePlayerSrc } from "./netease";
 import type { MusicSource } from "./progress";
 import {
   estimateSpeechMs,
@@ -54,8 +54,6 @@ class ToyPlayer {
   private enVoice: SpeechSynthesisVoice | null = null;
   private watchdog: number | null = null;
   private voicesHooked = false;
-  private buffers = new Map<string, AudioBuffer>();
-  private sources: AudioBufferSourceNode[] = [];
   private pending: Array<() => void> = [];
   private media: HTMLAudioElement | null = null;
   private frame: HTMLIFrameElement | null = null;
@@ -147,14 +145,6 @@ class ToyPlayer {
       }
     }
     this.oscillators = [];
-    for (const src of this.sources) {
-      try {
-        src.stop();
-      } catch {
-        /* already stopped */
-      }
-    }
-    this.sources = [];
   }
 
   async playSong(song: Song) {
@@ -244,20 +234,13 @@ class ToyPlayer {
     if (this.frame) this.frame.src = "about:blank";
   }
 
-  private async playNeteaseClip(id: string, ms: number, t: PlayToken) {
-    const frame = await this.mountNeteaseFrame();
-    if (!this.alive(t)) return true;
-    frame.src = neteasePlayerSrc(id, true);
-    await this.wait(ms, t);
-    if (this.alive(t)) this.clearNetease();
-    return this.alive(t);
-  }
-
-  private async playNeteaseCry(card: Flashcard, t: PlayToken) {
-    const info = card.sound ? neteaseCryFor(card.sound) : null;
-    if (!info || this.source !== "netease" || !this.alive(t)) return false;
-    await this.playNeteaseClip(info.id, info.ms, t);
-    return true;
+  private async playCartoonCry(card: Flashcard, t: PlayToken) {
+    this.onStep?.("sound");
+    if (card.cry) this.emit({ text: card.cry, lang: "zh-CN" });
+    if (card.sound) await this.playAnimalSound(card.sound, t);
+    if (!this.alive(t)) return;
+    const spoken = card.sayCry ?? card.cry;
+    if (spoken) await this.speak(spoken, "zh-CN", t, "cry");
   }
 
   private async playNeteaseSong(song: Song, t: PlayToken) {
@@ -381,9 +364,7 @@ class ToyPlayer {
     if (!this.alive(t)) return;
     if (card.cry) {
       await this.wait(200, t);
-      this.onStep?.("sound");
-      this.emit({ text: card.cry, lang: "zh-CN" });
-      if (!(await this.playNeteaseCry(card, t)) && card.sound) await this.playRecordedCry(card.sound, t);
+      await this.playCartoonCry(card, t);
     }
     this.clearWatchdog();
     if (this.alive(t)) this.onEnded?.("item");
@@ -394,9 +375,7 @@ class ToyPlayer {
     await this.wait(80, t);
     this.startWatchdog();
     if (card.cry) {
-      this.onStep?.("sound");
-      this.emit({ text: card.cry, lang: "zh-CN" });
-      if (!(await this.playNeteaseCry(card, t)) && card.sound) await this.playRecordedCry(card.sound, t);
+      await this.playCartoonCry(card, t);
     } else {
       this.onStep?.("zh");
       this.emit({ text: card.zh, lang: "zh-CN" });
@@ -692,42 +671,9 @@ class ToyPlayer {
     await this.playTone(783.99, 0.32, t);
   }
 
-  private async playRecordedCry(id: AnimalSoundId, t: PlayToken) {
-    if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
-    try {
-      let buf = this.buffers.get(id);
-      if (!buf) {
-        const res = await fetch(`/sfx/${id}.mp3`);
-        if (!res.ok) throw new Error("sfx");
-        const raw = await res.arrayBuffer();
-        buf = await this.ctx.decodeAudioData(raw.slice(0));
-        this.buffers.set(id, buf);
-      }
-      if (!this.alive(t) || !this.ctx || !this.master) return;
-      const src = this.ctx.createBufferSource();
-      src.buffer = buf;
-      src.connect(this.master);
-      this.sources.push(src);
-      await new Promise<void>((resolve) => {
-        let settled = false;
-        const done = () => {
-          if (settled) return;
-          settled = true;
-          resolve();
-        };
-        src.onended = done;
-        src.start();
-        const safety = window.setTimeout(done, Math.round((buf.duration + 0.2) * 1000));
-        this.timers.push(safety);
-      });
-    } catch {
-      if (this.alive(t)) await this.playAnimalSound(id, t);
-    }
-  }
-
   private async playAnimalSound(id: AnimalSoundId, t: PlayToken) {
     const fn = ANIMAL_SOUNDS[id];
-    if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
+    if (!fn || !this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
     await fn(this.ctx, this.master, (osc) => this.oscillators.push(osc));
   }
 }
@@ -738,214 +684,114 @@ type SoundFn = (
   track: (osc: OscillatorNode) => void
 ) => Promise<void>;
 
-function env(gain: GainNode, now: number, peak: number, dur: number) {
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(peak, now + 0.08);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + dur);
-}
-
-function toneSweep(
+/** Soft cartoon 拟声 — high sine, rounded, never a zoo recording. */
+function cartoonChirp(
   ctx: AudioContext,
   dest: AudioNode,
   track: (osc: OscillatorNode) => void,
-  opts: {
-    type?: OscillatorType;
-    from: number;
-    to: number;
-    dur: number;
-    peak?: number;
-    filter?: number;
-  }
+  opts: { from: number; to: number; dur: number; peak?: number },
 ) {
   const now = ctx.currentTime;
   const osc = ctx.createOscillator();
+  const air = ctx.createOscillator();
   const gain = ctx.createGain();
+  const airGain = ctx.createGain();
   const filter = ctx.createBiquadFilter();
-  osc.type = opts.type ?? "sine";
+  osc.type = "sine";
+  air.type = "sine";
   osc.frequency.setValueAtTime(opts.from, now);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(40, opts.to), now + opts.dur);
-  filter.type = "bandpass";
-  filter.frequency.value = opts.filter ?? opts.from;
-  filter.Q.value = 4;
-  env(gain, now, opts.peak ?? 0.35, opts.dur);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(80, opts.to), now + opts.dur);
+  air.frequency.setValueAtTime(opts.from * 2, now);
+  air.frequency.exponentialRampToValueAtTime(Math.max(120, opts.to * 2), now + opts.dur);
+  filter.type = "lowpass";
+  filter.frequency.value = 2200;
+  filter.Q.value = 0.6;
+  const peak = opts.peak ?? 0.07;
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(peak, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + opts.dur);
+  airGain.gain.setValueAtTime(0.0001, now);
+  airGain.gain.exponentialRampToValueAtTime(peak * 0.28, now + 0.025);
+  airGain.gain.exponentialRampToValueAtTime(0.0001, now + opts.dur);
   osc.connect(filter);
   filter.connect(gain);
   gain.connect(dest);
+  air.connect(airGain);
+  airGain.connect(dest);
   track(osc);
+  track(air);
   osc.start(now);
+  air.start(now);
   osc.stop(now + opts.dur + 0.02);
+  air.stop(now + opts.dur + 0.02);
   return new Promise<void>((resolve) => {
     osc.onended = () => resolve();
   });
 }
 
+function pause(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
 const ANIMAL_SOUNDS: Record<AnimalSoundId, SoundFn> = {
-  cat: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 880,
-      to: 620,
-      dur: 0.38,
-      peak: 0.1,
-      filter: 820,
-    });
-    await new Promise((r) => setTimeout(r, 140));
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 820,
-      to: 560,
-      dur: 0.34,
-      peak: 0.09,
-      filter: 760,
-    });
-  },
   dog: async (ctx, dest, track) => {
-    for (let i = 0; i < 2; i++) {
-      await toneSweep(ctx, dest, track, {
-        type: "triangle",
-        from: 320,
-        to: 210,
-        dur: 0.2,
-        peak: 0.11,
-        filter: 300,
-      });
-      await new Promise((r) => setTimeout(r, 160));
-    }
+    await cartoonChirp(ctx, dest, track, { from: 640, to: 380, dur: 0.16, peak: 0.08 });
+    await pause(90);
+    await cartoonChirp(ctx, dest, track, { from: 600, to: 360, dur: 0.16, peak: 0.07 });
+  },
+  cat: async (ctx, dest, track) => {
+    await cartoonChirp(ctx, dest, track, { from: 860, to: 1120, dur: 0.12, peak: 0.06 });
+    await cartoonChirp(ctx, dest, track, { from: 1120, to: 720, dur: 0.22, peak: 0.055 });
   },
   chick: async (ctx, dest, track) => {
-    for (let i = 0; i < 3; i++) {
-      await toneSweep(ctx, dest, track, {
-        type: "sine",
-        from: 1320,
-        to: 1560,
-        dur: 0.1,
-        peak: 0.07,
-        filter: 1480,
-      });
-      await new Promise((r) => setTimeout(r, 100));
+    for (const from of [1280, 1340, 1220]) {
+      await cartoonChirp(ctx, dest, track, { from, to: from + 180, dur: 0.08, peak: 0.05 });
+      await pause(70);
     }
   },
   duck: async (ctx, dest, track) => {
-    for (let i = 0; i < 2; i++) {
-      await toneSweep(ctx, dest, track, {
-        type: "triangle",
-        from: 420,
-        to: 300,
-        dur: 0.22,
-        peak: 0.1,
-        filter: 380,
-      });
-      await new Promise((r) => setTimeout(r, 140));
-    }
+    await cartoonChirp(ctx, dest, track, { from: 480, to: 340, dur: 0.14, peak: 0.07 });
+    await pause(80);
+    await cartoonChirp(ctx, dest, track, { from: 460, to: 320, dur: 0.14, peak: 0.06 });
   },
   cow: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 220,
-      to: 150,
-      dur: 0.72,
-      peak: 0.12,
-      filter: 200,
-    });
+    await cartoonChirp(ctx, dest, track, { from: 320, to: 210, dur: 0.42, peak: 0.07 });
   },
   sheep: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 480,
-      to: 340,
-      dur: 0.3,
-      peak: 0.1,
-      filter: 440,
-    });
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 400,
-      to: 300,
-      dur: 0.28,
-      peak: 0.08,
-      filter: 360,
-    });
+    await cartoonChirp(ctx, dest, track, { from: 680, to: 860, dur: 0.1, peak: 0.065 });
+    await cartoonChirp(ctx, dest, track, { from: 860, to: 480, dur: 0.2, peak: 0.055 });
   },
   pig: async (ctx, dest, track) => {
-    for (let i = 0; i < 3; i++) {
-      await toneSweep(ctx, dest, track, {
-        type: "triangle",
-        from: 300,
-        to: 230,
-        dur: 0.14,
-        peak: 0.09,
-        filter: 280,
-      });
-      await new Promise((r) => setTimeout(r, 90));
+    for (const from of [420, 400, 380]) {
+      await cartoonChirp(ctx, dest, track, { from, to: from - 90, dur: 0.11, peak: 0.06 });
+      await pause(60);
     }
   },
   bird: async (ctx, dest, track) => {
     for (const [from, to] of [
-      [1320, 1680],
-      [1480, 1760],
-      [1260, 1540],
+      [1360, 1720],
+      [1500, 1240],
+      [1420, 1780],
     ] as const) {
-      await toneSweep(ctx, dest, track, {
-        type: "sine",
-        from,
-        to,
-        dur: 0.14,
-        peak: 0.08,
-        filter: from,
-      });
-      await new Promise((r) => setTimeout(r, 80));
+      await cartoonChirp(ctx, dest, track, { from, to, dur: 0.11, peak: 0.05 });
+      await pause(60);
     }
   },
   frog: async (ctx, dest, track) => {
-    for (let i = 0; i < 2; i++) {
-      await toneSweep(ctx, dest, track, {
-        type: "triangle",
-        from: 340,
-        to: 240,
-        dur: 0.16,
-        peak: 0.1,
-        filter: 300,
-      });
-      await new Promise((r) => setTimeout(r, 180));
-    }
+    await cartoonChirp(ctx, dest, track, { from: 400, to: 260, dur: 0.1, peak: 0.065 });
+    await pause(120);
+    await cartoonChirp(ctx, dest, track, { from: 380, to: 240, dur: 0.1, peak: 0.055 });
   },
   horse: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 560,
-      to: 380,
-      dur: 0.4,
-      peak: 0.1,
-      filter: 480,
-    });
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 440,
-      to: 300,
-      dur: 0.32,
-      peak: 0.08,
-      filter: 380,
-    });
+    await cartoonChirp(ctx, dest, track, { from: 520, to: 360, dur: 0.14, peak: 0.065 });
+    await pause(70);
+    await cartoonChirp(ctx, dest, track, { from: 500, to: 340, dur: 0.14, peak: 0.055 });
   },
   lion: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 240,
-      to: 160,
-      dur: 0.7,
-      peak: 0.12,
-      filter: 220,
-    });
+    await cartoonChirp(ctx, dest, track, { from: 360, to: 240, dur: 0.36, peak: 0.07 });
   },
   elephant: async (ctx, dest, track) => {
-    await toneSweep(ctx, dest, track, {
-      type: "sine",
-      from: 320,
-      to: 180,
-      dur: 0.7,
-      peak: 0.12,
-      filter: 240,
-    });
+    await cartoonChirp(ctx, dest, track, { from: 380, to: 240, dur: 0.34, peak: 0.065 });
   },
 };
 

@@ -14,28 +14,8 @@ export const NETEASE_TRACK: Record<string, { id: string; ms: number }> = {
   boat: { id: "28707960", ms: 53000 },
 };
 
-/** Soft cartoon nursery clips — not wildlife SFX. Official outchain only. */
-export const NETEASE_CRY: Record<string, { id: string; ms: number }> = {
-  dog: { id: "2628348090", ms: 12000 },
-  cat: { id: "2620036575", ms: 12000 },
-  chick: { id: "3359659300", ms: 12000 },
-  duck: { id: "3364582988", ms: 12000 },
-  cow: { id: "2651524134", ms: 12000 },
-  sheep: { id: "1299844750", ms: 12000 },
-  pig: { id: "3359658503", ms: 12000 },
-  bird: { id: "2719642120", ms: 12000 },
-  frog: { id: "2613667349", ms: 12000 },
-  horse: { id: "5240736", ms: 12000 },
-  lion: { id: "2620036579", ms: 12000 },
-  elephant: { id: "28710563", ms: 12000 },
-};
-
 export function neteaseFor(songId: string) {
   return NETEASE_TRACK[songId] ?? null;
-}
-
-export function neteaseCryFor(animalId: string) {
-  return NETEASE_CRY[animalId] ?? null;
 }
 
 export function neteasePlayerSrc(id: string, auto = true) {

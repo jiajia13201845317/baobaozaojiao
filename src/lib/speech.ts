@@ -87,7 +87,9 @@ export function prepareSpeech(text: string, lang: SpeakLang, kind?: SpeakKind): 
   out = out.replace(/呱呱呱/g, "呱，呱，呱");
   out = out.replace(/哼哼哼/g, "哼，哼，哼");
   out = out.replace(/嘶嘶嘶/g, "嘶，嘶");
-  out = out.replace(/吼吼吼/g, "吼，吼");
+  out = out.replace(/吼吼吼/g, "哇呜，哇呜");
+  out = out.replace(/哇呜哇呜/g, "哇呜，哇呜");
+  out = out.replace(/咴咴咴/g, "咴，咴，咴");
   out = out.replace(/嗷嗷嗷/g, "嗷呜，嗷呜");
   out = out.replace(/嗷呜嗷呜/g, "嗷呜，嗷呜");
   out = out.replace(/嘿哟嘿哟/g, "嘿哟，嘿哟");
@@ -99,19 +101,21 @@ export function prepareSpeech(text: string, lang: SpeakLang, kind?: SpeakKind): 
 }
 
 export function speechRate(lang: SpeakLang, kind?: SpeakKind) {
-  if (kind === "verse") return 0.7;
-  if (kind === "cry") return lang === "zh-CN" ? 0.76 : 0.74;
+  if (kind === "verse") return 0.72;
+  if (kind === "cry") return lang === "zh-CN" ? 0.88 : 0.84;
   if (kind === "song") return lang === "zh-CN" ? 0.86 : 0.8;
   if (kind === "fun" || kind === "care") return 0.84;
-  if (kind === "story") return 0.82;
-  return lang === "zh-CN" ? 0.84 : 0.78;
+  if (kind === "story") return 0.8;
+  return lang === "zh-CN" ? 0.82 : 0.76;
 }
 
 export function speechPitch(lang: SpeakLang, kind?: SpeakKind) {
-  if (kind === "cry") return 1.14;
-  if (kind === "song") return lang === "en-US" ? 1.08 : 1.06;
-  if (kind === "verse") return 1.02;
-  return lang === "zh-CN" ? 1.05 : 1.03;
+  if (kind === "cry") return 1.32;
+  if (kind === "song") return lang === "en-US" ? 1.16 : 1.14;
+  if (kind === "verse") return 1.08;
+  if (kind === "fun" || kind === "care") return 1.12;
+  if (kind === "story") return 1.1;
+  return lang === "zh-CN" ? 1.14 : 1.1;
 }
 
 export function estimateSpeechMs(text: string, rate: number) {
@@ -133,8 +137,9 @@ function voiceScore(voice: SpeechSynthesisVoice, lang: SpeakLang) {
     } else if (tag.startsWith("zh")) score += 8;
     else return -100;
 
-    if (name.includes("xiaoxiao") || name.includes("xiaoyi") || name.includes("yaoyao")) score += 30;
-    if (name.includes("huihui") || name.includes("yaoyao") || name.includes("kangkang")) score += 16;
+    if (name.includes("xiaoxiao") || name.includes("xiaoyi") || name.includes("yaoyao")) score += 36;
+    if (name.includes("huihui") || name.includes("kangkang") || name.includes("child") || name.includes("xiao")) score += 18;
+    if (name.includes("neural") || name.includes("online")) score += 8;
     if (name.includes("tingting") || name.includes("meijia") || name.includes("hanhan")) score -= 30;
   } else {
     if (tag.startsWith("en-us")) score += 70;
