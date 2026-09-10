@@ -64,12 +64,12 @@ await page.waitForFunction(() => window.__spoken.includes("小狗"));
 const dogBtn = await page.$("button[aria-label*='点狗']");
 if (!dogBtn) throw new Error("no dog tap target");
 await dogBtn.click();
-await new Promise((r) => setTimeout(r, 1800));
+await new Promise((r) => setTimeout(r, 2600));
 await assertStillOn(page, "狗", 1);
 
-await new Promise((r) => setTimeout(r, 2500));
+await new Promise((r) => setTimeout(r, 2800));
 await dogBtn.click();
-await new Promise((r) => setTimeout(r, 1800));
+await new Promise((r) => setTimeout(r, 2600));
 await assertStillOn(page, "狗", 1);
 
 await browser.close();

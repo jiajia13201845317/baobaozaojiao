@@ -74,6 +74,7 @@ export function FlashcardPlayer({
           )}
           <button
             type="button"
+            onPointerDown={onTap}
             onClick={onTap}
             className="relative grid h-[var(--hero)] w-[var(--hero)] place-items-center"
             aria-label={card.cry ? `点${card.zh}，听真叫声` : `点${card.zh}，再听一遍`}

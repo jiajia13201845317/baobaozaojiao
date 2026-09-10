@@ -85,6 +85,7 @@ export function ToyApp() {
   const sleepTimer = useRef<number | null>(null);
   const playGen = useRef(0);
   const holdRef = useRef(false);
+  const pinRef = useRef<string | null>(null);
   const advanceTimer = useRef<number | null>(null);
   viewRef.current = view;
   modeRef.current = playMode;
@@ -101,7 +102,7 @@ export function ToyApp() {
     toyPlayer.onStep = (next) => setStep(next);
     toyPlayer.onEnded = (kind) => {
       setPlaying(false);
-      if (kind === "tap" || holdRef.current) {
+      if (kind === "tap" || holdRef.current || pinRef.current) {
         cancelAdvance();
         return;
       }
@@ -110,16 +111,17 @@ export function ToyApp() {
       if (modeRef.current === "once") return;
       const gen = playGen.current;
       cancelAdvance();
+      const delay = isLesson(current.category) ? 2200 : 700;
       advanceTimer.current = window.setTimeout(() => {
         advanceTimer.current = null;
-        if (holdRef.current || playGen.current !== gen) return;
+        if (holdRef.current || pinRef.current || playGen.current !== gen) return;
         if (modeRef.current === "loop") {
           void playItemRef.current(current.category, current.itemId, current.world);
           return;
         }
         const next = siblingId(current.category, current.itemId, 1);
         if (next) void playItemRef.current(current.category, next, current.world);
-      }, 700);
+      }, delay);
     };
     return () => {
       toyPlayer.onLine = null;
@@ -199,15 +201,17 @@ export function ToyApp() {
     world?: WorldId,
     source: "user" | "chain" = "user",
   ) => {
-    if (source === "chain" && holdRef.current) return;
+    if (source === "chain" && (holdRef.current || pinRef.current)) return;
     if (source === "user") {
       holdRef.current = false;
+      pinRef.current = null;
       cancelAdvance();
     }
     const gen = ++playGen.current;
     await toyPlayer.unlock();
-    if (gen !== playGen.current || (source === "chain" && holdRef.current)) return;
+    if (gen !== playGen.current || (source === "chain" && (holdRef.current || pinRef.current))) return;
     toyPlayer.tap();
+    if (source === "chain" && (holdRef.current || pinRef.current)) return;
     writeHasPlayed();
     setLine(null);
     setStep(null);
@@ -219,7 +223,7 @@ export function ToyApp() {
     armSleep(sleepMinutes);
     if (isLesson(category)) {
       const card = cardsFor(category).find((c) => c.id === itemId);
-      if (card && gen === playGen.current && !holdRef.current) await toyPlayer.playLesson(card);
+      if (card && gen === playGen.current && !holdRef.current && !pinRef.current) await toyPlayer.playLesson(card);
       return;
     }
     if (category === "zh-songs" || category === "en-songs") {
@@ -251,6 +255,7 @@ export function ToyApp() {
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
     cancelAdvance();
     holdRef.current = true;
+    pinRef.current = `${category}:${itemId}`;
     playGen.current += 1;
     toyPlayer.stop();
     await toyPlayer.unlock();
@@ -268,6 +273,8 @@ export function ToyApp() {
     cancelAdvance();
     playGen.current += 1;
     holdRef.current = true;
+    const current = viewRef.current;
+    if (current.name === "player") pinRef.current = `${current.category}:${current.itemId}`;
     toyPlayer.stop();
     setPlaying(false);
   }, []);
@@ -783,7 +790,7 @@ function LessonView({
       onBack={onBack}
       onPrev={() => canFlip && onOpen(list[(index - 1 + list.length) % list.length]!.id)}
       onNext={() => canFlip && onOpen(list[(index + 1) % list.length]!.id)}
-      onTap={onTap}
+      onTap={() => onTap()}
       onStop={onStop}
       onReplayAll={onReplay}
       volume={volume}
