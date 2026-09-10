@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronLeft, Home as HomeIcon, Pause, Play, RotateCcw, Settings2, Timer } from "lucide-react";
-import { CozyBackdrop, ItemArt, Mascot, PlayBadge } from "@/components/art";
+import { CozyBackdrop, ItemArt, PartyEgg, PlayBadge } from "@/components/art";
 import { CoverImage, Portrait, RoomHero } from "@/components/cover";
 import { FlashcardPlayer, ProgressDots } from "@/components/flashcard";
 import { ParentPanel } from "@/components/parent-panel";
@@ -429,17 +429,15 @@ function Home({
     .join(" · ");
 
   return (
-    <main className="page-shell home-playroom relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
-      <section className="home-banner">
+    <main className="page-shell party-lobby relative z-10 mx-auto flex w-full flex-1 flex-col overflow-y-auto px-3 pb-6">
+      <section className="party-hud">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="home-mascot-wrap">
-            <Mascot pose="wave" className="h-11 w-11" />
+          <span className="party-egg-wrap">
+            <PartyEgg className="h-12 w-12" />
           </span>
           <div className="min-w-0">
-            <p className="home-brand">宝宝听听</p>
-            <h1 className="ink truncate text-[20px] font-black leading-tight">
-              {greeting()}
-            </h1>
+            <p className="home-brand">蛋仔乐园</p>
+            <h1 className="party-hello truncate">{greeting()}</h1>
             <p className="ink-soft truncate text-[11px] font-semibold">{status}</p>
           </div>
         </div>
@@ -448,7 +446,7 @@ function Home({
       <CareStrip care={care} onTalk={onTalk} />
 
       {showContinue && lastPlay && (
-        <button type="button" onClick={() => onContinue(lastPlay)} className="continue-chip">
+        <button type="button" onClick={() => onContinue(lastPlay)} className="party-continue">
           <PlayBadge className="h-9 w-9" />
           <span className="min-w-0 text-left">
             <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
@@ -457,42 +455,42 @@ function Home({
         </button>
       )}
 
-      <button type="button" onClick={onPlayDog} className="hero-poster">
-        <span className="hero-poster-art">
+      <button type="button" onClick={onPlayDog} className="party-stage">
+        <span className="party-stage-island">
           <CoverImage src="/art/hero-dog.png" alt="小狗" />
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="hero-tile-badge">先听这个</span>
-          <span className="ink mt-1 block text-[20px] font-black leading-tight">小狗汪汪汪</span>
-          <span className="ink-soft mt-0.5 block text-[13px] font-bold">狗 → dog → 汪汪汪</span>
-          <span className="hero-poster-cta">
+        <span className="min-w-0 flex-1 text-left">
+          <span className="party-badge">派对开场</span>
+          <span className="party-stage-title">小狗真的会叫</span>
+          <span className="ink-soft mt-0.5 block text-[13px] font-bold">狗 → dog → 听真叫声</span>
+          <span className="party-cta">
             <PlayBadge className="h-7 w-7" />
             点一下就叫
           </span>
         </span>
       </button>
 
-      <p className="section-label">还想听</p>
-      <div className="flex flex-col gap-2.5">
-        {worlds.map((world) => (
+      <p className="party-label">还想听</p>
+      <div className="flex flex-col gap-3">
+        {worlds.map((world, index) => (
           <button
             key={world.id}
             type="button"
             onClick={() => onOpenWorld(world.id)}
-            className="world-slab"
+            className={`party-gate gate-${index}`}
             style={{
               ["--room-shadow" as string]: world.shadow,
               ["--door-tint" as string]: world.tint,
             }}
           >
-            <span className="world-slab-art">
+            <span className="party-gate-art">
               <CoverImage src={world.hero} alt={world.title} />
             </span>
             <span className="min-w-0 flex-1 text-left">
               <span className="ink block text-[18px] font-black leading-tight">{world.title}</span>
               <span className="ink-soft mt-0.5 block text-xs font-bold">{world.hint}</span>
             </span>
-            <span className="ink-mute text-lg font-black">›</span>
+            <span className="party-gate-go">进</span>
           </button>
         ))}
       </div>

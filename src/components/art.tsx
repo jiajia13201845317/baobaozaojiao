@@ -51,20 +51,76 @@ export function WorldBackdrop({ mood = "day" }: { mood?: "day" | "dusk" | "night
   );
 }
 
+export function PartyEgg({
+  className = "h-16 w-16",
+  fill = "#FFF6D8",
+  blush = "#FF8AB8",
+}: {
+  className?: string;
+  fill?: string;
+  blush?: string;
+}) {
+  return (
+    <svg viewBox="0 0 120 140" className={className} aria-hidden>
+      <ellipse cx="60" cy="130" rx="30" ry="7" fill="#1E3A5F" opacity="0.12" />
+      <ellipse cx="60" cy="72" rx="42" ry="54" fill={fill} />
+      <ellipse cx="60" cy="72" rx="36" ry="48" fill={fill} />
+      <ellipse cx="44" cy="50" rx="16" ry="20" fill="#FFFFFF" opacity="0.55" />
+      <ellipse cx="44" cy="82" rx="8" ry="6" fill={blush} opacity="0.9" />
+      <ellipse cx="76" cy="82" rx="8" ry="6" fill={blush} opacity="0.9" />
+      <ellipse cx="48" cy="68" rx="5" ry="6.5" fill="#2A2748" />
+      <ellipse cx="72" cy="68" rx="5" ry="6.5" fill="#2A2748" />
+      <circle cx="50" cy="66" r="1.6" fill="white" />
+      <circle cx="74" cy="66" r="1.6" fill="white" />
+      <path d="M54 90 Q 60 96 66 90" fill="none" stroke="#2A2748" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function CozyBackdrop() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="cozy-sky absolute inset-0" />
-      <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-[#fff27a]/55 blur-3xl" />
-      <div className="absolute -right-20 top-10 h-52 w-52 rounded-full bg-[#ffb0d8]/40 blur-3xl" />
+      <div className="party-sky absolute inset-0" />
+      <div className="absolute -left-10 top-8 h-40 w-40 rounded-full bg-[#fff27a]/50 blur-3xl" />
+      <div className="absolute right-[-2rem] top-16 h-44 w-44 rounded-full bg-[#ff8ad4]/35 blur-3xl" />
+      <svg className="absolute inset-x-0 top-6 h-28 w-full" viewBox="0 0 390 120" preserveAspectRatio="xMidYMin slice" aria-hidden>
+        <g className="animate-[float_8s_ease-in-out_infinite]" fill="white" opacity="0.92">
+          <ellipse cx="58" cy="36" rx="30" ry="16" />
+          <ellipse cx="84" cy="34" rx="20" ry="13" />
+          <ellipse cx="38" cy="40" rx="16" ry="11" />
+        </g>
+        <g className="animate-[float_11s_ease-in-out_infinite_reverse]" fill="white" opacity="0.8">
+          <ellipse cx="300" cy="28" rx="26" ry="14" />
+          <ellipse cx="322" cy="26" rx="16" ry="10" />
+        </g>
+        <circle cx="196" cy="22" r="16" fill="#FFE566" />
+        <circle cx="196" cy="22" r="10" fill="#FFF3A8" />
+      </svg>
+      <svg className="party-eggs absolute left-3 top-24 h-16 w-16 animate-[bob_4s_ease-in-out_infinite]" viewBox="0 0 80 90" aria-hidden>
+        <ellipse cx="40" cy="48" rx="22" ry="28" fill="#FFF4C8" />
+        <ellipse cx="33" cy="38" rx="8" ry="10" fill="white" opacity="0.5" />
+        <circle cx="34" cy="46" r="2.4" fill="#2A2748" />
+        <circle cx="46" cy="46" r="2.4" fill="#2A2748" />
+        <ellipse cx="32" cy="54" rx="4" ry="2.5" fill="#FF8AB8" />
+        <ellipse cx="48" cy="54" rx="4" ry="2.5" fill="#FF8AB8" />
+      </svg>
+      <svg className="party-eggs absolute right-4 top-36 h-14 w-14 animate-[bob_5s_ease-in-out_infinite]" viewBox="0 0 80 90" aria-hidden>
+        <ellipse cx="40" cy="48" rx="22" ry="28" fill="#B8F0FF" />
+        <circle cx="34" cy="46" r="2.4" fill="#2A2748" />
+        <circle cx="46" cy="46" r="2.4" fill="#2A2748" />
+        <path d="M34 56 Q 40 61 46 56" fill="none" stroke="#2A2748" strokeWidth="2" />
+      </svg>
       <svg
-        className="cozy-land absolute inset-x-0 bottom-0 h-40 w-full"
-        viewBox="0 0 390 160"
+        className="cozy-land absolute inset-x-0 bottom-0 h-44 w-full"
+        viewBox="0 0 390 170"
         preserveAspectRatio="xMidYMax slice"
         aria-hidden
       >
-        <path d="M0 92 C 70 62, 150 96, 230 74 C 300 55, 350 84, 390 70 L 390 160 L 0 160 Z" fill="#8FDE7A" />
-        <path d="M0 122 C 80 100, 160 128, 250 110 C 320 96, 360 118, 390 108 L 390 160 L 0 160 Z" fill="#FFD2A8" />
+        <path d="M0 78 C 60 40, 140 88, 210 52 C 280 18, 340 70, 390 46 L 390 170 L 0 170 Z" fill="#7AE06A" />
+        <path d="M0 108 C 80 78, 160 120, 250 90 C 320 68, 360 104, 390 92 L 390 170 L 0 170 Z" fill="#5ED15A" />
+        <ellipse cx="52" cy="118" rx="18" ry="8" fill="#FF5CA8" />
+        <ellipse cx="168" cy="128" rx="14" ry="7" fill="#FFE566" />
+        <ellipse cx="300" cy="116" rx="16" ry="7" fill="#7EC8FF" />
       </svg>
     </div>
   );

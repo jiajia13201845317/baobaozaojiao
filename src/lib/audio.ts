@@ -52,6 +52,8 @@ class ToyPlayer {
   private enVoice: SpeechSynthesisVoice | null = null;
   private watchdog: number | null = null;
   private voicesHooked = false;
+  private buffers = new Map<string, AudioBuffer>();
+  private sources: AudioBufferSourceNode[] = [];
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -119,6 +121,14 @@ class ToyPlayer {
       }
     }
     this.oscillators = [];
+    for (const src of this.sources) {
+      try {
+        src.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+    this.sources = [];
   }
 
   async playSong(song: Song) {
@@ -162,9 +172,7 @@ class ToyPlayer {
       await this.wait(200, t);
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      await this.speak(card.sayCry ?? card.cry, "zh-CN", t, "cry");
-      if (!this.alive(t)) return;
-      if (card.sound) await this.playAnimalSound(card.sound, t);
+      if (card.sound) await this.playRecordedCry(card.sound, t);
     }
     this.clearWatchdog();
     if (this.alive(t)) this.onEnded?.("item");
@@ -172,14 +180,12 @@ class ToyPlayer {
 
   async playCry(card: Flashcard) {
     const t = this.begin();
-    await this.wait(120, t);
+    await this.wait(80, t);
     this.startWatchdog();
     if (card.cry) {
       this.onStep?.("sound");
       this.emit({ text: card.cry, lang: "zh-CN" });
-      await this.speak(card.sayCry ?? card.cry, "zh-CN", t, "cry");
-      if (!this.alive(t)) return;
-      if (card.sound) await this.playAnimalSound(card.sound, t);
+      if (card.sound) await this.playRecordedCry(card.sound, t);
     } else {
       this.onStep?.("zh");
       this.emit({ text: card.zh, lang: "zh-CN" });
@@ -428,6 +434,39 @@ class ToyPlayer {
     await this.playTone(523.25, 0.18, t);
     await this.playTone(659.25, 0.22, t);
     await this.playTone(783.99, 0.32, t);
+  }
+
+  private async playRecordedCry(id: AnimalSoundId, t: PlayToken) {
+    if (!this.ctx || !this.master || !this.alive(t) || this.volume <= 0.02) return;
+    try {
+      let buf = this.buffers.get(id);
+      if (!buf) {
+        const res = await fetch(`/sfx/${id}.mp3`);
+        if (!res.ok) throw new Error("sfx");
+        const raw = await res.arrayBuffer();
+        buf = await this.ctx.decodeAudioData(raw.slice(0));
+        this.buffers.set(id, buf);
+      }
+      if (!this.alive(t) || !this.ctx || !this.master) return;
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(this.master);
+      this.sources.push(src);
+      await new Promise<void>((resolve) => {
+        let settled = false;
+        const done = () => {
+          if (settled) return;
+          settled = true;
+          resolve();
+        };
+        src.onended = done;
+        src.start();
+        const safety = window.setTimeout(done, Math.round((buf.duration + 0.2) * 1000));
+        this.timers.push(safety);
+      });
+    } catch {
+      if (this.alive(t)) await this.playAnimalSound(id, t);
+    }
   }
 
   private async playAnimalSound(id: AnimalSoundId, t: PlayToken) {

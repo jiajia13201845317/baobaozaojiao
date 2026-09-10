@@ -202,5 +202,5 @@ export function bubbleFor(care: CareInfo) {
   if (care.sky === "rain") return "下雨啦，在家听";
   if (care.sky === "night") return "月亮也来听";
   if (care.sky === "cloud") return "云朵软软的";
-  return "汪汪汪，来玩呀";
+  return "来派对呀，小狗会叫";
 }

@@ -4,7 +4,7 @@ import { Moon, Settings2, Sun } from "lucide-react";
 import { CareToys, PupOutfit, SkyBuddy, bubbleFor, useCare } from "@/components/care-toys";
 import type { SkyKind } from "@/lib/care";
 import { CoverImage } from "@/components/cover";
-import { PlayBadge } from "@/components/art";
+import { PartyEgg, PlayBadge } from "@/components/art";
 
 const FRIENDS = [
   { src: "/art/cat.png", alt: "小猫", label: "喵" },
@@ -64,7 +64,7 @@ export function Welcome({
 
           <div className="welcome-stack">
             <div className="welcome-head">
-              <p className="welcome-kicker">小乖乖早教机</p>
+              <p className="welcome-kicker">蛋仔乐园</p>
               <h1 className="welcome-title">宝宝听听</h1>
             </div>
 
@@ -78,6 +78,10 @@ export function Welcome({
             <CareToys care={care} onTalk={onTalk} />
 
             <div className="welcome-friends" aria-label="一起来的朋友">
+              <div className="welcome-friend welcome-egg">
+                <PartyEgg className="h-11 w-11" fill="#FFF6D8" />
+                <span>蛋</span>
+              </div>
               {FRIENDS.map((friend) => (
                 <div key={friend.src} className="welcome-friend">
                   <CoverImage src={friend.src} alt={friend.alt} />

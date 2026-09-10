@@ -69,7 +69,7 @@ export function FlashcardPlayer({
           type="button"
           onClick={onTap}
           className="relative flex flex-1 flex-col items-center justify-center px-3 pt-3 pb-2"
-          aria-label={card.cry ? `点${card.zh}，听${card.cry}` : `点${card.zh}，再听一遍`}
+          aria-label={card.cry ? `点${card.zh}，听真叫声` : `点${card.zh}，再听一遍`}
         >
           {total > 1 && (
             <p className="ink-soft mb-2 text-sm font-bold">
@@ -88,7 +88,7 @@ export function FlashcardPlayer({
             </div>
           </div>
           <p className="ink-soft mt-2 text-sm font-bold">
-            {card.cry ? `点${card.zh}，再听 ${card.cry}` : `点图片，再听 ${card.zh}`}
+            {card.cry ? `点${card.zh}，听真叫声` : `点图片，再听 ${card.zh}`}
           </p>
           <ProgressDots total={total} index={index} />
         </button>
@@ -111,7 +111,7 @@ export function FlashcardPlayer({
           {showSound && (
             <WordChip
               label={card.cry!}
-              hint="叫声"
+              hint="真叫声"
               active={step === "sound"}
               tone="var(--ink)"
               bg="var(--sage)"

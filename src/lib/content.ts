@@ -157,7 +157,7 @@ export const categories: {
     id: "animals",
     title: "动物叫声",
     place: "快乐农场",
-    hint: "狗 · dog · 汪汪汪",
+    hint: "狗 · dog · 真叫声",
     english: "Happy Farm",
     emoji: "🐶",
     tint: "#C8F2B0",
