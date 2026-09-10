@@ -883,7 +883,8 @@ function Player({
           </p>
           <h1 className="ink mt-1 text-2xl font-black">{item.title}</h1>
           <p className="ink-soft mt-1 text-xs font-bold">
-            点图{playing ? "停下" : "再听"} · {PLAY_MODE_LABEL[playMode]}
+            点图{playing ? "停下" : "再听"}
+            {song?.track ? " · 完整录音" : ""} · {PLAY_MODE_LABEL[playMode]}
           </p>
           <ProgressDots total={place.total} index={place.index} />
           {line?.kind === "fun" && (
