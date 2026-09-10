@@ -27,7 +27,7 @@ const SYNTH_LIMITS = {
 
 /** Real takes carry more harmonics; the ceiling still rules out shrillness. */
 const RECORDED_LIMITS = {
-  dog: { maxCentroid: 1600 },
+  dog: { maxCentroid: 800 },
   cat: { maxCentroid: 2300 },
   chick: { minCentroid: 1200, maxCentroid: 3600 },
   duck: { maxCentroid: 1900 },
@@ -36,7 +36,7 @@ const RECORDED_LIMITS = {
   pig: { maxCentroid: 1600 },
   bird: { minCentroid: 1400, maxCentroid: 3800 },
   frog: { maxCentroid: 1900 },
-  horse: { maxCentroid: 2000 },
+  horse: { maxCentroid: 1000 },
   lion: { maxCentroid: 800 },
   elephant: { maxCentroid: 900 },
 };

@@ -26,9 +26,9 @@ const CLIPS = [
   { id: "pig", file: "File:Pig grunt - Erdie.ogg", len: 1.0, lowpass: 2200, single: true, fadeIn: 0.05, gain: 0.85 },
   { id: "bird", file: "File:Arremon abeillei - Black-capped Sparrow XC250490.mp3", len: 0.9, lowpass: 3400, fadeIn: 0.06, gain: 0.75 },
   { id: "frog", file: "File:Single Frog Croak.oga", len: 1.0, lowpass: 2400, fadeIn: 0.05 },
-  { id: "horse", file: "File:Wiehern.ogg", len: 1.3, lowpass: 1800, fadeIn: 0.1, gain: 0.75 },
+  { id: "horse", file: "File:Wiehern.ogg", len: 1.2, lowpass: 1300, fadeIn: 0.22, gain: 0.62 },
   { id: "lion", file: "File:Lion raring-sound1TamilNadu178.ogg", len: 1.2, lowpass: 900, speed: 1.3, fadeIn: 0.16, gain: 0.8 },
-  { id: "elephant", file: "File:Elephant voice - trumpeting.ogg", len: 1.3, lowpass: 1100, fadeIn: 0.18, gain: 0.6 },
+  { id: "elephant", file: "File:Elephant voice - trumpeting.ogg", len: 1.3, lowpass: 800, fadeIn: 0.32, gain: 0.55 },
 ];
 
 function ffmpeg(args) {
