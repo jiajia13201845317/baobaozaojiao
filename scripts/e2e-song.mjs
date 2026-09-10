@@ -49,13 +49,22 @@ await page.evaluate(() => {
   next?.click();
 });
 await page.waitForFunction(() => document.body.innerText.includes("正在听"));
-await new Promise((r) => setTimeout(r, 3200));
+await new Promise((r) => setTimeout(r, 5200));
 const body = await page.evaluate(() => document.body.innerText);
 const spoken = await page.evaluate(() => window.__spoken);
+const current = await page.evaluate(() => {
+  const audio = document.querySelector("audio[data-bao-track]");
+  return {
+    title: document.body.innerText.includes("小兔子乖乖"),
+    tigers: document.body.innerText.includes("两只老虎"),
+    time: audio ? audio.currentTime : null,
+    paused: audio ? audio.paused : null,
+  };
+});
 await browser.close();
 
-if (!body.includes("正在听") || !body.includes("小兔子乖乖") || body.includes("两只老虎")) {
-  console.error("FAIL song did not stay on 小兔子乖乖\n", body.slice(0, 400));
+if (!body.includes("正在听") || !current.title || current.tigers || (current.time != null && current.time < 1.2)) {
+  console.error("FAIL song did not stay on 小兔子乖乖\n", body.slice(0, 400), current);
   process.exit(1);
 }
 console.log("PASS song stays playing", spoken.slice(0, 3).join(" | "));

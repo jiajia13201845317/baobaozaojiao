@@ -56,7 +56,6 @@ class ToyPlayer {
   private sources: AudioBufferSourceNode[] = [];
   private pending: Array<() => void> = [];
   private media: HTMLAudioElement | null = null;
-  private mediaNode: MediaElementAudioSourceNode | null = null;
 
   onLine: ((info: LineInfo) => void) | null = null;
   onEnded: ((kind?: "item" | "tap") => void) | null = null;
@@ -94,7 +93,7 @@ class ToyPlayer {
     if (this.master && this.ctx) {
       this.master.gain.setTargetAtTime(v, this.ctx.currentTime, 0.04);
     }
-    if (this.media && !this.mediaNode) this.media.volume = v;
+    if (this.media) this.media.volume = Math.min(1, Math.max(0, v));
   }
 
   tap() {
@@ -182,20 +181,16 @@ class ToyPlayer {
   }
 
   private ensureMedia() {
-    if (!this.ctx || !this.master) return null;
     if (!this.media) {
       const audio = new Audio();
       audio.preload = "auto";
-      audio.crossOrigin = "anonymous";
-      try {
-        this.mediaNode = this.ctx.createMediaElementSource(audio);
-        this.mediaNode.connect(this.master);
-        audio.volume = 1;
-      } catch {
-        audio.volume = this.volume;
-      }
+      audio.setAttribute("playsinline", "true");
+      audio.dataset.baoTrack = "1";
+      audio.style.display = "none";
+      document.body.appendChild(audio);
       this.media = audio;
     }
+    this.media.volume = Math.min(1, Math.max(0, this.volume));
     return this.media;
   }
 
@@ -220,30 +215,49 @@ class ToyPlayer {
     if (!audio || !song.track || !this.alive(t)) return false;
     const cues = await this.loadCues(song);
     if (!this.alive(t)) return true;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.ontimeupdate = null;
     this.emit({ text: song.title, lang: song.lyricLang });
     audio.src = song.track;
     try {
-      audio.load();
+      audio.currentTime = 0;
     } catch {
       /* ignore */
     }
     let cueAt = 0;
-    audio.ontimeupdate = () => {
+    const applyCues = () => {
       if (!this.alive(t)) return;
       const now = audio.currentTime;
+      if (!Number.isFinite(now)) return;
       while (cueAt < cues.length && now >= cues[cueAt]!.at) {
         this.emit({ text: cues[cueAt]!.text, lang: song.lyricLang });
         cueAt += 1;
       }
     };
+    audio.ontimeupdate = applyCues;
     try {
       await audio.play();
     } catch {
       return false;
     }
     if (!this.alive(t)) return true;
+    const startedAt = Date.now();
+    const finishedWell = () => {
+      const dur = audio.duration;
+      const pos = audio.currentTime;
+      const elapsed = Date.now() - startedAt;
+      if (!Number.isFinite(dur) || dur < 4) return false;
+      if (elapsed < 2000) return false;
+      return pos >= dur - 0.85 || pos >= dur * 0.92;
+    };
     await new Promise<void>((resolve) => {
+      let settled = false;
+      let poll = 0;
       const done = () => {
+        if (settled) return;
+        settled = true;
+        window.clearInterval(poll);
         audio.ontimeupdate = null;
         audio.onended = null;
         audio.onerror = null;
@@ -251,10 +265,21 @@ class ToyPlayer {
         resolve();
       };
       this.pending.push(done);
-      audio.onended = done;
-      audio.onerror = done;
+      audio.onended = () => {
+        if (finishedWell()) done();
+      };
+      audio.onerror = () => done();
+      poll = window.setInterval(() => {
+        if (!this.alive(t)) {
+          done();
+          return;
+        }
+        applyCues();
+        if (audio.ended && finishedWell()) done();
+      }, 250);
+      this.timers.push(poll);
     });
-    if (this.alive(t)) this.onEnded?.("item");
+    if (this.alive(t) && finishedWell()) this.onEnded?.("item");
     return true;
   }
 

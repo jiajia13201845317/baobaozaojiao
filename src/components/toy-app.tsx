@@ -838,9 +838,9 @@ function Player({
   playMode: PlayMode;
 }) {
   const ignoreStopUntil = useRef(0);
-  const allow = useTapQuiet(itemId);
+  const allow = useTapQuiet(itemId, 1400);
   useEffect(() => {
-    ignoreStopUntil.current = Date.now() + 700;
+    ignoreStopUntil.current = Date.now() + 1400;
   }, [itemId]);
   const cat = getCategory(category);
   const item = listenItem(category, itemId);
