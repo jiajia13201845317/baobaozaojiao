@@ -233,16 +233,16 @@ html.night {
 
 .island-card {
   overflow: hidden;
-  border-radius: 1.35rem;
-  background: var(--card-bg);
-  box-shadow: var(--lift);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  border-radius: 1.6rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
+  box-shadow: 0 7px 0 #7ad4ff, 0 14px 20px rgba(40, 90, 160, 0.14);
+  transition: transform 160ms ease, box-shadow 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .island-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 6px 12px var(--shadow);
+  transform: translateY(4px);
+  box-shadow: 0 3px 0 #7ad4ff, 0 8px 12px rgba(40, 90, 160, 0.12);
 }
 
 .home-banner {
@@ -476,18 +476,18 @@ html.night .home-brand {
 }
 
 .room-tile {
-  --room-shadow: var(--beige);
+  --room-shadow: #6fcc62;
   display: block;
-  border-radius: 1.35rem;
-  padding: 0.28rem;
-  background: var(--surface);
-  box-shadow: var(--lift);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  border-radius: 1.6rem;
+  padding: 0.22rem;
+  background: linear-gradient(180deg, #ffffff 0%, #e8fff4 100%);
+  box-shadow: 0 6px 0 var(--room-shadow), 0 12px 16px rgba(40, 90, 160, 0.12);
+  transition: transform 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .room-tile:active {
-  transform: scale(0.98);
+  transform: translateY(4px);
 }
 
 .welcome-page {
@@ -557,8 +557,8 @@ html.night .cozy-sky {
   border-radius: 1.4rem;
   background: var(--mist);
   box-shadow:
-    inset 0 0 0 5px var(--bg),
-    inset 0 0 0 8px var(--apricot);
+    inset 0 0 0 5px #fffdf8,
+    inset 0 0 0 9px #ff8ad4;
 }
 
 .machine-chin {
@@ -651,12 +651,12 @@ html.night .welcome-sky {
   align-items: center;
   gap: 0.08rem;
   padding: 0.3rem 0.45rem 0.35rem;
-  border-radius: 1.1rem;
-  background: color-mix(in srgb, var(--surface) 88%, white);
+  border-radius: 1.2rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fff4c8 100%);
   color: var(--ink);
   font-size: 0.74rem;
   font-weight: 700;
-  box-shadow: var(--lift);
+  box-shadow: 0 4px 0 #f0c14e, 0 8px 12px rgba(40, 90, 160, 0.1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -686,11 +686,11 @@ html.night .welcome-sky {
   flex-shrink: 0;
   padding: 0 0.7rem 0 0.35rem;
   border-radius: 999px;
-  background: var(--surface);
+  background: linear-gradient(180deg, #ffffff 0%, #fff4c8 100%);
   color: var(--ink);
   font-size: 0.74rem;
   font-weight: 700;
-  box-shadow: var(--lift);
+  box-shadow: 0 4px 0 #f0c14e, 0 8px 12px rgba(40, 90, 160, 0.1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -786,9 +786,9 @@ html.night .machine-shell::after {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
+  background: linear-gradient(180deg, #ffffff 0%, #fff4c8 100%);
   color: var(--ink);
-  box-shadow: 0 4px 10px var(--shadow);
+  box-shadow: 0 4px 0 #f0c14e, 0 8px 12px rgba(40, 90, 160, 0.12);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -850,9 +850,9 @@ html.night .welcome-kicker {
   margin-top: 0.25rem;
   overflow: hidden;
   border-radius: 999px;
-  background: #fffdfb;
+  background: radial-gradient(circle at 40% 30%, #fffef6 0%, #c8f2a8 100%);
   padding: 0.22rem;
-  box-shadow: 0 14px 32px rgba(232, 90, 42, 0.14);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75), 0 6px 0 #5ed15a, 0 14px 24px rgba(40, 90, 160, 0.16);
 }
 
 @media (max-height: 620px) {
@@ -919,12 +919,12 @@ html.night .welcome-kicker {
 .welcome-bubble {
   margin-top: 0.3rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
+  background: linear-gradient(180deg, #ffffff 0%, #ffe8f4 100%);
   padding: 0.18rem 0.7rem;
   font-size: 0.74rem;
   font-weight: 800;
   color: var(--brand-deep);
-  box-shadow: var(--lift);
+  box-shadow: 0 4px 0 #ff8ad4, 0 8px 12px rgba(255, 61, 138, 0.16);
 }
 
 .welcome-friends {
@@ -940,9 +940,9 @@ html.night .welcome-kicker {
   width: 2.7rem;
   overflow: hidden;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 88%, white);
+  background: linear-gradient(180deg, #ffffff 0%, #e8f7ff 100%);
   padding: 0.12rem;
-  box-shadow: var(--lift);
+  box-shadow: 0 4px 0 #7ad4ff, 0 8px 10px rgba(40, 90, 160, 0.12);
 }
 
 .welcome-friend:nth-child(1) {
@@ -1027,11 +1027,8 @@ html.night .welcome-kicker {
   min-height: 4.2rem;
   padding: 0.7rem 0.8rem;
   border-radius: 1.4rem;
-  background:
-    linear-gradient(180deg, var(--bg) 0%, var(--surface) 100%);
-  box-shadow:
-    0 8px 18px var(--shadow),
-    inset 0 0 0 1px color-mix(in srgb, var(--beige) 70%, transparent);
+  background: linear-gradient(180deg, #ffffff 0%, #fff6d8 100%);
+  box-shadow: 0 5px 0 #f0c14e, 0 10px 16px rgba(40, 90, 160, 0.1);
 }
 
 .control-round {
@@ -1045,18 +1042,19 @@ html.night .welcome-kicker {
 }
 
 .control-round.stop {
-  background: #c48a7a;
-  box-shadow: var(--lift);
+  background: linear-gradient(180deg, #ff8ad4 0%, #ff3d8a 100%);
+  box-shadow: 0 5px 0 #d01868, 0 10px 16px rgba(255, 61, 138, 0.22);
 }
 
 .control-round.stop:disabled {
-  background: var(--beige);
+  background: linear-gradient(180deg, #ffe8f4 0%, #ffd0e8 100%);
   box-shadow: none;
+  color: #c080a0;
 }
 
 .control-round.replay {
-  background: #8aa0b4;
-  box-shadow: var(--lift);
+  background: linear-gradient(180deg, #7ad4ff 0%, #3aa0e8 100%);
+  box-shadow: 0 5px 0 #1e7ec0, 0 10px 16px rgba(40, 90, 160, 0.18);
 }
 
 .control-round:active:not(:disabled) {
@@ -1069,12 +1067,12 @@ html.night .welcome-kicker {
   justify-content: center;
   gap: 0.15rem;
   height: 2.85rem;
-  border-radius: 1rem;
-  background: var(--surface);
-  color: var(--ink);
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  color: #2a2748;
   font-size: 0.86rem;
   font-weight: 800;
-  box-shadow: var(--lift);
+  box-shadow: 0 4px 0 #e09a00, 0 8px 12px rgba(40, 90, 160, 0.12);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -1110,10 +1108,10 @@ html.night .welcome-kicker {
 .parent-sheet {
   position: relative;
   width: min(100%, 28rem);
-  border-radius: 1.8rem 1.8rem 0 0;
-  background: var(--surface);
+  border-radius: 2rem 2rem 0 0;
+  background: linear-gradient(180deg, #fff6d8 0%, #ffffff 18%, #e8f7ff 100%);
   padding: 1.15rem 1.1rem max(1.5rem, env(safe-area-inset-bottom));
-  box-shadow: 0 -10px 32px var(--shadow);
+  box-shadow: 0 -8px 0 #ff8ad4, 0 -16px 32px rgba(255, 61, 138, 0.16);
 }
 
 .parent-row {
@@ -1123,26 +1121,29 @@ html.night .welcome-kicker {
   width: 100%;
   margin-bottom: 0.6rem;
   padding: 0.85rem 0.9rem;
-  border-radius: 1.2rem;
-  background: var(--bg);
+  border-radius: 1.35rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
   color: var(--ink);
   text-align: left;
+  box-shadow: 0 5px 0 #7ad4ff, 0 10px 14px rgba(40, 90, 160, 0.1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .parent-pill {
   border-radius: 999px;
   padding: 0.28rem 0.65rem;
-  background: var(--beige);
-  color: var(--ink);
+  background: linear-gradient(180deg, #fff4c8 0%, #ffe566 100%);
+  color: #2a2748;
   font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
+  box-shadow: 0 2px 0 #f0c14e;
 }
 
 .parent-pill-on {
-  background: var(--brand);
-  color: var(--on-brand);
+  background: linear-gradient(180deg, #ff8ad4 0%, #ff3d8a 100%);
+  color: #fffdf8;
+  box-shadow: 0 2px 0 #d01868;
 }
 
 .dots {
@@ -1155,15 +1156,16 @@ html.night .welcome-kicker {
 
 .dot {
   display: block;
-  width: 0.48rem;
-  height: 0.48rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--beige) 70%, var(--ink-mute));
+  width: 0.55rem;
+  height: 0.7rem;
+  border-radius: 999px 999px 70% 70%;
+  background: #d8e8f8;
 }
 
 .dot.on {
-  background: var(--brand);
-  transform: scale(1.25);
+  background: linear-gradient(180deg, #ffe566 0%, #ff8ad4 100%);
+  transform: scale(1.2);
+  box-shadow: 0 2px 0 #ff3d8a;
 }
 
 .now-dot {
@@ -1195,18 +1197,19 @@ html.night .welcome-kicker {
   justify-content: center;
   gap: 0.4rem;
   width: 100%;
-  height: 2.8rem;
+  height: 2.9rem;
   border-radius: 0 0 1.6rem 1.6rem;
-  background: color-mix(in srgb, var(--brand) 16%, var(--bg));
-  color: var(--accent-deep);
+  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  color: #2a2748;
   font-size: 1rem;
   font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
   -webkit-tap-highlight-color: transparent;
 }
 
 .playall-btn.mt-4 {
-  border-radius: 1.3rem;
-  box-shadow: 0 6px 14px var(--shadow);
+  border-radius: 1.4rem;
+  box-shadow: 0 5px 0 #e09a00, 0 10px 14px rgba(40, 90, 160, 0.12);
 }
 
 .playall-btn:active {
@@ -1389,6 +1392,78 @@ html.night .party-hello {
   color: #fff6d8;
 }
 
+html.night .party-rainbow {
+  opacity: 0.28;
+}
+
+html.night .party-sun {
+  opacity: 0.35;
+}
+
+html.night .island-card {
+  background: linear-gradient(180deg, #42362e 0%, #342a24 100%);
+  box-shadow: 0 7px 0 #5a4032, 0 14px 20px rgba(0, 0, 0, 0.28);
+}
+
+html.night .room-tile {
+  background: linear-gradient(180deg, #42362e 0%, #342a24 100%);
+}
+
+html.night .nav-pill,
+html.night .playall-btn,
+html.night .playall-btn.mt-4 {
+  background: linear-gradient(180deg, #5a4630 0%, #4a3228 100%);
+  color: #fff6d8;
+  box-shadow: 0 4px 0 #2a1c16, 0 8px 12px rgba(0, 0, 0, 0.28);
+}
+
+html.night .parent-sheet {
+  background: linear-gradient(180deg, #4a3a30 0%, #342a24 100%);
+  box-shadow: 0 -8px 0 #5a2a40, 0 -16px 32px rgba(0, 0, 0, 0.32);
+}
+
+html.night .parent-row,
+html.night .story-page,
+html.night .care-chip,
+html.night .care-toy {
+  background: linear-gradient(180deg, #42362e 0%, #342a24 100%);
+  box-shadow: 0 5px 0 #2a1c16, 0 10px 14px rgba(0, 0, 0, 0.24);
+}
+
+.party-hero,
+.party-play {
+  background: linear-gradient(180deg, #ffffff 0%, #fffdf8 100%);
+}
+
+.party-hero-band,
+.party-play-band {
+  background: linear-gradient(160deg, #b8f0ff 0%, #ffe8f4 58%, #fff6c8 100%);
+}
+
+html.night .party-hero-band,
+html.night .party-play-band {
+  background: linear-gradient(160deg, #2a4060 0%, #5a2a48 58%, #5a4630 100%);
+}
+
+.party-word {
+  min-width: 5.6rem;
+  border-radius: 1.15rem;
+  padding: 0.4rem 0.85rem;
+  text-align: center;
+  box-shadow: 0 4px 0 rgba(40, 90, 160, 0.12);
+}
+
+.party-word.on {
+  transform: scale(1.06);
+  box-shadow: 0 5px 0 #ff3d8a;
+}
+
+.party-cover {
+  border-radius: 2rem;
+  background: radial-gradient(circle at 40% 30%, #fffef6 0%, #c8f2a8 100%);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.75), 0 5px 0 #5ed15a;
+}
+
 .care-chip {
   background: linear-gradient(180deg, #ffffff 0%, #fff4c8 100%);
   box-shadow: 0 4px 0 #f0c14e, 0 8px 12px rgba(40, 90, 160, 0.1);
@@ -1415,9 +1490,9 @@ html.night .party-hello {
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 999px;
-  background: var(--brand);
-  color: var(--on-brand);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--brand-deep) 70%, #4a3228);
+  background: linear-gradient(180deg, #ffe566 0%, #ffb000 100%);
+  color: #2a2748;
+  box-shadow: 0 3px 0 #e09a00;
 }
 
 @keyframes float {

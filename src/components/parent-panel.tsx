@@ -1,6 +1,7 @@
 "use client";
 
 import { Moon, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X } from "lucide-react";
+import { PartyEgg } from "@/components/art";
 import {
   PLAY_MODE_HINT,
   PLAY_MODE_LABEL,
@@ -48,7 +49,10 @@ export function ParentPanel({
       <button type="button" className="parent-backdrop" aria-label="关掉设置" onClick={onClose} />
       <div className="parent-sheet">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="ink text-xl font-black">家长设置</h2>
+          <div className="flex items-center gap-2">
+            <PartyEgg className="h-10 w-10" />
+            <h2 className="ink text-xl font-black">家长设置</h2>
+          </div>
           <button type="button" onClick={onClose} className="glass-chip" aria-label="关掉">
             <X className="size-5" />
           </button>

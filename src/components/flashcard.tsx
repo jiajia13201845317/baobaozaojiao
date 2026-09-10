@@ -64,8 +64,8 @@ export function FlashcardPlayer({
         {volume}
       </header>
 
-      <section className="island-card mt-4 flex flex-1 flex-col overflow-hidden bg-[var(--card-bg)]">
-        <div className="relative flex flex-1 flex-col items-center justify-center px-3 pt-3 pb-2">
+      <section className="island-card party-play mt-4 flex flex-1 flex-col overflow-hidden">
+        <div className="party-play-band relative flex flex-1 flex-col items-center justify-center px-3 pt-3 pb-2">
           {total > 1 && (
             <p className="ink-soft mb-2 text-sm font-bold">
               第 {index + 1} {unit} / 共 {total} {unit}
@@ -82,7 +82,7 @@ export function FlashcardPlayer({
               <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
             )}
             <div
-              className={`relative h-full w-full overflow-hidden rounded-[2.2rem] bg-[var(--bg)] shadow-[0_12px_24px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
+              className={`party-cover relative h-full w-full overflow-hidden ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
             >
               <Portrait card={card} className="h-full w-full" />
             </div>
@@ -157,7 +157,7 @@ function WordChip({
 }) {
   return (
     <span
-      className={`min-w-24 rounded-2xl px-4 py-2 text-center ${active ? "scale-105 shadow-[0_4px_0_var(--shadow)]" : "opacity-75"}`}
+      className={`party-word ${active ? "on" : "opacity-80"}`}
       style={{ background: bg, color: tone }}
     >
       <span className="block text-[10px] font-bold tracking-wider">{hint}</span>

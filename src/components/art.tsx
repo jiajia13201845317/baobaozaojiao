@@ -83,7 +83,15 @@ export function CozyBackdrop() {
       <div className="party-sky absolute inset-0" />
       <div className="absolute -left-10 top-8 h-40 w-40 rounded-full bg-[#fff27a]/50 blur-3xl" />
       <div className="absolute right-[-2rem] top-16 h-44 w-44 rounded-full bg-[#ff8ad4]/35 blur-3xl" />
-      <svg className="absolute inset-x-0 top-6 h-28 w-full" viewBox="0 0 390 120" preserveAspectRatio="xMidYMin slice" aria-hidden>
+      <svg className="absolute inset-x-0 top-0 h-44 w-full" viewBox="0 0 390 170" preserveAspectRatio="xMidYMin slice" aria-hidden>
+        <g className="party-rainbow" fill="none" strokeLinecap="round">
+          <path d="M48 148 A 148 148 0 0 1 342 148" stroke="#FF5B7A" strokeWidth="8" />
+          <path d="M58 148 A 138 138 0 0 1 332 148" stroke="#FF9A3C" strokeWidth="8" />
+          <path d="M68 148 A 128 128 0 0 1 322 148" stroke="#FFE566" strokeWidth="8" />
+          <path d="M78 148 A 118 118 0 0 1 312 148" stroke="#7AE06A" strokeWidth="8" />
+          <path d="M88 148 A 108 108 0 0 1 302 148" stroke="#5EC8FF" strokeWidth="8" />
+          <path d="M98 148 A 98 98 0 0 1 292 148" stroke="#C79BFF" strokeWidth="8" />
+        </g>
         <g className="animate-[float_8s_ease-in-out_infinite]" fill="white" opacity="0.92">
           <ellipse cx="58" cy="36" rx="30" ry="16" />
           <ellipse cx="84" cy="34" rx="20" ry="13" />
@@ -93,8 +101,9 @@ export function CozyBackdrop() {
           <ellipse cx="300" cy="28" rx="26" ry="14" />
           <ellipse cx="322" cy="26" rx="16" ry="10" />
         </g>
-        <circle cx="196" cy="22" r="16" fill="#FFE566" />
-        <circle cx="196" cy="22" r="10" fill="#FFF3A8" />
+        <ellipse cx="210" cy="22" rx="18" ry="10" fill="white" opacity="0.75" />
+        <circle className="party-sun" cx="48" cy="42" r="16" fill="#FFE566" />
+        <circle className="party-sun" cx="48" cy="42" r="10" fill="#FFF3A8" />
       </svg>
       <svg className="party-eggs absolute left-3 top-24 h-16 w-16 animate-[bob_4s_ease-in-out_infinite]" viewBox="0 0 80 90" aria-hidden>
         <ellipse cx="40" cy="48" rx="22" ry="28" fill="#FFF4C8" />
@@ -118,9 +127,30 @@ export function CozyBackdrop() {
       >
         <path d="M0 78 C 60 40, 140 88, 210 52 C 280 18, 340 70, 390 46 L 390 170 L 0 170 Z" fill="#7AE06A" />
         <path d="M0 108 C 80 78, 160 120, 250 90 C 320 68, 360 104, 390 92 L 390 170 L 0 170 Z" fill="#5ED15A" />
-        <ellipse cx="52" cy="118" rx="18" ry="8" fill="#FF5CA8" />
-        <ellipse cx="168" cy="128" rx="14" ry="7" fill="#FFE566" />
-        <ellipse cx="300" cy="116" rx="16" ry="7" fill="#7EC8FF" />
+        <g>
+          <circle cx="36" cy="128" r="5" fill="#FF7AB0" />
+          <circle cx="32" cy="124" r="4" fill="#FF7AB0" />
+          <circle cx="40" cy="124" r="4" fill="#FF7AB0" />
+          <circle cx="36" cy="126" r="2.2" fill="#FFE566" />
+        </g>
+        <g>
+          <circle cx="168" cy="136" r="4.5" fill="#FFE566" />
+          <circle cx="164" cy="132" r="3.6" fill="#FFE566" />
+          <circle cx="172" cy="132" r="3.6" fill="#FFE566" />
+          <circle cx="168" cy="134" r="2" fill="#FF8A5C" />
+        </g>
+        <g>
+          <circle cx="248" cy="122" r="5" fill="#C79BFF" />
+          <circle cx="244" cy="118" r="4" fill="#C79BFF" />
+          <circle cx="252" cy="118" r="4" fill="#C79BFF" />
+          <circle cx="248" cy="120" r="2.2" fill="#FFE566" />
+        </g>
+        <g>
+          <circle cx="342" cy="132" r="5" fill="#7EC8FF" />
+          <circle cx="338" cy="128" r="4" fill="#7EC8FF" />
+          <circle cx="346" cy="128" r="4" fill="#7EC8FF" />
+          <circle cx="342" cy="130" r="2.2" fill="#FFE566" />
+        </g>
       </svg>
     </div>
   );

@@ -553,9 +553,9 @@ function WorldGate({
         {volume}
       </header>
 
-      <section className="island-card mt-4 overflow-hidden">
-        <div className="flex items-center gap-3 px-3 py-3" style={{ background: world.tint }}>
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--bg)] p-1.5">
+      <section className="island-card party-hero mt-4 overflow-hidden">
+        <div className="party-hero-band flex items-center gap-3 px-3 py-3">
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl p-1.5" style={{ background: world.tint }}>
             <CoverImage src={world.hero} alt={world.title} />
           </span>
           <div className="min-w-0 flex-1">
@@ -659,9 +659,9 @@ function Library({
         {volume}
       </header>
 
-      <section className="island-card mt-4 overflow-hidden">
-        <div className="flex items-center gap-3 px-3 py-3" style={{ background: cat.tint }}>
-          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-[var(--bg)] p-1.5">
+      <section className="island-card party-hero mt-4 overflow-hidden">
+        <div className="party-hero-band flex items-center gap-3 px-3 py-3">
+          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl p-1.5" style={{ background: cat.tint }}>
             <CoverImage src={cat.hero} alt={cat.title} />
           </span>
           <div>
@@ -834,12 +834,12 @@ function Player({
         </button>
         {volume}
       </header>
-      <section className="island-card relative mt-4 flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-1 flex-col items-center px-3 py-4 text-center" style={{ background: cat.tint }}>
+      <section className="island-card party-play relative mt-4 flex flex-1 flex-col overflow-hidden">
+        <div className="party-play-band flex flex-1 flex-col items-center px-3 py-4 text-center">
           <button
             type="button"
             onClick={() => (playing ? onStop() : onReplay())}
-            className={`cover-hit relative h-[var(--hero)] w-[var(--hero)] overflow-hidden rounded-[1.5rem] bg-[var(--bg)] p-1.5 shadow-[0_8px_16px_var(--shadow)] ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
+            className={`cover-hit party-cover relative h-[var(--hero)] w-[var(--hero)] overflow-hidden p-1.5 ${playing ? "animate-[bob_4s_ease-in-out_infinite]" : ""}`}
             aria-label={playing ? "点图停下" : "点图再听"}
           >
             <CoverImage src={cover} alt={item.title} />
