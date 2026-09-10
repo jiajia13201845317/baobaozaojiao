@@ -17,7 +17,7 @@ const OUT = "public/sfx";
  * is what makes a grown animal read as a puppy or a cub.
  */
 const CLIPS = [
-  { id: "dog", file: "File:Barking of a dog 2.ogg", len: 0.8, lowpass: 2600, speed: 1.16, single: true, fadeIn: 0.07, gain: 0.8 },
+  { id: "dog", file: "File:Ladrido perro.ogg", len: 0.8, lowpass: 2000, speed: 1.35, single: true, fadeIn: 0.1, gain: 0.75 },
   { id: "cat", file: "File:Meow of a pleading cat.oga", len: 1.1, lowpass: 3200, speed: 1.06, single: true, fadeIn: 0.06 },
   { id: "chick", file: "File:Rock-wren-chicks-begging.ogg", len: 1.2, lowpass: 4200, fadeIn: 0.05, gain: 0.9 },
   { id: "duck", file: "File:Pekin duck & mallard.ogg", len: 1.0, lowpass: 2800, fadeIn: 0.04 },

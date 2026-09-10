@@ -3,8 +3,8 @@ Source: Wikimedia Commons. Each clip is trimmed to one call, low-passed,
 faded in over 30ms and levelled down so it cannot startle a baby.
 Regenerate with: node scripts/fetch-sfx.mjs
 
-dog: Barking of a dog 2.ogg — Amada44 — CC BY-SA 3.0
-  https://commons.wikimedia.org/wiki/File:Barking_of_a_dog_2.ogg
+dog: Ladrido perro.ogg — Edo.pt2 — CC0
+  https://commons.wikimedia.org/wiki/File:Ladrido_perro.ogg
 cat: Meow of a pleading cat.oga — Heismark — Public domain
   https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga
 chick: Rock-wren-chicks-begging.ogg — Department of Conservation — CC BY 4.0
