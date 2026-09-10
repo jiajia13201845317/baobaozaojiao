@@ -36,6 +36,7 @@ await page.evaluateOnNewDocument(() => {
 
 await page.goto(`${BASE}/?night=0&go=zh-songs&v=holdsong`, { waitUntil: "domcontentloaded" });
 await page.waitForFunction(() => document.body.innerText.includes("小兔子乖乖"));
+await new Promise((r) => setTimeout(r, 800));
 await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小兔子乖乖"));
   btn?.click();
