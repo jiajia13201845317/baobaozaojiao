@@ -1,13 +1,23 @@
 import assert from "node:assert/strict";
 import { prepareSpeech, zhNumber } from "../src/lib/speech.ts";
+import { categories, cardsFor } from "../src/lib/content.ts";
+
+// Animal rooms play a recording. No card may show or speak an onomatopoeia word.
+const ONOMATOPOEIA = /[汪喵哞咩嘎叽啾呱哼嗷吼咕嘶哒]/;
+for (const category of categories) {
+  for (const card of cardsFor(category.id)) {
+    for (const text of [card.zh, card.en, card.sayZh, card.sayEn]) {
+      if (text && ONOMATOPOEIA.test(text)) {
+        assert.fail(`card ${card.id} still carries an onomatopoeia word: ${text}`);
+      }
+    }
+  }
+}
 
 assert.equal(zhNumber(1), "一");
 assert.equal(zhNumber(11), "十一");
 assert.equal(zhNumber(31), "三十一");
 assert.equal(prepareSpeech("现在31度", "zh-CN", "care"), "现在三十一度");
-assert.equal(prepareSpeech("汪汪汪", "zh-CN", "cry"), "汪，汪，汪");
-assert.equal(prepareSpeech("哇呜哇呜", "zh-CN", "cry"), "哇呜，哇呜");
-assert.equal(prepareSpeech("咴咴咴", "zh-CN", "cry"), "咴，咴，咴");
 assert.equal(prepareSpeech("嘎嘎嘎嘎，真呀真多呀。", "zh-CN", "song"), "嘎，嘎，嘎，嘎，真呀真多呀。");
 assert.equal(prepareSpeech("二四六七八", "zh-CN", "song"), "二，四，六，七，八");
 assert.equal(prepareSpeech("三十一度", "zh-CN", "care"), "三十一度");

@@ -7,10 +7,10 @@ import { CoverImage } from "@/components/cover";
 import { PartyEgg, PlayBadge } from "@/components/art";
 
 const FRIENDS = [
-  { src: "/art/cat.png", alt: "小猫", label: "喵" },
-  { src: "/art/chick.png", alt: "小鸡", label: "叽" },
-  { src: "/art/pig-baby.png", alt: "小猪", label: "哼" },
-  { src: "/art/lion.png", alt: "狮子", label: "吼" },
+  { src: "/art/cat.png", alt: "小猫", label: "猫" },
+  { src: "/art/chick.png", alt: "小鸡", label: "鸡" },
+  { src: "/art/pig-baby.png", alt: "小猪", label: "猪" },
+  { src: "/art/lion.png", alt: "狮子", label: "狮" },
 ] as const;
 
 export function Welcome({

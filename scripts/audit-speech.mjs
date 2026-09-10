@@ -24,7 +24,6 @@ function add(group, id, display, spoken, lang, kind) {
 for (const card of [...animals, ...bodyParts, ...familyMembers, ...colorCards, ...numberCards]) {
   add("card-zh", card.id, card.zh, card.sayZh ?? card.zh, "zh-CN", "word");
   add("card-en", card.id, card.en, card.sayEn ?? card.en, "en-US", "word");
-  if (card.cry) add("card-cry", card.id, card.cry, card.sayCry ?? card.cry, "zh-CN", "cry");
 }
 
 for (const song of [...zhSongs, ...enSongs]) {
@@ -69,7 +68,7 @@ for (const row of rows) {
   const t = row.prepared;
   if (!t) risks.push({ ...row, reason: "empty spoken text" });
   if (/[0-9]/.test(t) && /度/.test(t)) risks.push({ ...row, reason: "digit left in temperature" });
-  if (/(汪汪汪|喵喵喵|嘎嘎嘎嘎|呱呱呱|嘿哟嘿哟|E I E I O)/.test(t)) {
+  if (/(嘎嘎嘎嘎|嘿哟嘿哟|E I E I O)/.test(t)) {
     risks.push({ ...row, reason: "raw onomatopoeia or EIEIO not split" });
   }
   if (row.group === "card-zh" && row.display === "一" && t === "一") {

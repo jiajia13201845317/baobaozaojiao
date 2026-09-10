@@ -36,7 +36,7 @@ await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("小狗软软地叫"));
   btn?.click();
 });
-await page.waitForFunction(() => document.body.innerText.includes("汪汪汪") || document.body.innerText.includes("点狗"));
+await page.waitForFunction(() => document.body.innerText.includes("狗叫") || document.body.innerText.includes("点狗"));
 body = await page.evaluate(() => document.body.innerText);
 await browser.close();
 if (!body.includes("狗")) {

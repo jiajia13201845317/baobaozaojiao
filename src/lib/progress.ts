@@ -25,11 +25,11 @@ export type CrySource = "real" | "soft";
 
 export const CRY_SOURCE_LABEL: Record<CrySource, string> = {
   real: "真声",
-  soft: "拟声",
+  soft: "合成",
 };
 
 export const CRY_SOURCE_HINT: Record<CrySource, string> = {
-  real: "真动物录音，只留一声，压柔了：狗是小奶狗那一声汪。",
+  real: "真动物录音，只留一声，压柔了，听着像小奶狗、小狮子。",
   soft: "本机合成的软叫声，比真声还轻，宝宝更不容易被惊到。",
 };
 

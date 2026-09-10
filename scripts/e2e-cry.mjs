@@ -34,8 +34,8 @@ await new Promise((r) => setTimeout(r, 1200));
 await page.evaluate(() => {
   [...document.querySelectorAll("button")].find((b) => b.innerText.includes("开始听"))?.click();
 });
-await page.waitForFunction(() => document.body.innerText.includes("汪汪汪"));
-await page.waitForFunction(() => document.body.innerText.includes("轻轻的狗叫"));
+await page.waitForFunction(() => document.body.innerText.includes("狗叫"));
+await page.waitForFunction(() => document.body.innerText.includes("真的狗叫"));
 
 // The lesson ends on the cry, so the recording must get requested.
 const deadline = Date.now() + 15000;
@@ -56,12 +56,12 @@ if (!body.includes("动物叫声") || !body.includes("真声")) fail("parent pan
 await page.evaluate(() => {
   [...document.querySelectorAll("button")].find((b) => b.innerText.includes("动物叫声"))?.click();
 });
-await page.waitForFunction(() => document.body.innerText.includes("拟声"));
+await page.waitForFunction(() => document.body.innerText.includes("合成"));
 body = await page.evaluate(() => document.body.innerText);
-if (!body.includes("比真声还轻")) fail("switching to 拟声 did not stick", body);
+if (!body.includes("比真声还轻")) fail("switching to 合成 did not stick", body);
 
 const stored = await page.evaluate(() => localStorage.getItem("bao-cry"));
 if (stored !== "soft") fail(`bao-cry is ${stored}, expected soft`);
 
 await browser.close();
-if (!process.exitCode) console.log("PASS dog plays the recording, parent can switch to 拟声");
+if (!process.exitCode) console.log("PASS dog plays the recording, parent can switch to 合成");

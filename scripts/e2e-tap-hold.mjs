@@ -59,7 +59,7 @@ await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("开始听"));
   btn?.click();
 });
-await page.waitForFunction(() => document.body.innerText.includes("汪汪汪"));
+await page.waitForFunction(() => document.body.innerText.includes("狗叫"));
 await page.waitForFunction(() => window.__spoken.includes("小狗"));
 
 const dogBtn = await page.$("button[aria-label*='点狗']");

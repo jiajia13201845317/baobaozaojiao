@@ -26,7 +26,7 @@ await page.evaluate(() => {
 });
 await new Promise((r) => setTimeout(r, 250));
 let body = await page.evaluate(() => document.body.innerText);
-  if (!body.includes("开始听") || body.includes("小狗软软地叫") || body.includes("汪汪汪")) {
+  if (!body.includes("开始听") || body.includes("小狗软软地叫") || body.includes("狗叫")) {
   console.error("FAIL welcome jumped on first tap\n", body.slice(0, 400));
   await browser.close();
   process.exit(1);
@@ -37,7 +37,7 @@ await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("开始听"));
   btn?.click();
 });
-await page.waitForFunction(() => document.body.innerText.includes("汪汪汪") || document.body.innerText.includes("点狗"));
+await page.waitForFunction(() => document.body.innerText.includes("狗叫") || document.body.innerText.includes("点狗"));
 body = await page.evaluate(() => document.body.innerText);
 await browser.close();
 if (!body.includes("狗")) {

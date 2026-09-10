@@ -71,7 +71,7 @@ export function ParentPanel({
             <X className="size-5" />
           </button>
         </div>
-        <p className="ink-soft mb-4 text-sm font-bold">宝宝拍大按钮，这些给大人调。音量、连播、定时都记在这台机器上。觉得叫声还是有点吓人，就把「动物叫声」切成拟声。</p>
+        <p className="ink-soft mb-4 text-sm font-bold">宝宝拍大按钮，这些给大人调。音量、连播、定时都记在这台机器上。觉得叫声还是有点吓人，就把「动物叫声」切成合成。</p>
 
         <button type="button" onClick={onCycleVolume} className="parent-row">
           <VolumeIcon className="size-5" />

@@ -241,13 +241,11 @@ class ToyPlayer {
     if (this.frame) this.frame.src = "about:blank";
   }
 
-  private async playCartoonCry(card: Flashcard, t: PlayToken) {
+  /** Just the animal. No spoken 拟声 word after it. */
+  private async playAnimalCall(card: Flashcard, t: PlayToken) {
+    if (!card.sound) return;
     this.onStep?.("sound");
-    if (card.cry) this.emit({ text: card.cry, lang: "zh-CN" });
-    if (card.sound) await this.playAnimalSound(card.sound, t);
-    if (!this.alive(t)) return;
-    const spoken = card.sayCry ?? card.cry;
-    if (spoken) await this.speak(spoken, "zh-CN", t, "cry");
+    await this.playAnimalSound(card.sound, t);
   }
 
   private async playNeteaseSong(song: Song, t: PlayToken) {
@@ -369,9 +367,9 @@ class ToyPlayer {
     this.emit({ text: card.en, lang: "en-US" });
     await this.speak(card.sayEn ?? card.en, "en-US", t, "word");
     if (!this.alive(t)) return;
-    if (card.cry) {
+    if (card.sound) {
       await this.wait(200, t);
-      await this.playCartoonCry(card, t);
+      await this.playAnimalCall(card, t);
     }
     this.clearWatchdog();
     if (this.alive(t)) this.onEnded?.("item");
@@ -381,8 +379,8 @@ class ToyPlayer {
     const t = this.begin();
     await this.wait(80, t);
     this.startWatchdog();
-    if (card.cry) {
-      await this.playCartoonCry(card, t);
+    if (card.sound) {
+      await this.playAnimalCall(card, t);
     } else {
       this.onStep?.("zh");
       this.emit({ text: card.zh, lang: "zh-CN" });

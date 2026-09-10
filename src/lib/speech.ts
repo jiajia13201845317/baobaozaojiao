@@ -78,20 +78,6 @@ export function prepareSpeech(text: string, lang: SpeakLang, kind?: SpeakKind): 
 
   out = out.replace(/(-?\d+(?:\.\d+)?)度/g, (_, raw: string) => `${zhNumber(Number(raw))}度`);
   out = out.replace(/嘎嘎嘎嘎/g, "嘎，嘎，嘎，嘎");
-  out = out.replace(/汪汪汪/g, "汪，汪，汪");
-  out = out.replace(/喵喵喵/g, "喵，喵，喵");
-  out = out.replace(/哞哞哞/g, "哞，哞，哞");
-  out = out.replace(/咩咩咩/g, "咩，咩，咩");
-  out = out.replace(/叽叽叽/g, "叽，叽，叽");
-  out = out.replace(/啾啾啾/g, "啾，啾，啾");
-  out = out.replace(/呱呱呱/g, "呱，呱，呱");
-  out = out.replace(/哼哼哼/g, "哼，哼，哼");
-  out = out.replace(/嘶嘶嘶/g, "嘶，嘶");
-  out = out.replace(/吼吼吼/g, "哇呜，哇呜");
-  out = out.replace(/哇呜哇呜/g, "哇呜，哇呜");
-  out = out.replace(/咴咴咴/g, "咴，咴，咴");
-  out = out.replace(/嗷嗷嗷/g, "嗷呜，嗷呜");
-  out = out.replace(/嗷呜嗷呜/g, "嗷呜，嗷呜");
   out = out.replace(/嘿哟嘿哟/g, "嘿哟，嘿哟");
   out = out.replace(/([一二三四五六七八九]{3,})/g, (seq) => [...seq].join("，"));
   if (kind === "verse") {

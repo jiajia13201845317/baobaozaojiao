@@ -131,7 +131,7 @@ try {
 
   await clickText(page, "开始听");
   await waitBody(page, "狗");
-  if (await hasText(page, "汪汪汪")) pass("start plays dog");
+  if (await hasText(page, "狗叫")) pass("start plays dog");
   else fail("start plays dog", await textOf(page, "main"));
   try {
     await page.waitForFunction(
@@ -151,7 +151,7 @@ try {
   const beforeTap = await page.evaluate(() => document.body.innerText);
   const dogImg = await page.$("button[aria-label*='点狗']");
   if (dogImg) await dogImg.click();
-  else await page.click("button[aria-label*='汪汪汪'], main button");
+  else await page.click("button[aria-label*='点狗'], main button");
   await new Promise((r) => setTimeout(r, 400));
   const afterTap = await page.evaluate(() => document.body.innerText);
   if (afterTap.includes("狗") && !afterTap.includes("第 2 只")) pass("tap dog stays on dog");
@@ -247,7 +247,7 @@ try {
   if ((await hasText(page, "认一认")) && (await hasText(page, "唱儿歌")) && (await hasText(page, "听故事"))) {
     pass("home three doors");
   } else fail("home three doors", await textOf(page, "main"));
-  if (await hasText(page, "小狗汪汪汪")) pass("home dog hero");
+  if (await hasText(page, "真的狗叫")) pass("home dog hero");
   else fail("home dog hero");
   if (await hasText(page, "家长")) pass("home parent visible");
   else fail("home parent visible");

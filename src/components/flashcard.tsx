@@ -51,7 +51,7 @@ export function FlashcardPlayer({
   volume: ReactNode;
 }) {
   const cat = getCategory(category);
-  const showSound = Boolean(card.cry);
+  const showSound = Boolean(card.sound);
   const unit = category === "animals" ? "只" : "张";
 
   return (
@@ -77,7 +77,7 @@ export function FlashcardPlayer({
             onPointerDown={onTap}
             onClick={onTap}
             className="relative grid h-[var(--hero)] w-[var(--hero)] place-items-center"
-            aria-label={card.cry ? `点${card.zh}，听轻轻的叫声` : `点${card.zh}，再听一遍`}
+            aria-label={card.sound ? `点${card.zh}，听真的${card.zh}叫` : `点${card.zh}，再听一遍`}
           >
             {playing && (
               <span className="absolute h-[108%] w-[108%] rounded-full bg-[var(--sage)]/50" />
@@ -89,7 +89,7 @@ export function FlashcardPlayer({
             </div>
           </button>
           <p className="ink-soft mt-2 text-sm font-bold">
-            {card.cry ? `点${card.zh}，听轻轻的${card.zh}叫` : `点图片，再听 ${card.zh}`}
+            {card.sound ? `点${card.zh}，听真的${card.zh}叫` : `点图片，再听 ${card.zh}`}
           </p>
           <ProgressDots total={total} index={index} />
         </div>
@@ -111,8 +111,8 @@ export function FlashcardPlayer({
           />
           {showSound && (
             <WordChip
-              label={card.cry!}
-              hint="轻轻叫"
+              label={`${card.zh}叫`}
+              hint="真声"
               active={step === "sound"}
               tone="var(--ink)"
               bg="var(--sage)"

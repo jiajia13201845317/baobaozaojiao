@@ -65,10 +65,8 @@ export type Flashcard = {
   id: string;
   zh: string;
   en: string;
-  cry?: string;
   sayZh?: string;
   sayEn?: string;
-  sayCry?: string;
   sound?: AnimalSoundId;
   image: string;
   color: string;
@@ -629,18 +627,18 @@ export const enSongs: Song[] = [
 ];
 
 export const animals: Flashcard[] = [
-  { id: "dog", zh: "狗", en: "Dog", sayZh: "小狗", sayEn: "dog", cry: "汪汪汪", sayCry: "汪，汪，汪", sound: "dog", image: "/art/dog.png", color: "#F0D8C0", accent: "#B07840" },
-  { id: "cat", zh: "猫", en: "Cat", sayZh: "小猫", sayEn: "cat", cry: "喵喵喵", sayCry: "喵，喵，喵", sound: "cat", image: "/art/cat.png", color: "#FFE4C8", accent: "#E0892C" },
-  { id: "chick", zh: "鸡", en: "Chick", sayZh: "小鸡", sayEn: "chick", cry: "叽叽叽", sayCry: "叽，叽，叽", sound: "chick", image: "/art/chick.png", color: "#FFF3B0", accent: "#D4A017" },
-  { id: "duck", zh: "鸭", en: "Duck", sayZh: "小鸭", sayEn: "duck", cry: "嘎嘎嘎", sayCry: "嘎，嘎，嘎", sound: "duck", image: "/art/duck.png", color: "#D4F0C8", accent: "#5AAA4A" },
-  { id: "cow", zh: "牛", en: "Cow", sayZh: "奶牛", sayEn: "cow", cry: "哞哞哞", sayCry: "哞，哞，哞", sound: "cow", image: "/art/cow.png", color: "#F0E8DC", accent: "#8A6A4A" },
-  { id: "sheep", zh: "羊", en: "Sheep", sayZh: "小羊", sayEn: "sheep", cry: "咩咩咩", sayCry: "咩，咩，咩", sound: "sheep", image: "/art/sheep.png", color: "#F4F0E8", accent: "#8A7A6A" },
-  { id: "pig", zh: "猪", en: "Pig", sayZh: "小猪", sayEn: "pig", cry: "哼哼哼", sayCry: "哼，哼，哼", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
-  { id: "bird", zh: "鸟", en: "Bird", sayZh: "小鸟", sayEn: "bird", cry: "啾啾啾", sayCry: "啾，啾，啾", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
-  { id: "frog", zh: "青蛙", en: "Frog", sayZh: "青蛙", sayEn: "frog", cry: "呱呱呱", sayCry: "呱，呱，呱", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
-  { id: "horse", zh: "马", en: "Horse", sayZh: "小马", sayEn: "horse", cry: "咴咴咴", sayCry: "咴，咴，咴", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
-  { id: "lion", zh: "狮子", en: "Lion", sayZh: "小狮子", sayEn: "lion", cry: "哇呜哇呜", sayCry: "哇呜，哇呜", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
-  { id: "elephant", zh: "大象", en: "Elephant", sayZh: "大象", sayEn: "elephant", cry: "嗷嗷嗷", sayCry: "嗷呜，嗷呜", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
+  { id: "dog", zh: "狗", en: "Dog", sayZh: "小狗", sayEn: "dog", sound: "dog", image: "/art/dog.png", color: "#F0D8C0", accent: "#B07840" },
+  { id: "cat", zh: "猫", en: "Cat", sayZh: "小猫", sayEn: "cat", sound: "cat", image: "/art/cat.png", color: "#FFE4C8", accent: "#E0892C" },
+  { id: "chick", zh: "鸡", en: "Chick", sayZh: "小鸡", sayEn: "chick", sound: "chick", image: "/art/chick.png", color: "#FFF3B0", accent: "#D4A017" },
+  { id: "duck", zh: "鸭", en: "Duck", sayZh: "小鸭", sayEn: "duck", sound: "duck", image: "/art/duck.png", color: "#D4F0C8", accent: "#5AAA4A" },
+  { id: "cow", zh: "牛", en: "Cow", sayZh: "奶牛", sayEn: "cow", sound: "cow", image: "/art/cow.png", color: "#F0E8DC", accent: "#8A6A4A" },
+  { id: "sheep", zh: "羊", en: "Sheep", sayZh: "小羊", sayEn: "sheep", sound: "sheep", image: "/art/sheep.png", color: "#F4F0E8", accent: "#8A7A6A" },
+  { id: "pig", zh: "猪", en: "Pig", sayZh: "小猪", sayEn: "pig", sound: "pig", image: "/art/pig.png", color: "#FFD6E0", accent: "#E07090" },
+  { id: "bird", zh: "鸟", en: "Bird", sayZh: "小鸟", sayEn: "bird", sound: "bird", image: "/art/bird.png", color: "#C8EEF8", accent: "#2A88B0" },
+  { id: "frog", zh: "青蛙", en: "Frog", sayZh: "青蛙", sayEn: "frog", sound: "frog", image: "/art/frog.png", color: "#C8F0B8", accent: "#4A9A3A" },
+  { id: "horse", zh: "马", en: "Horse", sayZh: "小马", sayEn: "horse", sound: "horse", image: "/art/horse.png", color: "#E8D4B8", accent: "#8A6030" },
+  { id: "lion", zh: "狮子", en: "Lion", sayZh: "小狮子", sayEn: "lion", sound: "lion", image: "/art/lion.png", color: "#FFE7B0", accent: "#D49020" },
+  { id: "elephant", zh: "大象", en: "Elephant", sayZh: "大象", sayEn: "elephant", sound: "elephant", image: "/art/elephant.png", color: "#D8DCE8", accent: "#6A7088" },
 ];
 
 export const bodyParts: Flashcard[] = [
@@ -713,7 +711,7 @@ export const poems: Poem[] = [
     fun: [
       "诗背完了，来听好玩的话：",
       "春天的早上，宝宝睡到自己醒来。",
-      "窗外好多小鸟在聊天：啾啾啾。",
+      "窗外好多小鸟在聊天，一只说完换一只。",
       "夜里悄悄下过雨，花瓣像给草地盖了一层小被子。",
     ],
   },
@@ -945,7 +943,7 @@ export const stories: Story[] = [
       "池塘里，游着一群小蝌蚪。",
       "小蝌蚪要找妈妈。",
       "金鱼不是，螃蟹不是，乌龟也不是。",
-      "呱呱呱，青蛙妈妈来了。",
+      "荷叶一晃，青蛙妈妈来了。",
       "妈妈，我们找到你啦。",
     ],
   },
