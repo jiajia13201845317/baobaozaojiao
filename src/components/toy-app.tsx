@@ -85,20 +85,33 @@ export function ToyApp() {
   const sleepTimer = useRef<number | null>(null);
   const playGen = useRef(0);
   const holdRef = useRef(false);
+  const advanceTimer = useRef<number | null>(null);
   viewRef.current = view;
   modeRef.current = playMode;
+
+  const cancelAdvance = () => {
+    if (advanceTimer.current != null) {
+      window.clearTimeout(advanceTimer.current);
+      advanceTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     toyPlayer.onLine = (info) => setLine(info);
     toyPlayer.onStep = (next) => setStep(next);
     toyPlayer.onEnded = (kind) => {
       setPlaying(false);
-      if (kind === "tap" || holdRef.current) return;
+      if (kind === "tap" || holdRef.current) {
+        cancelAdvance();
+        return;
+      }
       const current = viewRef.current;
       if (current.name !== "player") return;
       if (modeRef.current === "once") return;
       const gen = playGen.current;
-      const advance = () => {
+      cancelAdvance();
+      advanceTimer.current = window.setTimeout(() => {
+        advanceTimer.current = null;
         if (holdRef.current || playGen.current !== gen) return;
         if (modeRef.current === "loop") {
           void playItemRef.current(current.category, current.itemId, current.world);
@@ -106,8 +119,7 @@ export function ToyApp() {
         }
         const next = siblingId(current.category, current.itemId, 1);
         if (next) void playItemRef.current(current.category, next, current.world);
-      };
-      window.setTimeout(advance, 80);
+      }, 700);
     };
     return () => {
       toyPlayer.onLine = null;
@@ -181,11 +193,20 @@ export function ToyApp() {
   const remainingText =
     remainingLabel === null ? null : remainingLabel <= 0 ? "马上停" : `${remainingLabel}分`;
 
-  const playItem = useCallback(async (category: CategoryId, itemId: string, world?: WorldId) => {
+  const playItem = useCallback(async (
+    category: CategoryId,
+    itemId: string,
+    world?: WorldId,
+    source: "user" | "chain" = "user",
+  ) => {
+    if (source === "chain" && holdRef.current) return;
+    if (source === "user") {
+      holdRef.current = false;
+      cancelAdvance();
+    }
     const gen = ++playGen.current;
-    holdRef.current = false;
     await toyPlayer.unlock();
-    if (gen !== playGen.current) return;
+    if (gen !== playGen.current || (source === "chain" && holdRef.current)) return;
     toyPlayer.tap();
     writeHasPlayed();
     setLine(null);
@@ -198,7 +219,7 @@ export function ToyApp() {
     armSleep(sleepMinutes);
     if (isLesson(category)) {
       const card = cardsFor(category).find((c) => c.id === itemId);
-      if (card && gen === playGen.current) await toyPlayer.playLesson(card);
+      if (card && gen === playGen.current && !holdRef.current) await toyPlayer.playLesson(card);
       return;
     }
     if (category === "zh-songs" || category === "en-songs") {
@@ -215,7 +236,7 @@ export function ToyApp() {
     if (story && gen === playGen.current) await toyPlayer.playStory(story);
   }, [armSleep, sleepMinutes]);
 
-  playItemRef.current = playItem;
+  playItemRef.current = (category, itemId, world) => playItem(category, itemId, world, "chain");
 
   const start = useCallback(async () => {
     await playItem("animals", "dog");
@@ -228,17 +249,23 @@ export function ToyApp() {
   }, []);
 
   const tapCard = useCallback(async (category: CategoryId, itemId: string) => {
-    playGen.current += 1;
+    cancelAdvance();
     holdRef.current = true;
+    playGen.current += 1;
+    toyPlayer.stop();
     await toyPlayer.unlock();
     toyPlayer.tap();
     setPlaying(true);
+    setView((current) =>
+      current.name === "player" ? { ...current, category, itemId } : { name: "player", category, itemId }
+    );
     armSleep(sleepMinutes);
     const card = cardsFor(category).find((c) => c.id === itemId);
     if (card) await toyPlayer.playCry(card);
   }, [armSleep, sleepMinutes]);
 
   const stop = useCallback(() => {
+    cancelAdvance();
     playGen.current += 1;
     holdRef.current = true;
     toyPlayer.stop();

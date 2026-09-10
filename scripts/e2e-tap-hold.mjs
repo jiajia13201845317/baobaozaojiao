@@ -9,8 +9,26 @@ const browser = await puppeteer.launch({
   args: ["--no-sandbox", "--disable-dev-shm-usage", "--autoplay-policy=no-user-gesture-required"],
   defaultViewport: { width: 390, height: 844, isMobile: true, hasTouch: true },
 });
+
+async function assertStillOn(page, animal, pageNo) {
+  const body = await page.evaluate(() => document.body.innerText);
+  const jumped =
+    body.includes("第 5 只") ||
+    body.includes("第 6 只") ||
+    body.includes("第 4 只") ||
+    body.includes("第 2 只") ||
+    body.includes("牛") ||
+    body.includes("羊") ||
+    body.includes("鸭");
+  if (!body.includes(animal) || !body.includes(`第 ${pageNo} 只`) || jumped) {
+    console.error(`FAIL left ${animal}\n`, body.slice(0, 500));
+    await browser.close();
+    process.exit(1);
+  }
+}
+
 const page = await browser.newPage();
-page.setDefaultTimeout(20000);
+page.setDefaultTimeout(25000);
 
 await page.evaluateOnNewDocument(() => {
   localStorage.setItem("bao-mode", "chain");
@@ -34,7 +52,7 @@ await page.evaluateOnNewDocument(() => {
   };
 });
 
-await page.goto(`${BASE}/?night=0&go=welcome&v=tap`, { waitUntil: "domcontentloaded" });
+await page.goto(`${BASE}/?night=0&go=welcome&v=hold`, { waitUntil: "domcontentloaded" });
 await page.waitForFunction(() => document.body.innerText.includes("开始听"));
 await page.evaluate(() => {
   const btn = [...document.querySelectorAll("button")].find((b) => b.innerText.includes("开始听"));
@@ -42,15 +60,17 @@ await page.evaluate(() => {
 });
 await page.waitForFunction(() => document.body.innerText.includes("汪汪汪"));
 await page.waitForFunction(() => window.__spoken.includes("小狗"));
+
 const dogBtn = await page.$("button[aria-label*='点狗']");
 if (!dogBtn) throw new Error("no dog tap target");
 await dogBtn.click();
-await page.waitForFunction(() => window.__spoken.filter((t) => t.includes("汪")).length >= 1);
-await new Promise((r) => setTimeout(r, 1200));
-const body = await page.evaluate(() => document.body.innerText);
+await new Promise((r) => setTimeout(r, 1800));
+await assertStillOn(page, "狗", 1);
+
+await new Promise((r) => setTimeout(r, 2500));
+await dogBtn.click();
+await new Promise((r) => setTimeout(r, 1800));
+await assertStillOn(page, "狗", 1);
+
 await browser.close();
-if (!body.includes("狗") || body.includes("第 5 只") || body.includes("第 2 只") || body.includes("牛")) {
-  console.error("FAIL tap jumped away\n", body.slice(0, 400));
-  process.exit(1);
-}
 console.log("PASS tap holds on dog under chain mode");

@@ -32,7 +32,7 @@ export function Welcome({
     <main className="welcome-page relative z-10 flex min-h-dvh flex-1 items-center justify-center">
       <div className="machine-shell">
         <div className="machine-lens" aria-hidden />
-        <div className="machine-screen" onClick={onStart} role="presentation">
+        <div className="machine-screen" role="presentation">
           <PlayroomBackdrop sky={care.sky} />
           <SkyBuddy care={care} onTalk={onTalk} />
 
