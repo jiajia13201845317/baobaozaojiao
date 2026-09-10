@@ -122,36 +122,10 @@ function PlayroomBackdrop({ sky }: { sky: SkyKind }) {
             <path d="M340 76 l-8 28" />
           </g>
         )}
-        <g className="party-rainbow" fill="none" strokeLinecap="round" opacity={sky === "night" ? 0.22 : 0.7}>
-          <path d="M40 210 A 160 160 0 0 1 350 210" stroke="#E8A8B4" strokeWidth="10" />
-          <path d="M52 210 A 148 148 0 0 1 338 210" stroke="#E8C49A" strokeWidth="10" />
-          <path d="M64 210 A 136 136 0 0 1 326 210" stroke="#E8D88A" strokeWidth="10" />
-          <path d="M76 210 A 124 124 0 0 1 314 210" stroke="#A8D49A" strokeWidth="10" />
-          <path d="M88 210 A 112 112 0 0 1 302 210" stroke="#9CC8DC" strokeWidth="10" />
-          <path d="M100 210 A 100 100 0 0 1 290 210" stroke="#C4B4E0" strokeWidth="10" />
-        </g>
         <ellipse cx="64" cy="72" rx="32" ry="14" fill="#FFFFFF" opacity={sky === "sun" ? 0.55 : 0.88} />
         <ellipse cx="90" cy="68" rx="20" ry="11" fill="#FFFFFF" opacity="0.7" />
-        <ellipse cx="280" cy="58" rx="26" ry="12" fill="#FFFFFF" opacity="0.82" />
-        <ellipse cx="300" cy="54" rx="16" ry="9" fill="#FFFFFF" opacity="0.7" />
         <path d="M-10 430 Q 195 360 410 430 L 410 800 L -10 800 Z" fill="#8FCB7A" />
         <path d="M-10 500 Q 195 440 410 500 L 410 800 L -10 800 Z" fill="#6BB05E" />
-        <circle cx="48" cy="520" r="7" fill="#E8A8B8" />
-        <circle cx="42" cy="514" r="5" fill="#E8A8B8" />
-        <circle cx="54" cy="514" r="5" fill="#E8A8B8" />
-        <circle cx="48" cy="517" r="3" fill="#F0D78A" />
-        <circle cx="120" cy="548" r="6" fill="#E8D88A" />
-        <circle cx="116" cy="543" r="4.5" fill="#E8D88A" />
-        <circle cx="124" cy="543" r="4.5" fill="#E8D88A" />
-        <circle cx="120" cy="546" r="2.4" fill="#E0A888" />
-        <circle cx="268" cy="530" r="7" fill="#C4B4E0" />
-        <circle cx="262" cy="524" r="5" fill="#C4B4E0" />
-        <circle cx="274" cy="524" r="5" fill="#C4B4E0" />
-        <circle cx="268" cy="527" r="3" fill="#F0D78A" />
-        <circle cx="340" cy="552" r="6" fill="#9CC8DC" />
-        <circle cx="336" cy="547" r="4.5" fill="#9CC8DC" />
-        <circle cx="344" cy="547" r="4.5" fill="#9CC8DC" />
-        <circle cx="340" cy="550" r="2.4" fill="#F0D78A" />
       </svg>
     </div>
   );

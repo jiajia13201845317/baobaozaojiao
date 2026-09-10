@@ -14,7 +14,7 @@
 
 请用这个公开地址，不要打开 `127.0.0.1`：那是云端开发机自己的地址，你自己的浏览器连不上。
 
-**https://tidy-valley-592.harvis.page/?night=0&go=welcome&v=song**
+**https://tidy-valley-592.harvis.page/?night=0&go=welcome&v=stayhome**
 
 开机窗里有会动的天气、穿衣和吃饭提醒。点太阳、衣服或小碗会说话。乐园页同样有这三块。想看晴天/下雨/夜里，把地址里的 `weather=` 换成 `sun`、`rain` 或 `night`。
 

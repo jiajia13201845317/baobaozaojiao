@@ -58,6 +58,17 @@ type View =
 
 const VOLUME_STEPS = [0, 0.45, 0.82] as const;
 
+function useTapQuiet(key: string) {
+  const until = useRef(0);
+  useEffect(() => {
+    until.current = Date.now() + 700;
+  }, [key]);
+  return (fn: () => void) => {
+    if (Date.now() < until.current) return;
+    fn();
+  };
+}
+
 function listenItem(category: CategoryId, itemId: string) {
   if (category === "zh-songs") return zhSongs.find((s) => s.id === itemId);
   if (category === "en-songs") return enSongs.find((s) => s.id === itemId);
@@ -453,6 +464,7 @@ function Home({
   onTalk: (text: string) => void;
   night: boolean;
 }) {
+  const allow = useTapQuiet("home");
   const care = useCare(night);
   const showContinue = Boolean(lastPlay && !(lastPlay.category === "animals" && lastPlay.itemId === "dog"));
   const status = [
@@ -477,10 +489,10 @@ function Home({
         </div>
         {volume}
       </section>
-      <CareStrip care={care} onTalk={onTalk} />
+      <CareStrip care={care} onTalk={(text) => allow(() => onTalk(text))} />
 
       {showContinue && lastPlay && (
-        <button type="button" onClick={() => onContinue(lastPlay)} className="party-continue">
+        <button type="button" onClick={() => allow(() => onContinue(lastPlay))} className="party-continue">
           <PlayBadge className="h-9 w-9" />
           <span className="min-w-0 text-left">
             <span className="block text-[11px] font-bold text-[var(--ink-soft)]">接着听</span>
@@ -489,7 +501,7 @@ function Home({
         </button>
       )}
 
-      <button type="button" onClick={onPlayDog} className="party-stage">
+      <button type="button" onClick={() => allow(onPlayDog)} className="party-stage">
         <span className="party-stage-island">
           <CoverImage src="/art/hero-dog.png" alt="小狗" />
         </span>
@@ -510,7 +522,7 @@ function Home({
           <button
             key={world.id}
             type="button"
-            onClick={() => onOpenWorld(world.id)}
+            onClick={() => allow(() => onOpenWorld(world.id))}
             className={`party-gate gate-${index}`}
             style={{
               ["--room-shadow" as string]: world.shadow,
@@ -547,6 +559,7 @@ function WorldGate({
   onOpen: (id: CategoryId, world: WorldId) => void;
   onPlayFirst: () => void;
 }) {
+  const allow = useTapQuiet(worldId);
   const world = getWorld(worldId);
   const rooms = world.rooms.map((id) => getCategory(id));
 
@@ -571,7 +584,7 @@ function WorldGate({
             <p className="ink-soft text-sm font-medium">{world.hint}</p>
           </div>
         </div>
-        <button type="button" onClick={onPlayFirst} className="playall-btn">
+        <button type="button" onClick={() => allow(onPlayFirst)} className="playall-btn">
           <PlayBadge className="h-8 w-8" />
           先听一张
         </button>
@@ -579,7 +592,7 @@ function WorldGate({
 
       <div className="mt-4 grid grid-cols-2 gap-3.5">
         {rooms.map((cat) => (
-          <RoomButton key={cat.id} cat={cat} onOpen={(id) => onOpen(id, worldId)} />
+          <RoomButton key={cat.id} cat={cat} onOpen={(id) => allow(() => onOpen(id, worldId))} />
         ))}
       </div>
     </main>
@@ -647,6 +660,7 @@ function Library({
   onPlay: (id: string) => void;
   volume: ReactNode;
 }) {
+  const allow = useTapQuiet(category);
   const cat = getCategory(category);
   const lesson = isLesson(category);
   const cards = lesson ? cardsFor(category) : [];
@@ -680,7 +694,7 @@ function Library({
       </section>
 
       {first && (
-        <button type="button" onClick={() => onPlay(first.id)} className="playall-btn mt-4">
+        <button type="button" onClick={() => allow(() => onPlay(first.id))} className="playall-btn mt-4">
           <PlayBadge className="h-8 w-8" />
           从第一{unit}听
         </button>
@@ -690,7 +704,7 @@ function Library({
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {cards.map((card) => (
             <li key={card.id}>
-              <button type="button" onClick={() => onPlay(card.id)} className={`island-card w-full text-left ${lastId === card.id ? "now-card" : ""}`}>
+              <button type="button" onClick={() => allow(() => onPlay(card.id))} className={`island-card w-full text-left ${lastId === card.id ? "now-card" : ""}`}>
                 <span className="relative block aspect-square overflow-hidden">
                   <Portrait card={card} className="h-full w-full" />
                   {lastId === card.id ? (
@@ -719,7 +733,7 @@ function Library({
         <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {(songs.length ? songs : poemItems.length ? poemItems : taleItems).map((item) => (
             <li key={item.id}>
-              <button type="button" onClick={() => onPlay(item.id)} className={`island-card w-full text-left ${lastId === item.id ? "now-card" : ""}`}>
+              <button type="button" onClick={() => allow(() => onPlay(item.id))} className={`island-card w-full text-left ${lastId === item.id ? "now-card" : ""}`}>
                 <span className="relative block aspect-square overflow-hidden" style={{ background: item.color }}>
                   {"image" in item && item.image ? (
                     <CoverImage src={item.image} alt={item.title} className="p-3" />
