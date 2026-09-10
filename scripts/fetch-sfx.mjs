@@ -28,7 +28,7 @@ const CLIPS = [
   { id: "frog", file: "File:Single Frog Croak.oga", len: 1.0, lowpass: 2400, fadeIn: 0.05 },
   { id: "horse", file: "File:Wiehern.ogg", len: 1.3, lowpass: 1800, fadeIn: 0.1, gain: 0.75 },
   { id: "lion", file: "File:Lion raring-sound1TamilNadu178.ogg", len: 1.2, lowpass: 900, speed: 1.3, fadeIn: 0.16, gain: 0.8 },
-  { id: "elephant", file: "File:Elephant voice - trumpeting.ogg", len: 1.3, lowpass: 1800, fadeIn: 0.08, gain: 0.85 },
+  { id: "elephant", file: "File:Elephant voice - trumpeting.ogg", len: 1.3, lowpass: 1100, fadeIn: 0.18, gain: 0.6 },
 ];
 
 function ffmpeg(args) {

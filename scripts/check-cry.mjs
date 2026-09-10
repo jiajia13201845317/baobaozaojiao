@@ -38,7 +38,7 @@ const RECORDED_LIMITS = {
   frog: { maxCentroid: 1900 },
   horse: { maxCentroid: 2000 },
   lion: { maxCentroid: 800 },
-  elephant: { maxCentroid: 1600 },
+  elephant: { maxCentroid: 900 },
 };
 
 const LIMITS = MODE === "synth" ? SYNTH_LIMITS : RECORDED_LIMITS;
