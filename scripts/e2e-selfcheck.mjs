@@ -43,6 +43,10 @@ async function waitBody(page, needle, ms = 8000) {
   await page.waitForFunction((want) => document.body.innerText.includes(want), { timeout: ms }, needle);
 }
 
+/** Every screen ignores taps for its first 700ms so a leftover tap cannot fire. */
+const TAP_QUIET_MS = 900;
+const settle = () => new Promise((r) => setTimeout(r, TAP_QUIET_MS));
+
 const browser = await puppeteer.launch({
   executablePath: chrome,
   headless: "new",
@@ -89,7 +93,11 @@ async function grabSpoken() {
   return batch;
 }
 
+let asked = [];
+page.on("request", (req) => asked.push(req.url()));
+
 async function open(path) {
+  asked = [];
   await page.goto(`${BASE}${path}`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("main, [role=dialog], button");
 }
@@ -129,8 +137,9 @@ try {
   if (careSpoken.some((s) => /度/.test(s.text))) pass("care weather spoken", careSpoken[0]?.text);
   else pass("care toys clicked");
 
+  await settle();
   await clickText(page, "开始听");
-  await waitBody(page, "狗");
+  await waitBody(page, "正在听");
   if (await hasText(page, "狗叫")) pass("start plays dog");
   else fail("start plays dog", await textOf(page, "main"));
   try {
@@ -159,10 +168,13 @@ try {
   else pass("tap dog stays on dog");
 
   if (await hasText(page, "下一只")) {
+    // The player ignores taps for 1400ms after it opens.
+    await new Promise((r) => setTimeout(r, 1600));
     await clickText(page, "下一只");
     await page.waitForFunction(() => document.body.innerText.includes("猫") || document.body.innerText.includes("第 2"));
     if (await hasText(page, "猫")) pass("next animal");
     else fail("next animal", await textOf(page, "main"));
+    await new Promise((r) => setTimeout(r, 1600));
     await clickText(page, "上一只");
     await waitBody(page, "狗");
     pass("prev animal");
@@ -185,12 +197,15 @@ try {
     if (room.go === "stories") {
       await open("/?night=0&go=stories&v=voice");
       await waitBody(page, "寓言故事");
+      await settle();
       await clickText(page, "寓言故事");
       await waitBody(page, room.expect);
+      await settle();
       return;
     }
     await open(`/?night=0&go=${room.go}&v=voice`);
     await waitBody(page, room.expect);
+    await settle();
   }
 
   async function clickCard(title) {
@@ -224,7 +239,7 @@ try {
       await openLibrary(room);
       await waitBody(page, item);
       await clickCard(item);
-      await waitBody(page, item);
+      await waitBody(page, "正在听");
       if (await hasText(page, item)) pass(`player ${room.go}/${item}`);
       else fail(`player ${room.go}/${item}`, await textOf(page, "main"));
       try {
@@ -233,8 +248,15 @@ try {
         /* empty */
       }
       const batch = await grabSpoken();
+      // Songs come from a recording or the NetEase player, never the speech engine.
+      const track = asked.find((u) => /\/songs\/.+\.mp3$/.test(u));
+      const frame = await page.evaluate(() =>
+        [...document.querySelectorAll("iframe")].map((f) => f.src).find((src) => src.includes("music.163.com")) ?? "",
+      );
       if (batch.length) pass(`speech ${room.go}/${item}`, batch.map((s) => s.text).slice(0, 2).join(" / "));
-      else fail(`speech ${room.go}/${item}`, "no utterance captured");
+      else if (track) pass(`audio ${room.go}/${item}`, track.replace(BASE, ""));
+      else if (frame) pass(`audio ${room.go}/${item}`, "netease player");
+      else fail(`speech ${room.go}/${item}`, "nothing played");
       if (["zh-songs", "en-songs", "tales", "poems", "stories"].includes(room.go) && item === room.items[0]) {
         if (await hasText(page, "下一首")) pass(`next-track ${room.go}`);
         else fail(`next-track ${room.go}`);
@@ -281,12 +303,14 @@ try {
   await waitBody(page, "认一认");
   if (await hasText(page, "点一张")) pass("world learn");
   else fail("world learn", await textOf(page, "main"));
+  await settle();
   await clickText(page, "先听一张");
   await waitBody(page, "狗");
   pass("world learn first card");
 
   await open("/?night=0&go=songs&v=voice");
   await waitBody(page, "唱儿歌");
+  await settle();
   await clickText(page, "先听一张");
   await waitBody(page, "小兔子乖乖");
   pass("world songs first card");
@@ -299,6 +323,7 @@ try {
 
   await open("/?night=0&go=stories&v=voice");
   await waitBody(page, "听故事");
+  await settle();
   await clickText(page, "先听一张");
   await waitBody(page, "小红帽");
   pass("world stories first card");
