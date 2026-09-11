@@ -1,0 +1,101 @@
+import { mkdir } from "node:fs/promises";
+import sharp from "sharp";
+
+/**
+ * The pet art is generated on a flat white backdrop: the incubating egg one
+ * frame at a time, the collection three creatures to a sheet. This turns both
+ * into centred, transparent, equally sized PNGs the cards can sit on top of a
+ * coloured gradient.
+ *
+ * Cutting the backdrop out cannot key on colour alone — several creatures are
+ * near-white themselves (the frosty one, the cream bellies, the eye
+ * highlights). So flood fill inward from the frame edge and only touch
+ * background that is actually connected to it.
+ *
+ * The fill fades rather than cuts: alpha ramps from nothing at pure white up
+ * to solid at FEATHER_TO. That erases the wide pale halo the renderer leaves
+ * while keeping the dense core of the contact shadow, so the creature still
+ * looks like it is standing on something.
+ */
+const SEED = [255, 255, 255];
+const FEATHER_FROM = 10;
+const FEATHER_TO = 30;
+/** The hero renders at ~13rem, so 448 covers a 2x screen with room to spare. */
+const SIZE = 448;
+
+const SHEETS = [
+  { id: "forest", file: "series-forest.png" },
+  { id: "fire", file: "series-fire2.png" },
+  { id: "ice", file: "series-ice2.png" },
+  { id: "wind", file: "series-wind.png" },
+  { id: "water", file: "series-water.png" },
+  { id: "light", file: "series-light.png" },
+  { id: "star", file: "series-star.png" },
+];
+
+const EGGS = [
+  { id: "egg-1", file: "pet-1-egg.png" },
+  { id: "egg-2", file: "pet-2-crack.png" },
+  { id: "egg-3", file: "pet-3-hatch.png" },
+];
+
+const SRC = process.argv[2] || "/opt/cursor/artifacts/assets";
+const OUT = "public/art/pet";
+
+function cutout(data, width, height) {
+  const seen = new Uint8Array(width * height);
+  const stack = [];
+  for (let x = 0; x < width; x++) stack.push(x, x + (height - 1) * width);
+  for (let y = 0; y < height; y++) stack.push(y * width, width - 1 + y * width);
+
+  while (stack.length) {
+    const at = stack.pop();
+    if (seen[at]) continue;
+    const i = at * 4;
+    const d = Math.hypot(data[i] - SEED[0], data[i + 1] - SEED[1], data[i + 2] - SEED[2]);
+    if (d > FEATHER_TO) continue;
+    seen[at] = 1;
+    data[i + 3] = d <= FEATHER_FROM ? 0 : Math.round((255 * (d - FEATHER_FROM)) / (FEATHER_TO - FEATHER_FROM));
+    const x = at % width;
+    const y = (at / width) | 0;
+    if (x > 0) stack.push(at - 1);
+    if (x < width - 1) stack.push(at + 1);
+    if (y > 0) stack.push(at - width);
+    if (y < height - 1) stack.push(at + width);
+  }
+}
+
+async function emit(input, name) {
+  const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  cutout(data, info.width, info.height);
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+    .png()
+    .toBuffer()
+    .then((buf) =>
+      sharp(buf)
+        .trim({ threshold: 8 })
+        .resize(SIZE, SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .webp({ quality: 86, alphaQuality: 90, effort: 6 })
+        .toFile(`${OUT}/${name}.webp`),
+    );
+  console.log(`${name}.webp`);
+}
+
+await mkdir(OUT, { recursive: true });
+
+for (const egg of EGGS) {
+  await emit(`${SRC}/${egg.file}`, egg.id);
+}
+
+for (const sheet of SHEETS) {
+  const src = `${SRC}/${sheet.file}`;
+  const { width, height } = await sharp(src).metadata();
+  const third = Math.floor(width / 3);
+  for (let i = 0; i < 3; i++) {
+    const tile = await sharp(src)
+      .extract({ left: i * third, top: 0, width: i === 2 ? width - 2 * third : third, height })
+      .png()
+      .toBuffer();
+    await emit(tile, `${sheet.id}-${i + 1}`);
+  }
+}
