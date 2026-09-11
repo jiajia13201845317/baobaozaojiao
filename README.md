@@ -96,7 +96,7 @@ node scripts/build-pets.mjs   # 三联图按三等分切开、去底、居中，
 ## 测试
 
 ```bash
-node scripts/e2e-grow.mjs   # 102 项：引导、打卡、积分、领养、照顾、破壳、曲线、疫苗、边界文案、窄屏
+node scripts/e2e-grow.mjs   # 109 项：引导、打卡、积分、领养、照顾、破壳、曲线、疫苗、置灰原因、边界文案、窄屏
 ```
 
 ## 在手机或电脑浏览器打开
