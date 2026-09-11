@@ -132,7 +132,15 @@ export function PetsPage({
             const incubating = owned.includes(c.id) && !has;
             return (
               <li key={c.id} className={has ? "on" : ""}>
-                <span className="book-art" style={{ background: has ? s.tint : undefined }}>
+                <span
+                  className={incubating ? "book-art is-hatching" : "book-art"}
+                  style={{
+                    // Tinting even the locked slots turns the grid into seven
+                    // visible families instead of one grey wall.
+                    background: has ? s.tint : `color-mix(in srgb, ${s.tint} 52%, #f6f8fd)`,
+                    ...(incubating ? { boxShadow: `inset 0 0 0 2px ${s.color}` } : null),
+                  }}
+                >
                   {has ? (
                     <Image src={`/art/pet/${c.id}.webp`} alt={c.name} width={224} height={224} />
                   ) : (

@@ -1041,15 +1041,14 @@
 }
 
 .book-egg {
-  opacity: 0.5;
-  filter: grayscale(0.55);
+  opacity: 0.85;
 }
 
 /* Unowned entries keep the egg silhouette so the page reads as a set to
    complete rather than a wall of empty boxes. */
 .book-locked {
-  opacity: 0.5;
-  filter: grayscale(1) brightness(1.35) contrast(0.28);
+  opacity: 0.55;
+  filter: grayscale(1) brightness(1.18) contrast(0.34);
 }
 
 .book-grid b {
