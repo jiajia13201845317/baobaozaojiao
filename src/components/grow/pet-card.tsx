@@ -1,0 +1,128 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { Bath, ChevronRight, Cookie, Gamepad2 } from "lucide-react";
+import { CARES, type CareId, type PetView, meterOf } from "@/lib/grow/pets";
+import type { CareState } from "@/lib/grow/pets";
+
+const ICONS: Record<CareId, typeof Cookie> = { food: Cookie, play: Gamepad2, bath: Bath };
+
+/**
+ * The home pet card. Levelling up is the payoff the whole point system exists
+ * to deliver, so it gets a held celebration rather than a silent image swap.
+ */
+export function PetCard({
+  view,
+  care,
+  spendable,
+  collected,
+  total,
+  onCare,
+  onOpenPets,
+}: {
+  view: PetView;
+  care: CareState;
+  spendable: number;
+  collected: number;
+  total: number;
+  onCare: (id: CareId) => void;
+  onOpenPets: () => void;
+}) {
+  const [party, setParty] = useState(false);
+  const seen = useRef<string | null>(null);
+
+  useEffect(() => {
+    const key = `${view.pet.id}:${view.level.lv}`;
+    if (seen.current == null || seen.current === key) {
+      seen.current = key;
+      return;
+    }
+    seen.current = key;
+    setParty(true);
+    const id = window.setTimeout(() => setParty(false), 2800);
+    return () => window.clearTimeout(id);
+  }, [view.pet.id, view.level.lv]);
+
+  return (
+    <section className={`g-card pet-card ${party ? "is-party" : ""}`}>
+      <div className="pet-card-top">
+        <span className="pet-name">{view.name}</span>
+        <span className="pet-lv" style={{ background: view.series.color }}>
+          Lv{view.level.lv}
+        </span>
+        <button type="button" className="pet-book" onClick={onOpenPets}>
+          图鉴 {collected}/{total}
+          <ChevronRight className="size-3.5" />
+        </button>
+      </div>
+
+      <div className="pet-window" style={{ background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` }}>
+        <span className="pet-window-glow" style={{ background: view.series.color }} />
+        <div className="pet-figure">
+          <Image src={view.art} alt={view.name} width={448} height={448} priority />
+        </div>
+        {party && (
+          <div className="pet-confetti" aria-hidden>
+            {Array.from({ length: 14 }).map((_, i) => (
+              <span key={i} style={{ ["--i" as string]: i }} />
+            ))}
+          </div>
+        )}
+        <p className="pet-say" aria-live="polite">
+          {party ? `升到 Lv${view.level.lv} 啦！` : view.line}
+        </p>
+      </div>
+
+      <div className="pet-meters">
+        {CARES.map((c) => {
+          const value = meterOf(care, c.id);
+          return (
+            <div key={c.id} className="pet-meter">
+              <span className="pet-meter-top">
+                <span>{c.meter}</span>
+                <b>{value}</b>
+              </span>
+              <span className="pet-bar">
+                <i style={{ width: `${value}%`, background: c.color }} />
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="pet-actions">
+        {CARES.map((c) => {
+          const Icon = ICONS[c.id];
+          const full = meterOf(care, c.id) >= 100;
+          const poor = spendable < c.cost;
+          return (
+            <button
+              key={c.id}
+              type="button"
+              className="g-chip-btn"
+              disabled={full || poor}
+              onClick={() => onCare(c.id)}
+              title={full ? "已经满了" : poor ? "可用积分不够" : undefined}
+            >
+              <Icon className="size-4" style={{ color: c.color }} />
+              {c.name}
+              <em>{c.cost}</em>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="pet-eva">
+        <div className="pet-eva-top">
+          <span>进化进度</span>
+          <b>{view.next ? `距 Lv${view.next.lv} 还需 ${view.need} 累计积分` : "已经是最终形态"}</b>
+        </div>
+        <span className="pet-eva-bar">
+          <i style={{ width: `${Math.round(view.ratio * 100)}%` }} />
+        </span>
+        {!view.revealed && <p className="pet-eva-hint">壳里是谁，破壳那天才知道。</p>}
+      </div>
+    </section>
+  );
+}

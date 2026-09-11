@@ -170,6 +170,20 @@ export function taskForDay(stage: Stage, dayIndex: number): Task {
   return pool[round % pool.length]!;
 }
 
+/** How many tasks a day offers. Doing any one of them counts as showing up. */
+export const DAILY_COUNT = 3;
+
+/**
+ * Today's shortlist: three tasks from three different dimensions. The offer is
+ * three so there is something to choose from on an off day, not so that a
+ * parent owes three — the streak only asks for one.
+ */
+export function tasksForDay(stage: Stage, dayIndex: number): Task[] {
+  const out: Task[] = [];
+  for (let i = 0; i < DAILY_COUNT; i++) out.push(taskForDay(stage, dayIndex + i));
+  return out;
+}
+
 export function dayIndexOf(date = new Date()) {
   const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   return Math.floor(local.getTime() / 86400000);

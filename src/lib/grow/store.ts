@@ -1,3 +1,4 @@
+import { type CareState, type OwnedPet, type SeriesId, pickCreature } from "./pets";
 import { POINTS } from "./pet";
 import { dateKey } from "./tasks";
 
@@ -18,54 +19,105 @@ export type Measure = {
 
 export type GrowState = {
   profile: Profile | null;
-  /** Dates the daily task was ticked off, newest last. */
-  doneDays: string[];
+  /** Task ids finished, keyed by local date. */
+  done: Record<string, string[]>;
   milestones: string[];
   measures: Measure[];
   vaccines: string[];
+  pets: OwnedPet[];
+  active: string | null;
+  care: Record<string, CareState>;
+  /** 可用积分 already spent on adoption and care. Never touches 累计. */
+  spent: number;
 };
 
 const KEY = "grow-state";
 
 export const EMPTY: GrowState = {
   profile: null,
-  doneDays: [],
+  done: {},
   milestones: [],
   measures: [],
   vaccines: [],
+  pets: [],
+  active: null,
+  care: {},
+  spent: 0,
 };
 
 function asStringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
 }
 
+type Legacy = Partial<GrowState> & { doneDays?: unknown };
+
 /** Anything unreadable falls back to empty rather than throwing on boot. */
 export function readState(): GrowState {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return EMPTY;
-    const data = JSON.parse(raw) as Partial<GrowState>;
+    const data = JSON.parse(raw) as Legacy;
     const p = data.profile;
     const profile: Profile | null =
       p && typeof p.name === "string" && typeof p.birthday === "string" && (p.sex === "boy" || p.sex === "girl")
         ? { name: p.name, sex: p.sex, birthday: p.birthday }
         : null;
+
+    const done: Record<string, string[]> = {};
+    if (data.done && typeof data.done === "object") {
+      for (const [day, ids] of Object.entries(data.done)) done[day] = asStringArray(ids);
+    }
+    // Before the day offered three tasks, a day was just a tick.
+    for (const day of asStringArray(data.doneDays)) done[day] ??= ["legacy"];
+
     const measures = Array.isArray(data.measures)
       ? data.measures.filter(
           (m): m is Measure =>
-            !!m && typeof m.id === "string" && typeof m.date === "string" && (typeof m.height === "number" || typeof m.weight === "number"),
+            !!m &&
+            typeof m.id === "string" &&
+            typeof m.date === "string" &&
+            (typeof m.height === "number" || typeof m.weight === "number"),
         )
       : [];
-    return {
+
+    const pets = Array.isArray(data.pets)
+      ? data.pets.filter(
+          (v): v is OwnedPet =>
+            !!v && typeof v.id === "string" && typeof v.creature === "string" && typeof v.from === "number",
+        )
+      : [];
+
+    const care: Record<string, CareState> = {};
+    if (data.care && typeof data.care === "object") {
+      for (const [id, value] of Object.entries(data.care)) {
+        if (value && typeof value === "object") care[id] = value as CareState;
+      }
+    }
+
+    const state: GrowState = {
       profile,
-      doneDays: asStringArray(data.doneDays),
+      done,
       milestones: asStringArray(data.milestones),
       measures,
       vaccines: asStringArray(data.vaccines),
+      pets,
+      active: typeof data.active === "string" ? data.active : null,
+      care,
+      spent: typeof data.spent === "number" && data.spent >= 0 ? data.spent : 0,
     };
+    return withFirstEgg(state);
   } catch {
     return EMPTY;
   }
+}
+
+/** Everyone with a profile has at least one egg; the first one is on the house. */
+export function withFirstEgg(state: GrowState): GrowState {
+  if (!state.profile || state.pets.length) {
+    return state.pets.length && !state.active ? { ...state, active: state.pets[0]!.id } : state;
+  }
+  const pet: OwnedPet = { id: newId(), creature: pickCreature("forest", []), from: 0 };
+  return { ...state, pets: [pet], active: pet.id };
 }
 
 function writeState(state: GrowState) {
@@ -88,7 +140,13 @@ export function subscribe(listener: () => void) {
 
 /** Must stay referentially stable between writes or React will loop. */
 export function snapshot(): GrowState {
-  if (!cache) cache = readState();
+  if (!cache) {
+    cache = readState();
+    // Migration and the free first egg both happen on read. Without writing
+    // them back, a saved file from before the pets would roll a different
+    // creature on every reload.
+    if (cache !== EMPTY) writeState(cache);
+  }
   return cache;
 }
 
@@ -129,6 +187,14 @@ function streakRuns(days: string[]) {
   return runs;
 }
 
+export function activeDays(state: GrowState) {
+  return Object.keys(state.done).filter((day) => state.done[day]!.length > 0);
+}
+
+export function taskCount(state: GrowState) {
+  return Object.values(state.done).reduce((sum, ids) => sum + ids.length, 0);
+}
+
 export type PointLine = { label: string; detail: string; points: number };
 
 /**
@@ -137,50 +203,63 @@ export type PointLine = { label: string; detail: string; points: number };
  * that points must never shrink — deriving them makes both impossible.
  */
 export function pointBreakdown(state: GrowState): PointLine[] {
-  const runs = streakRuns(state.doneDays);
+  const days = activeDays(state);
+  const runs = streakRuns(days);
   const bonuses = runs.reduce((sum, run) => sum + Math.floor(run / POINTS.streakEvery), 0);
+  const tasks = taskCount(state);
   const firsts = [
-    state.doneDays.length > 0,
+    tasks > 0,
     state.milestones.length > 0,
     state.measures.length > 0,
     state.vaccines.length > 0,
   ].filter(Boolean).length;
 
   return [
-    {
-      label: "每日小任务",
-      detail: `${state.doneDays.length} 天 × ${POINTS.task} 分`,
-      points: state.doneDays.length * POINTS.task,
-    },
+    { label: "早教小任务", detail: `${tasks} 个 × ${POINTS.task} 分`, points: tasks * POINTS.task },
     {
       label: "连续打卡奖励",
       detail: `${bonuses} 次满 ${POINTS.streakEvery} 天 × ${POINTS.streakBonus} 分`,
       points: bonuses * POINTS.streakBonus,
     },
-    {
-      label: "里程碑",
-      detail: `${state.milestones.length} 个 × ${POINTS.milestone} 分`,
-      points: state.milestones.length * POINTS.milestone,
-    },
-    {
-      label: "健康记录",
-      detail: `${state.measures.length} 次 × ${POINTS.health} 分`,
-      points: state.measures.length * POINTS.health,
-    },
-    {
-      label: "第一次使用",
-      detail: `${firsts} 个功能 × ${POINTS.firstTime} 分`,
-      points: firsts * POINTS.firstTime,
-    },
+    { label: "里程碑", detail: `${state.milestones.length} 个 × ${POINTS.milestone} 分`, points: state.milestones.length * POINTS.milestone },
+    { label: "健康记录", detail: `${state.measures.length} 次 × ${POINTS.health} 分`, points: state.measures.length * POINTS.health },
+    { label: "第一次使用", detail: `${firsts} 个功能 × ${POINTS.firstTime} 分`, points: firsts * POINTS.firstTime },
   ];
 }
 
+/** 累计积分: only ever goes up, and is the only thing pets level on. */
 export function totalPoints(state: GrowState) {
   return pointBreakdown(state).reduce((sum, line) => sum + line.points, 0);
 }
 
+/** 可用积分: what is left to spend. Spending never reduces 累计. */
+export function spendablePoints(state: GrowState) {
+  return Math.max(0, totalPoints(state) - state.spent);
+}
+
+export function doneToday(state: GrowState, today = dateKey()) {
+  return state.done[today] ?? [];
+}
+
 export function isDoneToday(state: GrowState, today = dateKey()) {
-  return state.doneDays.includes(today);
+  return doneToday(state, today).length > 0;
+}
+
+export function activePet(state: GrowState) {
+  return state.pets.find((p) => p.id === state.active) ?? state.pets[0] ?? null;
+}
+
+export function ownedCreatures(state: GrowState) {
+  return state.pets.map((p) => p.creature);
+}
+
+export function adopt(state: GrowState, series: SeriesId, cost: number): GrowState {
+  const pet: OwnedPet = {
+    id: newId(),
+    creature: pickCreature(series, ownedCreatures(state)),
+    from: totalPoints(state),
+  };
+  return { ...state, pets: [...state.pets, pet], active: pet.id, spent: state.spent + cost };
 }
 
 export function latest(state: GrowState, metric: "height" | "weight") {
@@ -198,5 +277,5 @@ export function seriesOf(state: GrowState, metric: "height" | "weight") {
 }
 
 export function newId() {
-  return `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+  return `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 }
