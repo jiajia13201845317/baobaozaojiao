@@ -115,6 +115,10 @@ export function Today({
           <ChevronRight className="size-5 shrink-0 opacity-40" />
         </button>
       )}
+
+      <a href="/" className="grow-back">
+        回到宝宝听听
+      </a>
     </div>
   );
 }

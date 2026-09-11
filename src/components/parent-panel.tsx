@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, PawPrint, Repeat, Sun, Timer, Volume1, Volume2, VolumeX, X, Music2 } from "lucide-react";
+import { ChevronRight, Moon, PawPrint, Repeat, Sprout, Sun, Timer, Volume1, Volume2, VolumeX, X, Music2 } from "lucide-react";
 import { PartyEgg } from "@/components/art";
 import {
   CRY_SOURCE_HINT,
@@ -139,6 +139,15 @@ export function ParentPanel({
             ))}
           </span>
         </div>
+
+        <a href="/grow/" className="parent-row">
+          <Sprout className="size-5" />
+          <span className="flex-1 text-left">
+            <span className="ink block font-black">一起长大</span>
+            <span className="ink-soft text-sm font-bold">给大人看的：每天一个小任务、身高体重曲线、疫苗提醒</span>
+          </span>
+          <ChevronRight className="size-5 shrink-0 opacity-40" />
+        </a>
       </div>
     </div>
   );

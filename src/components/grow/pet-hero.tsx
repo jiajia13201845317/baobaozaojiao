@@ -37,13 +37,16 @@ export function PetHero({ points, compact = false }: { points: number; compact?:
       <div className="pet-stage">
         <svg className="pet-ring" viewBox="0 0 200 200" aria-hidden>
           <circle cx="100" cy="100" r={r} className="pet-ring-track" />
-          <circle
-            cx="100"
-            cy="100"
-            r={r}
-            className="pet-ring-fill"
-            strokeDasharray={`${(c * ratio).toFixed(1)} ${c.toFixed(1)}`}
-          />
+          {/* A zero-length dash still paints a dot under the round cap. */}
+          {ratio > 0 && (
+            <circle
+              cx="100"
+              cy="100"
+              r={r}
+              className="pet-ring-fill"
+              strokeDasharray={`${(c * ratio).toFixed(1)} ${c.toFixed(1)}`}
+            />
+          )}
         </svg>
         <div className="pet-art">
           <Image src={stage.image} alt={`宠物 · ${stage.name}`} width={360} height={360} priority />

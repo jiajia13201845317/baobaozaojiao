@@ -1056,6 +1056,16 @@
   color: var(--g-accent);
 }
 
+.grow-back {
+  align-self: center;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--g-ink-mute);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ---------- boot ---------- */
 
 .grow-boot {
