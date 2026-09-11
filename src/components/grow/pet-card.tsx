@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Bath, ChevronRight, Cookie, Gamepad2 } from "lucide-react";
+import { POINTS } from "@/lib/grow/pet";
 import { CARES, type CareId, type PetView, meterOf } from "@/lib/grow/pets";
 import type { CareState } from "@/lib/grow/pets";
 
@@ -43,6 +44,13 @@ export function PetCard({
     const id = window.setTimeout(() => setParty(false), 2800);
     return () => window.clearTimeout(id);
   }, [view.pet.id, view.level.lv]);
+
+  const cheapest = Math.min(...CARES.map((c) => c.cost));
+  const blocked = CARES.every((c) => meterOf(care, c.id) >= 100)
+    ? "三样都满着，它现在很舒服，明天再来。"
+    : spendable < cheapest
+      ? `可用积分不够了。去「早教」做一个小任务就有 ${POINTS.task} 分，累计积分不会因为照顾它而减少。`
+      : null;
 
   return (
     <section className={`g-card pet-card ${party ? "is-party" : ""}`}>
@@ -112,6 +120,9 @@ export function PetCard({
           );
         })}
       </div>
+
+      {/* A greyed-out button that says nothing reads as a broken button. */}
+      {blocked && <p className="pet-blocked">{blocked}</p>}
 
       <div className="pet-eva">
         <div className="pet-eva-top">

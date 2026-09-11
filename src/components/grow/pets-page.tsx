@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Check, Egg, Sparkles } from "lucide-react";
+import { POINTS } from "@/lib/grow/pet";
 import {
   CREATURES,
   LEVELS,
@@ -37,6 +38,10 @@ export function PetsPage({
   const [confirm, setConfirm] = useState<SeriesId | null>(null);
 
   const revealed = revealedCreatures(state);
+  const nothingAffordable = SERIES.every((s) => {
+    const pool = creaturesOf(s.id);
+    return pool.every((c) => owned.includes(c.id)) || spendable < s.cost;
+  });
 
   return (
     <div className="g-scroll">
@@ -108,14 +113,20 @@ export function PetsPage({
                   <i className="series-sub">
                     {got}/{pool.length} 只 · {s.blurb}
                   </i>
-                  <span className="series-cost" style={{ color: s.color }}>
-                    {all ? "已集齐" : s.cost === 0 ? "免费" : `${s.cost} 积分`}
+                  {/* Saying how far off you are beats a dead grey card. */}
+                  <span className="series-cost" style={{ color: poor ? undefined : s.color }}>
+                    {all ? "已集齐" : poor ? `还差 ${s.cost - spendable} 分` : `${s.cost} 积分`}
                   </span>
                 </button>
               </li>
             );
           })}
         </ul>
+        {nothingAffordable && (
+          <p className="g-hint">
+            现在还领不了。去「早教」陪他玩一个，就有 {POINTS.task} 分；里程碑勾一个是 {POINTS.milestone} 分，攒得快一些。
+          </p>
+        )}
       </section>
 
       <section className="g-card">

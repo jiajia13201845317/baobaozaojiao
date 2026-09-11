@@ -703,6 +703,14 @@
   gap: 0.45rem;
 }
 
+.pet-blocked {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
 .pet-eva {
   margin-top: 0.75rem;
   border-radius: var(--r-md);

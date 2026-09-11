@@ -12,12 +12,16 @@ export function Onboard({ initial, onDone, onCancel }: { initial?: Profile | nul
   const [name, setName] = useState(initial?.name ?? "");
   const [sex, setSex] = useState<Sex | null>(initial?.sex ?? null);
   const [birthday, setBirthday] = useState(initial?.birthday ?? "");
-  const [touched, setTouched] = useState(false);
 
   const months = birthday ? monthsBetween(birthday) : null;
   const futureDate = Boolean(birthday) && birthday > today();
   const tooOld = months != null && months > 36;
   const ready = name.trim().length > 0 && sex != null && Boolean(birthday) && !futureDate;
+  const missing = [
+    name.trim() ? null : "称呼",
+    sex ? null : "性别",
+    birthday ? null : "出生日期",
+  ].filter((v): v is string => v != null);
 
   return (
     <div className="g-scroll g-onboard">
@@ -75,7 +79,6 @@ export function Onboard({ initial, onDone, onCancel }: { initial?: Profile | nul
             value={birthday}
             max={today()}
             onChange={(e) => setBirthday(e.target.value)}
-            onBlur={() => setTouched(true)}
           />
         </label>
         {futureDate && <p className="g-error">出生日期不能晚于今天。</p>}
@@ -86,7 +89,9 @@ export function Onboard({ initial, onDone, onCancel }: { initial?: Profile | nul
             {months < 12 && " · 玩法库从 12 月龄开始，先给你看 Q1-Q2 的内容。"}
           </p>
         )}
-        {touched && !birthday && <p className="g-error">还没填出生日期。</p>}
+        {/* The button is disabled until the form is usable, which on its own
+            just looks broken. Name what is still missing. */}
+        {!ready && !futureDate && missing.length > 0 && <p className="g-hint">还差{missing.join("、")}。</p>}
 
         <div className="measure-actions">
           {onCancel && (

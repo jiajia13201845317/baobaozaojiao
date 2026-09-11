@@ -160,9 +160,11 @@ try {
   const locked = () =>
     page.evaluate(() => [...document.querySelectorAll("button")].some((b) => b.innerText.trim() === "开始" && b.disabled));
   check("the start button is locked until the form is filled", await locked());
+  check("the locked button says what is missing", (await bodyText(page)).includes("还差称呼、性别、出生日期"), await bodyText(page));
   await setField("#baby-name", "小米");
   await setField("#baby-birthday", birthdayMonthsAgo(15));
   check("sex is required too", await locked());
+  check("the remaining field is named", (await bodyText(page)).includes("还差性别"), await bodyText(page));
   await clickText(page, "男宝");
   check("the age is echoed back", /1 岁 3 个月/.test(await bodyText(page)), await bodyText(page));
 
@@ -182,9 +184,17 @@ try {
   check("the reveal is teased, not spoiled", text.includes("破壳那天才知道"), text.slice(0, 500));
   check("the three care meters are shown", ["饱腹", "心情", "干净"].every((m) => text.includes(m)), text.slice(0, 600));
   check("care is unaffordable at zero points", (await page.$$eval(".g-chip-btn:disabled", (e) => e.length)) === 3);
+  check("the disabled care buttons explain themselves", text.includes("可用积分不够了"), text.slice(0, 700));
+  check("the explanation says points are not lost", text.includes("累计积分不会因为照顾它而减少"), text.slice(0, 700));
   check("today offers three tasks", (await page.$$eval(".today-tile", (e) => e.length)) === 3);
   check("the streak starts at zero", text.includes("连续 0 天打卡"), text.slice(0, 700));
   check("no pet art is oversized on home", (await oversizedArt(page)).length === 0, JSON.stringify(await oversizedArt(page)));
+
+  await clickText(page, "宠物");
+  await waitBody(page, "领养新蛋");
+  text = await bodyText(page);
+  check("with nothing saved up, adopting points at the way to earn", text.includes("现在还领不了"), text.slice(0, 1200));
+  check("every series is out of reach at zero", (await page.$$eval(".series-card:disabled", (e) => e.length)) === 7);
 
   // --- learn ------------------------------------------------------------
   await clickText(page, "早教");
@@ -247,6 +257,7 @@ try {
   check("adopting is explained as spendable-only", text.includes("累计积分一分不动"), text.slice(0, 900));
   check("no series is free", !/免费/.test(text), text.slice(0, 900));
   check("unowned entries stay a mystery", text.includes("？？？"), text.slice(0, 1200));
+  check("a series out of reach says how far", /还差 \d+ 分/.test(text), text.slice(0, 1200));
 
   const before = await readState();
   const beforeTotal = await page.evaluate(() => {
