@@ -12,7 +12,14 @@ import {
   seriesById,
   viewPet,
 } from "@/lib/grow/pets";
-import { type GrowState, activePet, ownedCreatures, spendablePoints, totalPoints } from "@/lib/grow/store";
+import {
+  type GrowState,
+  activePet,
+  ownedCreatures,
+  revealedCreatures,
+  spendablePoints,
+  totalPoints,
+} from "@/lib/grow/store";
 
 export function PetsPage({
   state,
@@ -29,9 +36,7 @@ export function PetsPage({
   const active = activePet(state);
   const [confirm, setConfirm] = useState<SeriesId | null>(null);
 
-  const revealed = new Set(
-    state.pets.filter((p) => viewPet(p, total).revealed).map((p) => p.creature),
-  );
+  const revealed = revealedCreatures(state);
 
   return (
     <div className="g-scroll">

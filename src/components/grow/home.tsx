@@ -11,6 +11,7 @@ import {
   activeDays,
   doneToday,
   latest,
+  revealedCreatures,
   spendablePoints,
   totalPoints,
 } from "@/lib/grow/store";
@@ -77,7 +78,7 @@ export function Home({
         view={view}
         care={care}
         spendable={spendable}
-        collected={state.pets.length}
+        collected={revealedCreatures(state).size}
         total={CREATURES.length}
         onCare={onCare}
         onOpenPets={() => onGo("pets")}

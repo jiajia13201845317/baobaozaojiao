@@ -43,7 +43,7 @@ const seed = {
   vaccines: ["hepb-1", "bcg", "hepb-2", "ipv-1", "ipv-2", "dtap-1", "opv-3", "dtap-2", "dtap-3", "hepb-3", "mpsva-1", "mmr-1", "je-1"],
   pets: [
     { id: "p1", creature: "forest-1", from: 0 },
-    { id: "p2", creature: "water-3", from: 600 },
+    { id: "p2", creature: "water-3", from: 430 },
   ],
   active: "p1",
   care: { p1: { food: { at: Date.now(), value: 92 }, play: { at: Date.now(), value: 78 }, bath: { at: Date.now(), value: 61 } } },

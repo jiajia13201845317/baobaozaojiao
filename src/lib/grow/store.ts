@@ -1,4 +1,4 @@
-import { type CareState, type OwnedPet, type SeriesId, pickCreature } from "./pets";
+import { type CareState, type OwnedPet, type SeriesId, pickCreature, viewPet } from "./pets";
 import { POINTS } from "./pet";
 import { dateKey } from "./tasks";
 
@@ -251,6 +251,12 @@ export function activePet(state: GrowState) {
 
 export function ownedCreatures(state: GrowState) {
   return state.pets.map((p) => p.creature);
+}
+
+/** A slot in the 图鉴 only fills once the egg is open and the creature is known. */
+export function revealedCreatures(state: GrowState) {
+  const total = totalPoints(state);
+  return new Set(state.pets.filter((p) => viewPet(p, total).revealed).map((p) => p.creature));
 }
 
 export function adopt(state: GrowState, series: SeriesId, cost: number): GrowState {
