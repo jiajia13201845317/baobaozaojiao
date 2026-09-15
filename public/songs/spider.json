@@ -3,23 +3,23 @@
   "title": "Itsy Bitsy Spider",
   "cues": [
     {
-      "at": 0.35,
+      "at": 0.3,
       "text": "Itsy Bitsy Spider"
     },
     {
-      "at": 2.61,
+      "at": 3.0,
       "text": "The itsy bitsy spider climbed up the water spout."
     },
     {
-      "at": 7.39,
+      "at": 15.5,
       "text": "Down came the rain and washed the spider out."
     },
     {
-      "at": 11.81,
+      "at": 25.5,
       "text": "Out came the sun and dried up all the rain."
     },
     {
-      "at": 16.11,
+      "at": 35.5,
       "text": "And the itsy bitsy spider climbed up the spout again."
     }
   ]

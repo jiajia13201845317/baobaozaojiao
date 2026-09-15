@@ -59,7 +59,7 @@ class ToyPlayer {
   private pending: Array<() => void> = [];
   private media: HTMLAudioElement | null = null;
   private frame: HTMLIFrameElement | null = null;
-  private source: MusicSource = "netease";
+  private source: MusicSource = "local";
   private crySource: CrySource = "real";
 
   onLine: ((info: LineInfo) => void) | null = null;

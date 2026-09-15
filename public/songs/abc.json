@@ -3,31 +3,31 @@
   "title": "ABC Song",
   "cues": [
     {
-      "at": 0.35,
+      "at": 0.3,
       "text": "ABC Song"
     },
     {
-      "at": 2.61,
-      "text": "Ay, Bee, See, Dee, Eee, Eff, Jee."
+      "at": 3.0,
+      "text": "A B C D E F G."
     },
     {
-      "at": 9.12,
-      "text": "Aitch, Eye, Jay, Kay, Ell, Em, En, Oh, Pee."
+      "at": 9.25,
+      "text": "H I J K L M N O P."
     },
     {
-      "at": 16.01,
-      "text": "Cue, Are, Ess, Tee, You, Vee."
+      "at": 15.5,
+      "text": "Q R S, T U V."
     },
     {
-      "at": 21.05,
-      "text": "Double you, Ecks, Why, and Zee."
+      "at": 23.0,
+      "text": "W X Y and Z."
     },
     {
-      "at": 25.52,
-      "text": "Now I know my Ay Bee Sees."
+      "at": 28.0,
+      "text": "Now I know my A B Cs."
     },
     {
-      "at": 29.15,
+      "at": 34.25,
       "text": "Next time won't you sing with me."
     }
   ]

@@ -46,3 +46,6 @@ next-env.d.ts
 # throwaway verification screenshots
 /screenshots_tour/
 /shots_grow/
+
+# per-syllable speech the song renderer keeps between runs
+/.tts-cache/

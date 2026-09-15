@@ -3,31 +3,31 @@
   "title": "Twinkle Twinkle",
   "cues": [
     {
-      "at": 0.35,
+      "at": 0.3,
       "text": "Twinkle Twinkle"
     },
     {
-      "at": 2.61,
+      "at": 3.0,
       "text": "Twinkle, twinkle, little star."
     },
     {
-      "at": 6.76,
+      "at": 9.82,
       "text": "How I wonder what you are."
     },
     {
-      "at": 9.79,
+      "at": 16.64,
       "text": "Up above the world so high."
     },
     {
-      "at": 13.2,
+      "at": 23.45,
       "text": "Like a diamond in the sky."
     },
     {
-      "at": 16.26,
+      "at": 30.27,
       "text": "Twinkle, twinkle, little star."
     },
     {
-      "at": 20.41,
+      "at": 37.09,
       "text": "How I wonder what you are."
     }
   ]

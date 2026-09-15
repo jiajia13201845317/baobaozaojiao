@@ -13,12 +13,12 @@ export type MusicSource = "netease" | "local";
 
 export const MUSIC_SOURCE_LABEL: Record<MusicSource, string> = {
   netease: "网易云",
-  local: "本地录音",
+  local: "本机童声",
 };
 
 export const MUSIC_SOURCE_HINT: Record<MusicSource, string> = {
-  netease: "儿歌走网易云官方外链，听正版成片。",
-  local: "儿歌用本地钢琴加童声，不用联网。",
+  netease: "儿歌走网易云官方外链，听正版成片。外链在部分设备上要手动点一下才出声。",
+  local: "儿歌是本机合成的童声演唱，一个字一个音地唱在调上，不用联网。",
 };
 
 export type CrySource = "real" | "soft";
@@ -54,13 +54,23 @@ export function cycleCrySource(source: CrySource): CrySource {
   return source === "real" ? "soft" : "real";
 }
 
+/**
+ * The local tracks by default.
+ *
+ * The outchain player used to be the default, on the grounds that a real
+ * recording beats anything synthesised here. It does — when it plays. It is a
+ * cross-origin iframe, so there is no way to find out whether it ever made a
+ * sound, and nothing to fall back to if it did not; on a device that blocks
+ * autoplay in frames, picking a song simply produced silence. The local
+ * tracks sing now, and they always play.
+ */
 export function readMusicSource(): MusicSource {
   try {
-    if (localStorage.getItem(SOURCE_KEY) === "local") return "local";
+    if (localStorage.getItem(SOURCE_KEY) === "netease") return "netease";
   } catch {
     /* ignore */
   }
-  return "netease";
+  return "local";
 }
 
 export function writeMusicSource(source: MusicSource) {

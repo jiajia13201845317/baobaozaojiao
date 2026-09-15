@@ -1,4 +1,5 @@
-Nursery-rhyme arrangements recorded for 宝宝听听.
-Piano, music box, harp and pad: FluidR3 GM (Frank Wen).
-Vocals: neural child voices, generated for this project.
-Melodies are traditional / public-domain nursery rhymes.
+Nursery rhymes sung for 宝宝听听.
+Vocals: a neural child voice, synthesised one syllable at a time and
+retuned onto each melody note. See scripts/render-songs.py.
+Music box and bass: synthesised in the same script.
+Melodies are traditional / public domain.

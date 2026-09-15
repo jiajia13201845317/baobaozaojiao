@@ -3,23 +3,23 @@
   "title": "Row Row Row Your Boat",
   "cues": [
     {
-      "at": 0.35,
+      "at": 0.3,
       "text": "Row Row Row Your Boat"
     },
     {
-      "at": 2.61,
+      "at": 3.0,
       "text": "Row, row, row your boat."
     },
     {
-      "at": 6.04,
+      "at": 8.19,
       "text": "Gently down the stream."
     },
     {
-      "at": 8.98,
+      "at": 13.38,
       "text": "Merrily, merrily, merrily, merrily."
     },
     {
-      "at": 13.61,
+      "at": 18.58,
       "text": "Life is but a dream."
     }
   ]
