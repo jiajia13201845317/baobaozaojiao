@@ -112,7 +112,9 @@ function NappyRow({
       <div className="nappy-top">
         <span className={`nappy-kind kind-${event.kind}`}>{NAMES[event.kind]}</span>
         <span className="nappy-time">{clockOf(event.at)}</span>
-        {tags.length > 0 && <span className="nappy-tags">{tags.join(" · ")}</span>}
+        {/* Always present so the actions stay pinned right whether or not
+            the parent added a label. */}
+        <span className="nappy-tags">{tags.join(" · ")}</span>
         {event.kind === "poop" && (
           <button type="button" className="nappy-note" onClick={() => setOpen((v) => !v)}>
             {tags.length ? "改备注" : "加备注"}

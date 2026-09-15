@@ -58,7 +58,7 @@ export function PetCard({
     <section className={`g-card pet-card ${party ? "is-party" : ""}`}>
       <div className="pet-card-top">
         <span className="pet-name">{view.name}</span>
-        <span className="pet-lv" style={{ background: view.series.color }}>
+        <span className="pet-lv" style={view.revealed ? { background: view.series.color } : undefined}>
           Lv{view.level.lv}
         </span>
         <button type="button" className="pet-book" onClick={onOpenPets}>
@@ -67,8 +67,16 @@ export function PetCard({
         </button>
       </div>
 
-      <div className="pet-window" style={{ background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` }}>
-        <span className="pet-window-glow" style={{ background: view.series.color }} />
+      {/*
+       * Before the reveal the window has no series colour to show — painting it
+       * would give away which creature is inside — so it borrows the baby's own
+       * theme and the 蛋仔 sits in matching light.
+       */}
+      <div
+        className="pet-window"
+        style={view.revealed ? { background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` } : undefined}
+      >
+        <span className="pet-window-glow" style={view.revealed ? { background: view.series.color } : undefined} />
         <div className="pet-figure">
           <Image src={themedPetArt(view.art, sex)} alt={view.name} width={448} height={448} priority />
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCheck, ChevronRight, Droplet, Flame, Plus, Ruler, Syringe, Utensils } from "lucide-react";
+import { CheckCheck, ChevronRight, Droplet, Flame, Plus, Ruler, Syringe, Toilet } from "lucide-react";
 import { PetCard } from "@/components/grow/pet-card";
 import { METRIC_UNIT, ageLabel, monthsBetween } from "@/lib/grow/growth";
 import { POINTS, streakOf } from "@/lib/grow/pet";
@@ -83,7 +83,7 @@ export function Home({
       )}
 
       <button type="button" className="g-card who-card" onClick={onEditProfile}>
-        <span className="who-face" style={{ background: view.series.color }}>
+        <span className="who-face">
           {baby.name.slice(0, 1)}
         </span>
         <span className="who-text">
@@ -129,7 +129,7 @@ export function Home({
         </div>
         <div className="tap-row tap-row-sm">
           <button type="button" className="tap-btn tap-poop" onClick={() => onQuick("poop")}>
-            <Utensils className="size-6" strokeWidth={2.4} />
+            <Toilet className="size-6" strokeWidth={2.4} />
             拉屎
           </button>
           <button type="button" className="tap-btn tap-pee" onClick={() => onQuick("pee")}>

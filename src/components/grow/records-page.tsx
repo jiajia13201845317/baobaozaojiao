@@ -9,6 +9,7 @@ import {
   Ruler,
   Syringe,
   Thermometer,
+  Toilet,
   Trash2,
   Undo2,
   Utensils,
@@ -42,9 +43,9 @@ const UNDO_MS = 6000;
 const ROW_ICON: Record<string, typeof Ruler> = {
   growth: Ruler,
   temp: Thermometer,
-  poop: Utensils,
+  poop: Toilet,
   pee: Droplet,
-  meal: Camera,
+  meal: Utensils,
 };
 
 /**
@@ -171,7 +172,7 @@ function Hub({
         </div>
         <div className="tap-row">
           <button type="button" className="tap-btn tap-poop" onClick={() => tap("poop")}>
-            <Utensils className="size-7" strokeWidth={2.4} />
+            <Toilet className="size-7" strokeWidth={2.4} />
             拉屎
           </button>
           <button type="button" className="tap-btn tap-pee" onClick={() => tap("pee")}>

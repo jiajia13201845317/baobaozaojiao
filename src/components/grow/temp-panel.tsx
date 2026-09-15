@@ -9,7 +9,7 @@ import { dateKey } from "@/lib/grow/tasks";
 
 const W = 520;
 const H = 200;
-const PAD = { top: 16, right: 16, bottom: 28, left: 40 };
+const PAD = { top: 24, right: 34, bottom: 28, left: 42 };
 
 /**
  * 4.8 体温记录.
@@ -100,7 +100,8 @@ export function TempPanel({
           同一个宝宝前后对比时，尽量固定用同一种方式，数字才好比较。
         </p>
         <p className="g-body">
-          具体多少度代表什么、要不要处理、隔多久量一次，这些是医生的判断，App 不给。你可以在下面设一个自己的提醒数值，那是你的标准，不是 App 的结论。
+          具体多少度代表什么、要不要处理、隔多久量一次，这些是医生的判断，App 不给，也不会主动建议你多久量一次。
+          定时提醒和「超过某个数值提醒我」要等通知功能做好再上，到时那个数值也由你自己定，App 只负责按你设的执行。
         </p>
       </section>
 
@@ -124,6 +125,8 @@ function TempChart({ points }: { points: RecordEvent[] }) {
   const span = Math.max(last - first, 3600000);
   const x = (at: number) => PAD.left + ((at - first) / span) * (W - PAD.left - PAD.right);
   const y = (v: number) => PAD.top + (1 - (v - yMin) / (yMax - yMin)) * (H - PAD.top - PAD.bottom);
+  /** Keep the first and last labels off the edges rather than half-cut. */
+  const label = (at: number) => Math.min(W - PAD.right + 12, Math.max(PAD.left - 6, x(at)));
 
   const ticks: number[] = [];
   for (let v = Math.ceil(yMin * 2) / 2; v <= yMax; v += 0.5) ticks.push(Math.round(v * 10) / 10);
@@ -145,10 +148,10 @@ function TempChart({ points }: { points: RecordEvent[] }) {
         {points.map((p) => (
           <g key={p.id}>
             <circle cx={x(p.at)} cy={y(p.num!.temp!)} r={4.5} className="temp-dot" />
-            <text x={x(p.at)} y={y(p.num!.temp!) - 10} className="temp-label" textAnchor="middle">
+            <text x={label(p.at)} y={y(p.num!.temp!) - 11} className="temp-label" textAnchor="middle">
               {p.num!.temp!.toFixed(1)}
             </text>
-            <text x={x(p.at)} y={H - 9} className="curve-axis" textAnchor="middle">
+            <text x={label(p.at)} y={H - 9} className="curve-axis" textAnchor="middle">
               {clockOf(p.at)}
             </text>
           </g>
