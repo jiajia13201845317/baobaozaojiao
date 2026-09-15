@@ -101,3 +101,12 @@ export async function photoBytes() {
   const all = await run<Photo[]>("readonly", (store) => store.getAll());
   return all.reduce((sum, p) => sum + p.full.size + p.thumb.size, 0);
 }
+
+/**
+ * 7.3 删除范围 — the photo store is the part a state wipe would miss, since
+ * the bytes never lived in localStorage. Clearing the whole object store is
+ * the only way "全部删掉" can be honest.
+ */
+export async function dropAllPhotos() {
+  await run("readwrite", (store) => store.clear());
+}

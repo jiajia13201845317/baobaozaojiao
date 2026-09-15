@@ -1,19 +1,32 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { Backpack, ClipboardList, GraduationCap, House } from "lucide-react";
+import { ChevronLeft, ClipboardList, GraduationCap, House, Music4, UserRound } from "lucide-react";
 import { Home } from "@/components/grow/home";
 import { Learn } from "@/components/grow/learn";
 import { Onboard, type BabyFields } from "@/components/grow/onboard";
 import { PetsPage } from "@/components/grow/pets-page";
+import { ToyApp } from "@/components/toy-app";
 import { RecordsHeader, RecordsPage, type RecordView, recordTitle } from "@/components/grow/records-page";
+import { ConsentGate } from "@/components/grow/consent-gate";
+import { KidLockBar, KidLockSetup } from "@/components/grow/kid-lock";
+import { ME_TITLES, MeHeader, MePage, type MeView } from "@/components/grow/me-page";
+import { ReminderCard } from "@/components/grow/reminder-card";
 import type { Metric } from "@/lib/grow/growth";
 import { CARES, type CareId, type SeriesId, afterCare, viewPet } from "@/lib/grow/pets";
-import { dropPhoto, putPhoto } from "@/lib/grow/media";
+import { dropPhoto, dropAllPhotos, putPhoto } from "@/lib/grow/media";
+import type { ConsentKey } from "@/lib/grow/settings";
 import type { RecordKind } from "@/lib/grow/records";
 import {
   type BabyData,
+  type GrowState,
   activePet,
+  addCarer,
+  editCarer,
+  note,
+  patchSettings,
+  removeCarer,
+  setConsent,
   addBaby,
   addEvent,
   adopt,
@@ -26,6 +39,7 @@ import {
   notHydrated,
   removeBaby,
   removeEvent,
+  EMPTY,
   saveState,
   serverSnapshot,
   setData,
@@ -36,22 +50,43 @@ import {
 } from "@/lib/grow/store";
 import { dateKey } from "@/lib/grow/tasks";
 
-type Tab = "home" | "pets" | "learn" | "records";
+type Tab = "home" | "pets" | "learn" | "listen" | "records" | "me";
 
+/**
+ * 宠物 is reached from the home pet card rather than the bar: five tabs is
+ * already the most a thumb can hit reliably on a phone, and 听听 earned its
+ * slot by being the one screen a child uses directly.
+ */
 const TABS: { id: Tab; label: string; icon: typeof House }[] = [
   { id: "home", label: "首页", icon: House },
-  { id: "pets", label: "宠物", icon: Backpack },
   { id: "learn", label: "早教", icon: GraduationCap },
+  { id: "listen", label: "听听", icon: Music4 },
   { id: "records", label: "记录", icon: ClipboardList },
+  { id: "me", label: "我的", icon: UserRound },
 ];
 
-const TITLES: Record<Tab, string> = { home: "首页", pets: "宠物", learn: "早教", records: "记录" };
+const TITLES: Record<Tab, string> = {
+  home: "首页",
+  pets: "宠物图鉴",
+  learn: "早教",
+  listen: "宝宝听听",
+  records: "记录",
+  me: "我的",
+};
 
 export function GrowApp() {
   const state = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const ready = useSyncExternalStore(subscribe, hydrated, notHydrated);
   const [tab, setTab] = useState<Tab>("home");
+  /**
+   * Once 听听 has been opened it stays mounted so a song survives a trip to
+   * 记录. Losing playback because a parent logged a nappy would be its own bug.
+   */
+  const [listenMounted, setListenMounted] = useState(false);
   const [view, setView] = useState<RecordView>("hub");
+  const [meView, setMeView] = useState<MeView>("hub");
+  const [kidSetup, setKidSetup] = useState(false);
+  const [kidMode, setKidMode] = useState(false);
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const [previewSex, setPreviewSex] = useState<"boy" | "girl" | null>(null);
@@ -86,6 +121,33 @@ export function GrowApp() {
     setEditing(false);
     setPreviewSex(null);
     setTab("home");
+  };
+
+  /** Household-level writes. Unlike `update`, these are not scoped to a baby. */
+  const house = useCallback((next: (prev: GrowState) => GrowState) => {
+    saveState(next(snapshot()));
+  }, []);
+
+  const consentOf = (key: ConsentKey, on: boolean) =>
+    house((prev) => note(setConsent(prev, key, on), `${on ? "打开" : "关闭"}了「${key === "photos" ? "照片记录" : key === "personalized" ? "分龄内容" : key === "notify" ? "提醒" : "基础记录"}」`));
+
+  /**
+   * 7.3 — 全部删掉 means gone, including the photo bytes in IndexedDB and the
+   * two listening-app keys, which do not live under the same state blob.
+   */
+  const wipeAll = () => {
+    void dropAllPhotos();
+    try {
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith("grow-") || key.startsWith("bao-")) localStorage.removeItem(key);
+      }
+    } catch {
+      /* blocked storage — the in-memory reset below still applies */
+    }
+    saveState(EMPTY);
+    setTab("home");
+    setMeView("hub");
+    setPreviewSex(null);
   };
 
   const doTask = (taskId: string) =>
@@ -180,6 +242,31 @@ export function GrowApp() {
     );
   }
 
+  /**
+   * 7.1 — consent comes before the first档案, not after. Asking afterwards
+   * would mean the app had already written a child's data to make the point.
+   */
+  if (!state.settings.consent.basic) {
+    return (
+      <main className={`g-page ${theme}`}>
+        <div className="g-shell">
+          <ConsentGate
+            onDone={(picked) =>
+              house((prev) =>
+                note(
+                  patchSettings(prev, {
+                    consent: { ...picked, guardianAt: Date.now() },
+                  }),
+                  "确认了监护人身份与分项同意",
+                ),
+              )
+            }
+          />
+        </div>
+      </main>
+    );
+  }
+
   if (!baby || adding) {
     return (
       <main className={`g-page ${theme}`}>
@@ -223,15 +310,50 @@ export function GrowApp() {
 
   const pet = activePet(data);
   const petView = pet ? viewPet(pet, totalPoints(data)) : null;
+  const full = state.settings.mode === "full";
+
+  /** 7.5 — nothing but playback is on screen, so nothing but playback is reachable. */
+  if (kidMode) {
+    return (
+      <main className={`g-page ${theme} is-kid`}>
+        <KidLockBar pin={state.settings.lockPin} onExit={() => setKidMode(false)} />
+        <div className="g-shell g-shell-wide">
+          <div className="listen-tab">
+            <ToyApp embedded />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={`g-page ${theme}`}>
-      <header className="g-topbar">
-        <h1>{tab === "records" ? recordTitle(view) : TITLES[tab]}</h1>
-        {tab === "records" && <RecordsHeader view={view} onBack={() => setView("hub")} />}
-      </header>
+      {tab !== "listen" && (
+        <header className="g-topbar">
+          <h1>{tab === "records" ? recordTitle(view) : tab === "me" ? ME_TITLES[meView] : TITLES[tab]}</h1>
+          {tab === "records" && <RecordsHeader view={view} onBack={() => setView("hub")} />}
+          {tab === "me" && <MeHeader view={meView} onBack={() => setMeView("hub")} />}
+          {tab === "pets" && (
+            <button type="button" className="g-back" onClick={() => setTab("home")}>
+              <ChevronLeft className="size-5" />
+              首页
+            </button>
+          )}
+        </header>
+      )}
 
-      <div className="g-shell">
+      <div className={`g-shell${tab === "listen" ? " g-shell-wide" : ""}`}>
+        {tab === "home" && (
+          <ReminderCard
+            baby={baby}
+            data={data}
+            settings={state.settings}
+            onGo={(where) => {
+              setTab(where);
+              if (where === "records") setView("hub");
+            }}
+          />
+        )}
         {tab === "home" && petView && (
           <Home
             baby={baby}
@@ -256,6 +378,42 @@ export function GrowApp() {
         )}
         {tab === "pets" && <PetsPage data={data} sex={baby.sex} onAdopt={takeIn} onSetActive={setActive} />}
         {tab === "learn" && <Learn baby={baby} data={data} onDo={doTask} onToggleMilestone={toggleMilestone} />}
+        {listenMounted && (
+          <div className={`listen-tab${tab === "listen" ? "" : " is-off"}`}>
+            <ToyApp embedded />
+          </div>
+        )}
+        {tab === "me" && (
+          <MePage
+            state={state}
+            baby={baby}
+            data={data}
+            view={meView}
+            onView={setMeView}
+            actions={{
+              onConsent: consentOf,
+              onBilingual: (on) => house((prev) => patchSettings(prev, { bilingual: on })),
+              onMode: (mode) =>
+                house((prev) => note(patchSettings(prev, { mode }), `切换到${mode === "full" ? "完整版" : "纯记录版"}`)),
+              onTempReminder: (on, every) => house((prev) => patchSettings(prev, { tempReminder: { on, every } })),
+              onAddCarer: (name, role) => house((prev) => note(addCarer(prev, name, role), "加了成员", name)),
+              onEditCarer: (id, patch) => house((prev) => note(editCarer(prev, id, patch), "改了成员权限")),
+              onRemoveCarer: (id) => house((prev) => note(removeCarer(prev, id), "删掉了成员")),
+              onSetBy: (id) => house((prev) => ({ ...prev, by: id })),
+              onSetPin: (pin) => house((prev) => patchSettings(prev, { lockPin: pin })),
+              onKidMode: () => setKidSetup(true),
+              onWipe: wipeAll,
+              onEditProfile: () => {
+                setPreviewSex(baby.sex);
+                setEditing(true);
+              },
+              onAddBaby: () => {
+                setPreviewSex(null);
+                setAdding(true);
+              },
+            }}
+          />
+        )}
         {tab === "records" && (
           <RecordsPage
             baby={baby}
@@ -274,8 +432,20 @@ export function GrowApp() {
         )}
       </div>
 
+      {kidSetup && (
+        <KidLockSetup
+          pin={state.settings.lockPin}
+          onCancel={() => setKidSetup(false)}
+          onSetPin={(pin) => house((prev) => patchSettings(prev, { lockPin: pin }))}
+          onStart={() => {
+            setKidSetup(false);
+            setKidMode(true);
+          }}
+        />
+      )}
+
       <nav className="g-tabs" aria-label="主导航">
-        {TABS.map((t) => {
+        {TABS.filter((t) => full || t.id === "home" || t.id === "records" || t.id === "me").map((t) => {
           const Icon = t.icon;
           return (
             <button
@@ -284,6 +454,7 @@ export function GrowApp() {
               onClick={() => {
                 setTab(t.id);
                 if (t.id === "records") setView("hub");
+                if (t.id === "listen") setListenMounted(true);
               }}
               className={tab === t.id ? "on" : ""}
               aria-current={tab === t.id ? "page" : undefined}

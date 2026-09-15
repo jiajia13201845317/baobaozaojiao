@@ -211,3 +211,97 @@ export function titleFor(category: CategoryId, itemId: string) {
   const item = itemsFor(category).find((entry) => entry.id === itemId);
   return item && "title" in item ? item.title : "这一段";
 }
+
+/**
+ * The listening app's saved preferences, as one external store.
+ *
+ * They all come from localStorage and the query string, neither of which
+ * exists when this static export is rendered at build time. Reading them in a
+ * mount effect worked but meant six setState calls on the first commit; an
+ * external store keeps the read out of both render and effects, which is the
+ * same shape the records store uses.
+ */
+export type Prefs = {
+  lastPlay: LastPlay | null;
+  volumeIndex: number;
+  playMode: PlayMode;
+  musicSource: MusicSource;
+  crySource: CrySource;
+  sleepMinutes: number;
+  /** ?go=home — an explicit bypass of the welcome gate, for bookmarks and tests. */
+  go: string | null;
+};
+
+const DEFAULT_PREFS: Prefs = {
+  lastPlay: null,
+  volumeIndex: 2,
+  playMode: "chain",
+  musicSource: "netease",
+  crySource: "real",
+  sleepMinutes: 0,
+  go: null,
+};
+
+function loadPrefs(): Prefs {
+  let params: URLSearchParams;
+  try {
+    params = new URLSearchParams(window.location.search);
+  } catch {
+    return DEFAULT_PREFS;
+  }
+  const source = params.get("source");
+  const musicSource: MusicSource = source === "local" || source === "netease" ? source : readMusicSource();
+  writeMusicSource(musicSource);
+  const cry = params.get("cry");
+  const crySource: CrySource = cry === "soft" || cry === "real" ? cry : readCrySource();
+  writeCrySource(crySource);
+  return {
+    lastPlay: readLastPlay(),
+    volumeIndex: readVolumeIndex(2),
+    playMode: readPlayMode(),
+    musicSource,
+    crySource,
+    sleepMinutes: readSleepMinutes(),
+    go: params.get("go"),
+  };
+}
+
+let prefs: Prefs | null = null;
+const prefsListeners = new Set<() => void>();
+
+export function subscribePrefs(listener: () => void) {
+  prefsListeners.add(listener);
+  return () => {
+    prefsListeners.delete(listener);
+  };
+}
+
+export function prefsSnapshot(): Prefs {
+  prefs ??= loadPrefs();
+  return prefs;
+}
+
+export function prefsServer(): Prefs {
+  return DEFAULT_PREFS;
+}
+
+export function prefsReady() {
+  return true;
+}
+
+export function prefsNotReady() {
+  return false;
+}
+
+/** Writes through to storage so the next open agrees with what is on screen. */
+export function patchPrefs(patch: Partial<Prefs>) {
+  const next = { ...prefsSnapshot(), ...patch };
+  prefs = next;
+  if (patch.volumeIndex != null) writeVolumeIndex(next.volumeIndex);
+  if (patch.playMode != null) writePlayMode(next.playMode);
+  if (patch.musicSource != null) writeMusicSource(next.musicSource);
+  if (patch.crySource != null) writeCrySource(next.crySource);
+  if (patch.sleepMinutes != null) writeSleepMinutes(next.sleepMinutes);
+  if (patch.lastPlay !== undefined && patch.lastPlay) writeLastPlay(patch.lastPlay);
+  for (const listener of prefsListeners) listener();
+}

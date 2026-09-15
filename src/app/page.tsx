@@ -1,5 +1,5 @@
-import { ToyApp } from "@/components/toy-app";
+import { GrowApp } from "@/components/grow/grow-app";
 
-export default function Home() {
-  return <ToyApp />;
+export default function Page() {
+  return <GrowApp />;
 }

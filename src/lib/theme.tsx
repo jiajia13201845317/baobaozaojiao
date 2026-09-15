@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 
 const KEY = "bao-night";
 
@@ -19,27 +19,49 @@ function shouldStartNight() {
   return hour >= 19 || hour < 7;
 }
 
+/**
+ * Night mode is read from the URL, then storage, then the clock — none of
+ * which exist when the static export is rendered at build time. An external
+ * store keeps that read out of render and out of an effect, so the first paint
+ * is the server value and the real one arrives with hydration.
+ */
+let cache: boolean | null = null;
+const listeners = new Set<() => void>();
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function snapshot() {
+  cache ??= shouldStartNight();
+  return cache;
+}
+
+function serverSnapshot() {
+  return false;
+}
+
+function set(next: boolean) {
+  cache = next;
+  try {
+    localStorage.setItem(KEY, next ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+  for (const listener of listeners) listener();
+}
+
 export function useNightMode() {
-  const [night, setNight] = useState(false);
+  const night = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
 
   useEffect(() => {
-    const on = shouldStartNight();
-    setNight(on);
-    document.documentElement.classList.toggle("night", on);
-  }, []);
+    document.documentElement.classList.toggle("night", night);
+  }, [night]);
 
-  const toggleNight = useCallback(() => {
-    setNight((prev) => {
-      const next = !prev;
-      document.documentElement.classList.toggle("night", next);
-      try {
-        localStorage.setItem(KEY, next ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
+  const toggleNight = useCallback(() => set(!snapshot()), []);
 
   return { night, toggleNight };
 }

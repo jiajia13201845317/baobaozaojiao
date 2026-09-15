@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { ChevronLeft, Home as HomeIcon, Pause, Play, RotateCcw, Settings2, Timer } from "lucide-react";
 import { CozyBackdrop, ItemArt, PartyEgg, PlayBadge } from "@/components/art";
 import { CoverImage, Portrait, RoomHero } from "@/components/cover";
@@ -37,21 +37,14 @@ import {
   cyclePlayMode,
   MUSIC_SOURCE_LABEL,
   PLAY_MODE_LABEL,
-  readCrySource,
-  readLastPlay,
-  readMusicSource,
-  readPlayMode,
-  readSleepMinutes,
-  readVolumeIndex,
+  patchPrefs,
+  prefsNotReady,
+  prefsReady,
+  prefsServer,
+  prefsSnapshot,
+  subscribePrefs,
   titleFor,
-  writeCrySource,
   writeHasPlayed,
-  writeLastPlay,
-  writeMusicSource,
-  writePlayMode,
-  writeSleepMinutes,
-  writeVolumeIndex,
-  type CrySource,
   type LastPlay,
   type MusicSource,
   type PlayMode,
@@ -65,6 +58,16 @@ type View =
   | { name: "player"; category: CategoryId; itemId: string; world?: WorldId };
 
 const VOLUME_STEPS = [0, 0.45, 0.82] as const;
+
+const WELCOME: View = { name: "welcome" };
+
+function deepLink(go: string | null): View {
+  if (go === "home") return { name: "home" };
+  if (go === "fables") return { name: "library", category: "stories" };
+  if (go && worlds.some((w) => w.id === go)) return { name: "world", world: go as WorldId };
+  if (go && categories.some((c) => c.id === go)) return { name: "library", category: go as CategoryId };
+  return WELCOME;
+}
 
 function useTapQuiet(key: string, ms = 700) {
   const until = useRef(0);
@@ -84,33 +87,55 @@ function listenItem(category: CategoryId, itemId: string) {
   return storiesFor(category).find((s) => s.id === itemId);
 }
 
-export function ToyApp() {
-  const [view, setView] = useState<View>({ name: "welcome" });
+/**
+ * 宝宝听听 now lives as a tab inside 一起长大 rather than as its own app, so it
+ * fills the shell instead of the viewport. The welcome gate stays: this tab is
+ * the only part of the product a toddler holds the phone for, and it must
+ * never be one stray tap away from playing sound.
+ */
+export function ToyApp({ embedded = false }: { embedded?: boolean } = {}) {
+  /**
+   * Where a ?go= link lands. Derived rather than pushed into state by an
+   * effect, so the gate is the first thing rendered unless the URL asked for
+   * somewhere else.
+   */
+  const [chosen, setChosen] = useState<View | null>(null);
   const [line, setLine] = useState<LineInfo | null>(null);
   const [step, setStep] = useState<LessonStep | null>(null);
   const [playing, setPlaying] = useState(false);
-  const [volumeIndex, setVolumeIndex] = useState(2);
-  const [volumeReady, setVolumeReady] = useState(false);
-  const [lastPlay, setLastPlay] = useState<LastPlay | null>(null);
-  const [playMode, setPlayMode] = useState<PlayMode>("chain");
-  const [musicSource, setMusicSource] = useState<MusicSource>("netease");
-  const [crySource, setCrySource] = useState<CrySource>("real");
-  const [sleepMinutes, setSleepMinutes] = useState(0);
-  const [sleepEndsAt, setSleepEndsAt] = useState<number | null>(null);
-  const [nowTick, setNowTick] = useState(0);
+  const prefs = useSyncExternalStore(subscribePrefs, prefsSnapshot, prefsServer);
+  const landing = useMemo(() => deepLink(prefs.go), [prefs.go]);
+  const view = chosen ?? landing;
+  const setView = useCallback(
+    (next: View | ((current: View) => View)) =>
+      setChosen((current) => (typeof next === "function" ? next(current ?? landing) : next)),
+    [landing],
+  );
+  const ready = useSyncExternalStore(subscribePrefs, prefsReady, prefsNotReady);
+  const { crySource, lastPlay, musicSource, playMode, sleepMinutes, volumeIndex } = prefs;
+  /** Whole minutes left on the nap timer, counted down by the timer itself. */
+  const [sleepLeft, setSleepLeft] = useState<number | null>(null);
   const [parentOpen, setParentOpen] = useState(false);
   const { night, toggleNight } = useNightMode();
   const viewRef = useRef(view);
   const modeRef = useRef(playMode);
   const playItemRef = useRef<(category: CategoryId, itemId: string, world?: WorldId) => Promise<void>>(async () => {});
   const sleepTimer = useRef<number | null>(null);
+  const sleepTick = useRef<number | null>(null);
   const playGen = useRef(0);
   const holdRef = useRef(false);
   const pinRef = useRef<string | null>(null);
   const advanceTimer = useRef<number | null>(null);
   const allowWelcome = useTapQuiet("welcome", 1000);
-  viewRef.current = view;
-  modeRef.current = playMode;
+
+  // Latest-value refs, for the audio callbacks that fire long after render.
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
+
+  useEffect(() => {
+    modeRef.current = playMode;
+  }, [playMode]);
 
   const cancelAdvance = () => {
     if (advanceTimer.current != null) {
@@ -151,51 +176,13 @@ export function ToyApp() {
       toyPlayer.onStep = null;
       toyPlayer.stop();
       if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
+      if (sleepTick.current) window.clearInterval(sleepTick.current);
     };
   }, []);
 
   useEffect(() => {
-    setLastPlay(readLastPlay());
-    setVolumeIndex(readVolumeIndex(2));
-    setPlayMode(readPlayMode());
-    setSleepMinutes(readSleepMinutes());
-    const params = new URLSearchParams(window.location.search);
-    const source = params.get("source");
-    const nextSource = source === "local" || source === "netease" ? source : readMusicSource();
-    setMusicSource(nextSource);
-    writeMusicSource(nextSource);
-    const cry = params.get("cry");
-    const nextCry = cry === "soft" || cry === "real" ? cry : readCrySource();
-    setCrySource(nextCry);
-    writeCrySource(nextCry);
-    setVolumeReady(true);
-    const go = params.get("go");
-    if (go === "home") {
-      setView({ name: "home" });
-      return;
-    }
-    if (go === "welcome") {
-      setView({ name: "welcome" });
-      return;
-    }
-    if (go === "fables") {
-      setView({ name: "library", category: "stories" });
-      return;
-    }
-    if (go && worlds.some((w) => w.id === go)) {
-      setView({ name: "world", world: go as WorldId });
-      return;
-    }
-    if (go && categories.some((c) => c.id === go)) {
-      setView({ name: "library", category: go as CategoryId });
-      return;
-    }
-  }, []);
-
-  useEffect(() => {
-    toyPlayer.setVolume(VOLUME_STEPS[volumeIndex]);
-    if (volumeReady) writeVolumeIndex(volumeIndex);
-  }, [volumeIndex, volumeReady]);
+    if (ready) toyPlayer.setVolume(VOLUME_STEPS[volumeIndex]);
+  }, [ready, volumeIndex]);
 
   useEffect(() => {
     toyPlayer.setSource(musicSource);
@@ -205,33 +192,31 @@ export function ToyApp() {
     toyPlayer.setCrySource(crySource);
   }, [crySource]);
 
+  /**
+   * The label counts whole minutes down rather than diffing against the clock,
+   * so rendering it never has to ask what time it is.
+   */
   const armSleep = useCallback((minutes: number) => {
     if (sleepTimer.current) window.clearTimeout(sleepTimer.current);
+    if (sleepTick.current) window.clearInterval(sleepTick.current);
     if (!minutes) {
-      setSleepEndsAt(null);
+      setSleepLeft(null);
       return;
     }
-    const ends = Date.now() + minutes * 60 * 1000;
-    setSleepEndsAt(ends);
+    setSleepLeft(minutes);
+    sleepTick.current = window.setInterval(
+      () => setSleepLeft((left) => (left == null ? null : Math.max(0, left - 1))),
+      60000,
+    );
     sleepTimer.current = window.setTimeout(() => {
       void toyPlayer.sayGoodnight();
       setPlaying(false);
-      setSleepEndsAt(null);
+      setSleepLeft(null);
+      if (sleepTick.current) window.clearInterval(sleepTick.current);
     }, minutes * 60 * 1000);
   }, []);
 
-  useEffect(() => {
-    if (!sleepEndsAt) return;
-    const id = window.setInterval(() => setNowTick(Date.now()), 15000);
-    setNowTick(Date.now());
-    return () => window.clearInterval(id);
-  }, [sleepEndsAt]);
-
-  const remainingLabel = sleepEndsAt
-    ? Math.max(0, Math.ceil((sleepEndsAt - (nowTick || Date.now())) / 60000))
-    : null;
-  const remainingText =
-    remainingLabel === null ? null : remainingLabel <= 0 ? "马上停" : `${remainingLabel}分`;
+  const remainingText = sleepLeft == null ? null : sleepLeft <= 0 ? "马上停" : `${sleepLeft}分`;
 
   const playItem = useCallback(async (
     category: CategoryId,
@@ -255,9 +240,7 @@ export function ToyApp() {
     setLine(null);
     setStep(null);
     setPlaying(true);
-    const last = { category, itemId, title: titleFor(category, itemId), world };
-    writeLastPlay(last);
-    setLastPlay(last);
+    patchPrefs({ lastPlay: { category, itemId, title: titleFor(category, itemId), world } });
     setView({ name: "player", category, itemId, world });
     armSleep(sleepMinutes);
     if (isLesson(category)) {
@@ -277,9 +260,11 @@ export function ToyApp() {
     }
     const story = storiesFor(category).find((s) => s.id === itemId);
     if (story && gen === playGen.current) await toyPlayer.playStory(story);
-  }, [armSleep, sleepMinutes]);
+  }, [armSleep, setView, sleepMinutes]);
 
-  playItemRef.current = (category, itemId, world) => playItem(category, itemId, world, "chain");
+  useEffect(() => {
+    playItemRef.current = (category, itemId, world) => playItem(category, itemId, world, "chain");
+  }, [playItem]);
 
   const start = useCallback(async () => {
     await playItem("animals", "dog");
@@ -306,7 +291,7 @@ export function ToyApp() {
     armSleep(sleepMinutes);
     const card = cardsFor(category).find((c) => c.id === itemId);
     if (card) await toyPlayer.playCry(card);
-  }, [armSleep, sleepMinutes]);
+  }, [armSleep, setView, sleepMinutes]);
 
   const stop = useCallback(() => {
     cancelAdvance();
@@ -321,14 +306,14 @@ export function ToyApp() {
   const goHome = useCallback(() => {
     stop();
     setView({ name: "home" });
-  }, [stop]);
+  }, [setView, stop]);
 
   const goWorld = useCallback(
     (world: WorldId) => {
       stop();
       setView({ name: "world", world });
     },
-    [stop]
+    [setView, stop]
   );
 
   const goLibrary = useCallback(
@@ -336,7 +321,7 @@ export function ToyApp() {
       stop();
       setView({ name: "library", category, world });
     },
-    [stop]
+    [setView, stop]
   );
 
   const tools = (
@@ -360,11 +345,16 @@ export function ToyApp() {
   );
 
   return (
-    <div className="relative isolate flex min-h-dvh flex-col overflow-x-hidden">
+    <div
+      className={`listen-root relative isolate flex flex-col overflow-x-hidden ${
+        embedded ? "min-h-full flex-1" : "min-h-dvh"
+      }`}
+    >
       {view.name !== "welcome" && <CozyBackdrop />}
 
       {view.name === "welcome" && (
         <Welcome
+          embedded={embedded}
           onStart={() => allowWelcome(() => void start())}
           night={night}
           onToggleNight={toggleNight}
@@ -456,31 +446,12 @@ export function ToyApp() {
         remainingLabel={remainingText}
         onClose={() => setParentOpen(false)}
         onToggleNight={toggleNight}
-        onCycleVolume={() => setVolumeIndex((i) => (i + 1) % VOLUME_STEPS.length)}
-        onCycleMode={() => {
-          setPlayMode((mode) => {
-            const next = cyclePlayMode(mode);
-            writePlayMode(next);
-            return next;
-          });
-        }}
-        onCycleSource={() => {
-          setMusicSource((source) => {
-            const next = cycleMusicSource(source);
-            writeMusicSource(next);
-            return next;
-          });
-        }}
-        onCycleCry={() => {
-          setCrySource((source) => {
-            const next = cycleCrySource(source);
-            writeCrySource(next);
-            return next;
-          });
-        }}
+        onCycleVolume={() => patchPrefs({ volumeIndex: (volumeIndex + 1) % VOLUME_STEPS.length })}
+        onCycleMode={() => patchPrefs({ playMode: cyclePlayMode(playMode) })}
+        onCycleSource={() => patchPrefs({ musicSource: cycleMusicSource(musicSource) })}
+        onCycleCry={() => patchPrefs({ crySource: cycleCrySource(crySource) })}
         onSleepMinutes={(minutes) => {
-          writeSleepMinutes(minutes);
-          setSleepMinutes(minutes);
+          patchPrefs({ sleepMinutes: minutes });
           armSleep(minutes);
         }}
       />
@@ -651,12 +622,6 @@ function greeting() {
   return "晚上好";
 }
 
-function homeHint() {
-  const h = new Date().getHours();
-  if (h >= 19 || h < 7) return "夜里先听一个短故事，再睡觉";
-  if (h < 11) return "早上先听小狗，再认一认";
-  return "点最大的卡片，右上角给大人";
-}
 
 function RoomButton({
   cat,

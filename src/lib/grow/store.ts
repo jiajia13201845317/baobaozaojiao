@@ -16,6 +16,16 @@
 import { type CareState, type OwnedPet, type SeriesId, pickCreature, viewPet } from "./pets";
 import { POINTS } from "./pet";
 import { type RecordEvent, type RecordKind, dayOf, recordPoints } from "./records";
+import {
+  type Carer,
+  type LogEntry,
+  type Settings,
+  DEFAULT_SETTINGS,
+  LOG_CAP,
+  readCarers,
+  readLog,
+  readSettings,
+} from "./settings";
 import { dateKey } from "./tasks";
 
 export type Sex = "boy" | "girl";
@@ -54,6 +64,14 @@ export type GrowState = {
   babies: Baby[];
   current: string | null;
   data: Record<string, BabyData>;
+  /** Household-level, not per baby: consent and switches belong to the device. */
+  settings: Settings;
+  /** 6.1 多看护人. Empty until a family names anyone. */
+  carers: Carer[];
+  /** 6.1 whose name new records carry. */
+  by: string | null;
+  /** 12.2 / 12.9 操作日志 — the audit trail behind every destructive action. */
+  log: LogEntry[];
 };
 
 const KEY = "grow-state";
@@ -69,7 +87,15 @@ export const EMPTY_BABY: BabyData = {
   spent: 0,
 };
 
-export const EMPTY: GrowState = { babies: [], current: null, data: {} };
+export const EMPTY: GrowState = {
+  babies: [],
+  current: null,
+  data: {},
+  settings: DEFAULT_SETTINGS,
+  carers: [],
+  by: null,
+  log: [],
+};
 
 function asStringArray(value: unknown) {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
@@ -170,6 +196,19 @@ function readBaby(value: unknown): Baby | null {
 
 type Legacy = Partial<GrowState> & { profile?: unknown };
 
+/**
+ * 7.1 — consent must never be pre-ticked for a new user. But a file saved
+ * before this screen existed already represents a parent who set up a档案 and
+ * kept records, so the two things they had already opted into are treated as
+ * given, and the two that are genuinely new stay off.
+ */
+function grandfather(): Settings {
+  return {
+    ...DEFAULT_SETTINGS,
+    consent: { ...DEFAULT_SETTINGS.consent, basic: true, personalized: true, guardianAt: Date.now() },
+  };
+}
+
 /** Anything unreadable falls back to empty rather than throwing on boot. */
 export function readState(): GrowState {
   try {
@@ -182,7 +221,10 @@ export function readState(): GrowState {
     if (parsed.profile && !Array.isArray(parsed.babies)) {
       const baby = readBaby({ ...(parsed.profile as object), id: "b1", createdAt: Date.now() });
       if (!baby) return EMPTY;
-      return withFirstEgg({ babies: [baby], current: baby.id, data: { [baby.id]: readBabyData(parsed) } }, baby.id);
+      return withFirstEgg(
+        { ...EMPTY, babies: [baby], current: baby.id, data: { [baby.id]: readBabyData(parsed) }, settings: grandfather() },
+        baby.id,
+      );
     }
 
     const babies = (Array.isArray(parsed.babies) ? parsed.babies : []).map(readBaby).filter((b): b is Baby => b != null);
@@ -191,7 +233,19 @@ export function readState(): GrowState {
     for (const baby of babies) data[baby.id] = readBabyData((parsed.data ?? {})[baby.id]);
     const current = typeof parsed.current === "string" && data[parsed.current] ? parsed.current : babies[0]!.id;
 
-    let state: GrowState = { babies, current, data };
+    const carers = readCarers(parsed.carers);
+    let state: GrowState = {
+      babies,
+      current,
+      data,
+      // A saved file from before consent existed belongs to someone already
+      // using the app; re-gating them behind a consent wall would read as the
+      // app having lost their records.
+      settings: parsed.settings ? readSettings(parsed.settings) : grandfather(),
+      carers,
+      by: typeof parsed.by === "string" && carers.some((c) => c.id === parsed.by) ? parsed.by : null,
+      log: readLog(parsed.log),
+    };
     for (const baby of babies) state = withFirstEgg(state, baby.id);
     return state;
   } catch {
@@ -281,6 +335,7 @@ export function setData(state: GrowState, babyId: string, data: BabyData): GrowS
 export function addBaby(state: GrowState, fields: Omit<Baby, "id" | "createdAt">): GrowState {
   const baby: Baby = { ...fields, id: newId(), createdAt: Date.now() };
   const next: GrowState = {
+    ...state,
     babies: [...state.babies, baby],
     current: baby.id,
     data: { ...state.data, [baby.id]: EMPTY_BABY },
@@ -303,7 +358,55 @@ export function removeBaby(state: GrowState, babyId: string): GrowState {
   const babies = state.babies.filter((b) => b.id !== babyId);
   const data = { ...state.data };
   delete data[babyId];
-  return { babies, data, current: babies.some((b) => b.id === state.current) ? state.current : (babies[0]?.id ?? null) };
+  return {
+    ...state,
+    babies,
+    data,
+    current: babies.some((b) => b.id === state.current) ? state.current : (babies[0]?.id ?? null),
+  };
+}
+
+// ---------- settings, carers, log ----------
+
+export function setSettings(state: GrowState, next: Settings): GrowState {
+  return { ...state, settings: next };
+}
+
+export function patchSettings(state: GrowState, patch: Partial<Settings>): GrowState {
+  return { ...state, settings: { ...state.settings, ...patch } };
+}
+
+export function setConsent(state: GrowState, key: keyof Settings["consent"], on: boolean): GrowState {
+  if (key === "guardianAt") return state;
+  return patchSettings(state, { consent: { ...state.settings.consent, [key]: on } });
+}
+
+export function addCarer(state: GrowState, name: string, role: Carer["role"]): GrowState {
+  const carer: Carer = { id: newId(), name: name.slice(0, 12), role, createdAt: Date.now() };
+  return { ...state, carers: [...state.carers, carer], by: state.by ?? carer.id };
+}
+
+export function editCarer(state: GrowState, id: string, patch: Partial<Pick<Carer, "name" | "role">>): GrowState {
+  return { ...state, carers: state.carers.map((c) => (c.id === id ? { ...c, ...patch } : c)) };
+}
+
+export function removeCarer(state: GrowState, id: string): GrowState {
+  const carers = state.carers.filter((c) => c.id !== id);
+  return { ...state, carers, by: state.by === id ? (carers[0]?.id ?? null) : state.by };
+}
+
+export function carerOf(state: GrowState, id: string | null | undefined) {
+  return state.carers.find((c) => c.id === id) ?? null;
+}
+
+/** The role in force right now. With nobody named, the household is its own owner. */
+export function myRole(state: GrowState): Carer["role"] {
+  return carerOf(state, state.by)?.role ?? "owner";
+}
+
+export function note(state: GrowState, what: string, detail?: string): GrowState {
+  const entry: LogEntry = { id: newId(), at: Date.now(), who: state.by ?? "", what, detail };
+  return { ...state, log: [...state.log, entry].slice(-LOG_CAP) };
 }
 
 // ---------- records ----------
