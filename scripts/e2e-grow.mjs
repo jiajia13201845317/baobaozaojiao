@@ -1615,6 +1615,37 @@ try {
     await new Promise((r) => setTimeout(r, 1500));
     check("starting playback keeps the tab bar", (await page.evaluate(() => document.querySelectorAll(".g-tabs button").length)) > 0);
 
+    /* The complaint that started this: songs were being read out rather than
+     * sung. Two things were wrong, and this covers the one a test can see —
+     * the app defaulted to a cross-origin player that cannot be checked or
+     * fallen back from, so on a device that blocks autoplay in frames,
+     * picking a song produced nothing at all. It now reaches for the local
+     * track, which is sung; that the track *is* sung is measured separately,
+     * by `npm run check:singing`. */
+    await page.goto(`${BASE}/grow/?go=zh-songs`, { waitUntil: "domcontentloaded" });
+    await new Promise((r) => setTimeout(r, 600));
+    await clickTab(page, "听听");
+    await waitBody(page, "小兔子乖乖");
+    /* The screen swallows taps for a second after it appears, so a toddler
+     * drumming on the phone cannot pick something by accident. Wait it out. */
+    await new Promise((r) => setTimeout(r, 1200));
+    await clickText(page, "小兔子乖乖");
+    await new Promise((r) => setTimeout(r, 3000));
+
+    const heard = await page.evaluate(() => {
+      const audio = document.querySelector("audio[data-bao-track]");
+      return {
+        src: audio?.getAttribute("src") ?? "",
+        at: audio?.currentTime ?? 0,
+        frames: document.querySelectorAll("iframe[data-bao-netease]").length,
+      };
+    });
+    check("a song plays from the local sung track, not a frame it cannot see", /\/songs\/bunny\.mp3$/.test(heard.src) && heard.frames === 0, JSON.stringify(heard));
+    check("and it is actually running", heard.at > 0.3, JSON.stringify(heard));
+
+    const words = await page.evaluate(() => document.body.innerText);
+    check("the words scroll with the singing", words.includes("小兔子乖乖"), words.slice(0, 200));
+
     const stayed = await page.evaluate(() => Boolean(document.querySelector(".listen-tab")));
     await clickText(page, "记录");
     await new Promise((r) => setTimeout(r, 400));
