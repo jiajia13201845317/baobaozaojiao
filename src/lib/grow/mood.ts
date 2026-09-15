@@ -129,7 +129,9 @@ export const ACTS: Record<ActId, number> = {
   peek: 1600,
   spin: 1000,
   yawn: 2000,
-  eat: 2200,
+  /* Long enough for the whole sequence: the food is brought up, bitten twice
+   * with chewing in between, and swallowed. */
+  eat: 3000,
   play: 2000,
   bath: 2400,
   poke: 700,

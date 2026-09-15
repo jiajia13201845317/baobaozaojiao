@@ -4355,15 +4355,51 @@
 
 /* ---------- answers to the parent ---------- */
 
-/* Chewing: quick, small, off-centre, nothing like a whole-body move. */
-.act-eat { animation: chew 0.34s ease-in-out infinite; }
 .act-play { animation: romp 0.5s ease-in-out infinite; }
 .act-bath { animation: shake 0.28s ease-in-out infinite; }
 .act-poke { animation: poked 0.35s ease-out infinite; }
 
-@keyframes chew {
-  0%, 100% { transform: translateY(0) scale(1, 1) rotate(0); }
-  50% { transform: translateY(1px) scale(1.035, 0.97) rotate(-1.5deg); }
+/*
+ * Eating, in the order a person would do it: lean down to meet the food, bite,
+ * chew, bite again, chew, swallow, settle. Not a loop — a sequence, run once
+ * over the act's own three seconds, which is why the stops are where they are.
+ *
+ * The chewing is a second animation on the `img` rather than more stops in
+ * this one. Two animations on the same element both writing `transform` would
+ * fight, and the jaw needs to work at its own quick tempo underneath the
+ * body's slow envelope.
+ */
+.act-eat { animation: eat-body 3s ease-in-out 1 both; }
+
+@keyframes eat-body {
+  0% { transform: translateY(0) scale(1, 1) rotate(0); }
+  /* Leaning down towards what is being offered. */
+  14% { transform: translateY(3px) scale(1.015, 0.985) rotate(-1deg); }
+  20% { transform: translateY(6px) scale(1.05, 0.94) rotate(-1.5deg); }
+  27% { transform: translateY(-1px) scale(0.985, 1.025) rotate(0); }
+  44% { transform: translateY(2px) scale(1.015, 0.985) rotate(-1deg); }
+  50% { transform: translateY(5px) scale(1.04, 0.955) rotate(-1deg); }
+  57% { transform: translateY(-1px) scale(0.99, 1.02) rotate(0); }
+  84% { transform: translateY(0) scale(1, 1) rotate(0); }
+  /* The swallow: everything goes up and narrow, then drops back. */
+  90% { transform: translateY(-5px) scale(0.95, 1.07) rotate(0); }
+  96% { transform: translateY(2px) scale(1.035, 0.965) rotate(0); }
+  100% { transform: translateY(0) scale(1, 1) rotate(0); }
+}
+
+/*
+ * The jaw. Starts when the food actually reaches the mouth — chewing on an
+ * empty mouth while the biscuit is still on its way up is exactly the kind of
+ * thing that makes the whole act look wrong — and runs to the end of the act.
+ */
+.act-eat img {
+  transform-origin: 50% 88%;
+  animation: eat-chew 0.3s ease-in-out 0.52s 8 both;
+}
+
+@keyframes eat-chew {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(1.5px) scale(1.022, 0.978); }
 }
 
 @keyframes romp {
@@ -4425,31 +4461,84 @@
 }
 
 /*
- * Crumbs fall from the mouth. Roughly — mouth height differs across the
- * twenty-one creatures, so this is the middle of that spread rather than any
- * one of them.
+ * The biscuit, and the mouth it goes into.
+ *
+ * `--mouth-x` and `--mouth-y` come from the component, measured off the art
+ * itself in `lib/grow/mouths.ts`. They are fractions of the image, and the
+ * image is a known 11.5rem square centred in a window with 0.6rem of padding
+ * above it, so they turn into the window's own coordinates exactly.
+ *
+ * Assuming the mouth was simply in the middle put the biscuit on the cheek:
+ * every revealed creature is posed with its head turned, as much as 9.5% of
+ * the image width off centre, and the eye line ranges over eleven points
+ * between the shortest face and the tallest.
  */
-.bits-eat i {
-  top: 38%;
-  width: 1.05rem;
-  height: 1.05rem;
-  background-image: url("/art/prop/crumb.webp");
-  animation: crumb 1.1s ease-in calc(var(--i) * 170ms) infinite both;
+.bits-eat {
+  --mx: calc(50% + (var(--mouth-x) - 0.5) * 11.5rem);
+  --my: calc(0.6rem + var(--mouth-y) * 11.5rem);
+}
+
+.bits-eat b {
+  position: absolute;
+  top: var(--my);
+  left: var(--mx);
+  display: block;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin: -0.65rem 0 0 -0.65rem;
+  background: url("/art/prop/crumb.webp") center / contain no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(53, 50, 86, 0.3));
+  animation: eat-food 3s ease-in-out 1 both;
 }
 
 /*
- * Narrow at the mouth, then fanning out and down past the feet. The first
- * version dropped them about 60px, which left them sitting on the creature's
- * cheek and chest: a tan cookie on a mid-green body has almost no contrast,
- * and two separate reviewers read them as "small yellow stars" rather than as
- * food. Falling clear of the silhouette puts them against the pale floor of
- * the window, where they actually look like crumbs.
+ * Offered from below — the 喂食 button is directly under the window, so food
+ * rising from that edge reads as the biscuit the parent just tapped — then
+ * taken away in two bites with chewing in between, the way a biscuit actually
+ * disappears. It never travels back out of the mouth.
  */
-@keyframes crumb {
-  0% { opacity: 0; transform: translate(calc(var(--i) * 11px - 22px), -6px) rotate(0) scale(0.5); }
+@keyframes eat-food {
+  0% { opacity: 0; transform: translate(-1.5rem, 122px) rotate(-22deg) scale(0.66); }
+  7% { opacity: 1; }
+  17% { transform: translate(-0.15rem, 10px) rotate(-4deg) scale(1); }
+  20% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+  /* First bite, then held — bobbing slightly, because a biscuit pinned
+   * perfectly still while the pet chews looks frozen rather than held. */
+  24% { transform: translate(0.06rem, 1px) rotate(7deg) scale(0.6); }
+  34% { transform: translate(0.02rem, 3px) rotate(2deg) scale(0.6); }
+  46% { transform: translate(0.06rem, 0) rotate(8deg) scale(0.6); }
+  /* Second bite: gone. */
+  51% { opacity: 1; transform: translate(0, 2px) rotate(14deg) scale(0.16); }
+  54% { opacity: 0; transform: translate(0, 2px) rotate(14deg) scale(0); }
+  100% { opacity: 0; transform: translate(0, 2px) rotate(14deg) scale(0); }
+}
+
+/*
+ * Crumbs, and only at the two bites. These used to be the whole act — five of
+ * them raining out of the mouth continuously — which read as the pet dropping
+ * its food rather than eating it. Now they are just what flies off a biscuit
+ * when you bite it: two per bite, small, sideways, over almost at once.
+ */
+.bits-eat i {
+  top: var(--my);
+  left: var(--mx);
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: -0.25rem 0 0 -0.25rem;
+  background-image: url("/art/prop/crumb.webp");
+  animation: crumb-fly 0.5s ease-out 1 both;
+}
+
+/* nth-of-type, not nth-child: the biscuit is the first child. */
+.bits-eat i:nth-of-type(1) { --dx: -19px; animation-delay: 0.64s; }
+.bits-eat i:nth-of-type(2) { --dx: 15px; animation-delay: 0.71s; }
+.bits-eat i:nth-of-type(3) { --dx: -13px; animation-delay: 1.56s; }
+.bits-eat i:nth-of-type(4) { --dx: 21px; animation-delay: 1.63s; }
+
+@keyframes crumb-fly {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0) scale(0.35); }
   18% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--i) * 24px - 48px), 104px) rotate(260deg) scale(1.05); }
+  100% { opacity: 0; transform: translate(var(--dx), 24px) rotate(180deg) scale(0.9); }
 }
 
 /* Hearts rise and drift apart. */
@@ -4556,8 +4645,10 @@
  */
 @media (prefers-reduced-motion: reduce) {
   .pet-figure,
+  .pet-figure img,
   .pet-mood i,
   .pet-bits i,
+  .pet-bits b,
   .pet-meter.is-want .pet-bar i {
     animation: none !important;
   }

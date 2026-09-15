@@ -840,7 +840,7 @@ try {
   await new Promise((r) => setTimeout(r, 300));
   now = await pet();
   check("feeding plays an eating pose", now.act === "act-eat", JSON.stringify(now));
-  check("feeding drops crumbs", now.bits === "pet-bits bits-eat", JSON.stringify(now));
+  check("feeding brings out the food", now.bits === "pet-bits bits-eat", JSON.stringify(now));
   check("feeding makes it happy on the spot", now.mood === "开心", JSON.stringify(now));
   check("the rain stops when it is fed", !now.cloud, JSON.stringify(now));
   check("feeding says something about eating", /吃|嚼/.test(now.line), JSON.stringify(now));
@@ -863,6 +863,70 @@ try {
   await new Promise((r) => setTimeout(r, 300));
   now = await pet();
   check("bathing plays its own pose", now.act === "act-bath" && now.bits === "pet-bits bits-bath", JSON.stringify(now));
+
+  // Eating has to look like eating: the food goes up to the mouth and is taken
+  // away in bites. The first version only rained crumbs out of the mouth,
+  // which read as the pet dropping its food rather than eating it, so these
+  // check the direction of travel as well as the fact that food exists.
+  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await waitBody(page, "今日早教");
+  /*
+   * Traced frame by frame from inside the page rather than sampled at fixed
+   * delays over the wire. Round-trip jitter was landing the "has it left the
+   * ground yet" sample after the food had already arrived, and the property
+   * worth testing is the path it takes, not where it happens to be at 90ms.
+   */
+  const trace = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const out = [];
+        const win = document.querySelector(".pet-window");
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        document.querySelectorAll(".pet-actions .g-chip-btn")[0].click();
+        const t0 = performance.now();
+        const tick = () => {
+          const el = document.querySelector(".bits-eat b");
+          if (el) {
+            const w = win.getBoundingClientRect();
+            const r = el.getBoundingClientRect();
+            const my = Number(getComputedStyle(document.querySelector(".bits-eat")).getPropertyValue("--mouth-y"));
+            out.push({
+              t: Math.round(performance.now() - t0),
+              y: (r.top + r.height / 2 - w.top) / w.height,
+              mouth: (0.6 * rem + my * 11.5 * rem) / w.height,
+              size: Math.round(r.width),
+              op: Number(getComputedStyle(el).opacity),
+              crumbs: [...document.querySelectorAll(".bits-eat i")].filter((e) => Number(getComputedStyle(e).opacity) > 0.15).length,
+            });
+          }
+          if (performance.now() - t0 < 3400) requestAnimationFrame(tick);
+          else resolve(out);
+        };
+        requestAnimationFrame(tick);
+      }),
+  );
+
+  check("feeding puts real food on screen", trace.length > 20, `${trace.length} frames traced`);
+  const mouth = trace[0].mouth;
+  check("the food starts below the pet", trace[0].y - mouth > 0.3, JSON.stringify(trace[0]));
+  const arrives = trace.findIndex((f) => Math.abs(f.y - mouth) < 0.04);
+  check("the food travels up to the mouth", arrives > 0, JSON.stringify(trace.map((f) => Number((f.y - mouth).toFixed(2)))));
+
+  // The whole point of the rewrite. Food that comes back down past the chin is
+  // food being dropped, which is what the first version looked like.
+  const after = trace.slice(arrives);
+  check("it never travels back out of the mouth", after.every((f) => f.y - mouth < 0.12), JSON.stringify(after.filter((f) => f.y - mouth >= 0.12)));
+
+  const big = Math.max(...trace.map((f) => f.size));
+  check("a bite takes a piece out of it", after.some((f) => f.size > 0 && f.size < big * 0.8), JSON.stringify({ big, sizes: [...new Set(after.map((f) => f.size))] }));
+  check("and a second bite finishes it", after.some((f) => f.op < 0.05), "the biscuit is never fully eaten");
+
+  const early = trace.filter((f) => f.t < 400);
+  check("no crumbs before the first bite", early.every((f) => f.crumbs === 0), JSON.stringify(early.filter((f) => f.crumbs > 0)));
+  check("crumbs fly when it bites", trace.some((f) => f.t > 500 && f.crumbs > 0), "no crumbs at any bite");
+
+  await new Promise((r) => setTimeout(r, 900));
+  check("the food is not left lying around", await page.evaluate(() => !document.querySelector(".bits-eat b")), "still present after the act");
 
   // Hunger outranks the other two, the way it would for a real animal: a pet
   // that has not been fed in a week is miserable however clean it is, while

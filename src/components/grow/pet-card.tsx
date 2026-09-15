@@ -7,6 +7,7 @@ import { POINTS } from "@/lib/grow/pet";
 import { CARES, type CareId, type PetView, meterOf, themedPetArt } from "@/lib/grow/pets";
 import type { CareState } from "@/lib/grow/pets";
 import { CARE_ACT, MOODS, lineFor, moodFor, wantOf } from "@/lib/grow/mood";
+import { mouthOf } from "@/lib/grow/mouths";
 import { usePetAct } from "@/lib/grow/use-pet-act";
 
 const ICONS: Record<CareId, typeof Cookie> = { food: Cookie, play: Gamepad2, bath: Bath };
@@ -130,7 +131,7 @@ export function PetCard({
         </button>
 
         <Weather mood={mood.id} act={act} />
-        <Bits act={act} />
+        <Bits act={act} mouth={mouthOf(themedPetArt(view.art, sex))} />
 
         {party && (
           <div className="pet-confetti" aria-hidden>
@@ -248,12 +249,29 @@ function Weather({ mood, act }: { mood: string; act: string }) {
  * at this size: a chewing wobble and a shiver look the same until crumbs or
  * bubbles say which one it is.
  */
-function Bits({ act }: { act: string }) {
+function Bits({ act, mouth }: { act: string; mouth: [number, number] }) {
+  /*
+   * Eating is the one act with a subject as well as a reaction. The first
+   * version only had crumbs falling out of the mouth, which read as the pet
+   * dropping its food rather than eating it. So the food itself is here: `b`
+   * is the biscuit, carried up to the mouth and taken away in two bites, and
+   * the crumbs are only what flies off when it bites.
+   *
+   * The mouth is measured per image rather than assumed to be in the middle —
+   * see `lib/grow/mouths.ts`. The figure is a square image of known height, so
+   * the fractions convert straight into the window's own coordinates.
+   */
   if (act === "eat") {
+    const [mx, my] = mouth;
     return (
-      <span className="pet-bits bits-eat" aria-hidden>
-        {[0, 1, 2, 3, 4].map((i) => (
-          <i key={i} style={{ ["--i" as string]: i }} />
+      <span
+        className="pet-bits bits-eat"
+        style={{ ["--mouth-x" as string]: mx, ["--mouth-y" as string]: my }}
+        aria-hidden
+      >
+        <b />
+        {[0, 1, 2, 3].map((i) => (
+          <i key={i} />
         ))}
       </span>
     );
