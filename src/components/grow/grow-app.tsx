@@ -16,7 +16,7 @@ import type { Metric } from "@/lib/grow/growth";
 import { CARES, type CareId, type SeriesId, afterCare, viewPet } from "@/lib/grow/pets";
 import { dropPhoto, dropAllPhotos, putPhoto } from "@/lib/grow/media";
 import type { ConsentKey } from "@/lib/grow/settings";
-import type { RecordKind } from "@/lib/grow/records";
+import type { MealId, RecordKind } from "@/lib/grow/records";
 import {
   type BabyData,
   type GrowState,
@@ -199,15 +199,30 @@ export function GrowApp() {
     update((prev) => removeEvent(prev, id));
   };
 
-  const pickMeal = async (file: File) => {
+  const logMeal = (meal: MealId) =>
+    update((prev) => addEvent(prev, { kind: "meal", at: Date.now(), pick: meal, by: state.by ?? undefined }));
+
+  const pickMeal = async (meal: MealId, file: File) => {
     const key = newId();
     try {
       await putPhoto(key, file);
     } catch {
       return;
     }
-    update((prev) => addEvent(prev, { kind: "meal", at: Date.now(), photo: key }));
+    update((prev) => addEvent(prev, { kind: "meal", at: Date.now(), pick: meal, photo: key, by: state.by ?? undefined }));
   };
+
+  /** 4.5 — two taps, no arithmetic. `napsOf` pairs them back into naps. */
+  const logSleep = (which: "down" | "up") =>
+    update((prev) => addEvent(prev, { kind: "sleep", at: Date.now(), pick: which, by: state.by ?? undefined }));
+
+  const logFeed = (what: string) =>
+    update((prev) => addEvent(prev, { kind: "feed", at: Date.now(), pick: what, by: state.by ?? undefined }));
+
+  /** 4.6 — the reference id goes in `pick`, its wording in `note`, so a later
+   * change to the reference text never rewrites what a parent recorded. */
+  const logMotor = (refId: string, what: string) =>
+    update((prev) => addEvent(prev, { kind: "motor", at: Date.now(), pick: refId, note: what, by: state.by ?? undefined }));
 
   const doCare = (careId: CareId) =>
     update((prev) => {
@@ -228,7 +243,7 @@ export function GrowApp() {
 
   const openRecord = (kind: RecordKind) => {
     setTab("records");
-    setView(kind === "poop" || kind === "pee" ? "nappy" : kind === "growth" ? "growth" : kind);
+    setView(kind === "poop" || kind === "pee" ? "nappy" : kind === "feed" ? "sleep" : kind);
   };
 
   if (!ready) {
@@ -377,7 +392,15 @@ export function GrowApp() {
           />
         )}
         {tab === "pets" && <PetsPage data={data} sex={baby.sex} onAdopt={takeIn} onSetActive={setActive} />}
-        {tab === "learn" && <Learn baby={baby} data={data} onDo={doTask} onToggleMilestone={toggleMilestone} />}
+        {tab === "learn" && (
+          <Learn
+            baby={baby}
+            data={data}
+            onDo={doTask}
+            onToggleMilestone={toggleMilestone}
+            bilingual={state.settings.bilingual}
+          />
+        )}
         {listenMounted && (
           <div className={`listen-tab${tab === "listen" ? "" : " is-off"}`}>
             <ToyApp embedded />
@@ -427,7 +450,12 @@ export function GrowApp() {
             onTagEvent={tagEvent}
             onDeleteEvent={deleteEvent}
             onPickMeal={pickMeal}
+            onLogMeal={logMeal}
+            onSleep={logSleep}
+            onFeed={logFeed}
+            onMotor={logMotor}
             onToggleVaccine={toggleVaccine}
+            photosOn={state.settings.consent.photos}
           />
         )}
       </div>

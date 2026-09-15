@@ -1,7 +1,7 @@
 "use client";
 
 import { Moon, Settings2, Sun } from "lucide-react";
-import { CareStrip, PupOutfit, useCare, bubbleFor } from "@/components/care-toys";
+import { CareStrip, useCare, bubbleFor } from "@/components/care-toys";
 import { CoverImage } from "@/components/cover";
 import { PartyEgg, PlayBadge } from "@/components/art";
 
@@ -60,7 +60,6 @@ export function Welcome({
           <span className="lw-glow" aria-hidden />
           <div className="lw-figure">
             <CoverImage src="/art/hero-dog.png" alt="小狗在等你" />
-            <PupOutfit kind={care.dressKind} />
           </div>
           <p className="lw-bubble">{bubbleFor(care)}</p>
         </div>

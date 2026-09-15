@@ -14,7 +14,7 @@
  */
 import { dateKey } from "./tasks";
 
-export type RecordKind = "growth" | "temp" | "poop" | "pee" | "meal";
+export type RecordKind = "growth" | "temp" | "poop" | "pee" | "meal" | "sleep" | "feed" | "motor";
 
 export type RecordEvent = {
   id: string;
@@ -54,8 +54,50 @@ export const KINDS: KindSpec[] = [
   { id: "temp", name: "体温", short: "量体温", instant: false, points: 2, hint: "只记数字和时间，不判断高低。" },
   { id: "poop", name: "拉屎", short: "拉屎", instant: true, points: 1, hint: "一按就记下时间。" },
   { id: "pee", name: "尿尿", short: "尿尿", instant: true, points: 1, hint: "一按就记下时间。" },
-  { id: "meal", name: "吃饭", short: "拍一下", instant: false, points: 2, hint: "拍张照就行，不用选食材。" },
+  { id: "meal", name: "吃饭", short: "吃饭", instant: false, points: 2, hint: "选个餐次，想拍照就拍一张。" },
+  { id: "sleep", name: "睡觉", short: "睡了", instant: true, points: 1, hint: "睡下按一次，醒了再按一次，时长自己算。" },
+  { id: "feed", name: "喂奶喝水", short: "喂奶", instant: true, points: 1, hint: "一按就记下时间和次数。" },
+  { id: "motor", name: "大动作", short: "会了", instant: false, points: 2, hint: "看到一个新动作，记下是哪天。" },
 ];
+
+/**
+ * 4.3 餐次. A label the parent picks, nothing more — the app does not know or
+ * guess what was eaten, and deliberately has nowhere to put a nutrition
+ * verdict on it.
+ */
+export const MEALS = [
+  { id: "breakfast", name: "早餐", from: 5, to: 10 },
+  { id: "lunch", name: "午餐", from: 10, to: 14 },
+  { id: "dinner", name: "晚餐", from: 16, to: 21 },
+  { id: "snack", name: "加餐", from: 0, to: 24 },
+] as const;
+
+export type MealId = (typeof MEALS)[number]["id"];
+
+export function mealName(id?: string) {
+  return MEALS.find((m) => m.id === id)?.name ?? "加餐";
+}
+
+/** The likeliest 餐次 for right now, so the common case is one tap. */
+export function mealForHour(hour = new Date().getHours()): MealId {
+  const hit = MEALS.find((m) => m.id !== "snack" && hour >= m.from && hour < m.to);
+  return hit?.id ?? "snack";
+}
+
+/** 4.3.1 家长自己填的进食反应，纯描述，不做过敏或耐受判断。 */
+export const MEAL_TAGS = ["吃得香", "吃得少", "第一次吃", "不太愿意", "自己拿着吃"] as const;
+
+/** 4.5 什么喂的。和餐次一样，只是标签。 */
+export const FEEDS = [
+  { id: "breast", name: "母乳" },
+  { id: "formula", name: "配方奶" },
+  { id: "water", name: "水" },
+  { id: "other", name: "其他" },
+] as const;
+
+export function feedName(id?: string) {
+  return FEEDS.find((f) => f.id === id)?.name ?? "未标注";
+}
 
 export function kindSpec(kind: RecordKind) {
   return KINDS.find((k) => k.id === kind) ?? KINDS[0]!;
@@ -99,6 +141,50 @@ export function eventsOnDay(events: RecordEvent[], day = dateKey()) {
 
 export function countOnDay(events: RecordEvent[], kind: RecordKind, day = dateKey()) {
   return events.filter((e) => e.kind === kind && dayOf(e.at) === day).length;
+}
+
+/**
+ * 4.5 睡眠 is recorded as two taps, not a duration field, because a parent
+ * settling a child cannot be asked to do arithmetic. Each 睡 event carries
+ * `pick` of "down" or "up"; pairing them in order turns the taps into naps.
+ * An unpaired "down" is a nap still in progress rather than bad data.
+ */
+export type Nap = { id: string; from: number; to: number | null };
+
+export function napsOf(events: RecordEvent[]): Nap[] {
+  const sleeps = eventsOfKind(events, "sleep").sort((a, b) => a.at - b.at);
+  const out: Nap[] = [];
+  for (const e of sleeps) {
+    const open = out[out.length - 1];
+    if (e.pick === "up") {
+      if (open && open.to == null) open.to = e.at;
+      continue;
+    }
+    if (open && open.to == null) continue; // already asleep; ignore a double tap
+    out.push({ id: e.id, from: e.at, to: null });
+  }
+  return out;
+}
+
+export function napMinutes(nap: Nap, now = Date.now()) {
+  return Math.max(0, Math.round(((nap.to ?? now) - nap.from) / 60000));
+}
+
+export function asleepNow(events: RecordEvent[]) {
+  const naps = napsOf(events);
+  const last = naps[naps.length - 1];
+  return last && last.to == null ? last : null;
+}
+
+export function napsOnDay(events: RecordEvent[], day = dateKey()) {
+  return napsOf(events).filter((n) => dayOf(n.from) === day);
+}
+
+export function durationText(minutes: number) {
+  if (minutes < 60) return `${minutes} 分钟`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h} 小时 ${m} 分` : `${h} 小时`;
 }
 
 export function clockOf(at: number) {

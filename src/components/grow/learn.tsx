@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Info } from "lucide-react";
+import { enContentFor } from "@/lib/grow/bilingual";
 import { ageLabel, monthsBetween } from "@/lib/grow/growth";
 import { POINTS, streakOf } from "@/lib/grow/pet";
 import {
@@ -39,14 +40,17 @@ export function Learn({
   data,
   onDo,
   onToggleMilestone,
+  bilingual,
 }: {
   baby: Baby;
   data: BabyData;
   onDo: (taskId: string) => void;
   onToggleMilestone: (id: string) => void;
+  bilingual: boolean;
 }) {
   const months = monthsBetween(baby.birthday);
   const stage = stageForMonths(months);
+  const en = enContentFor(stage.id);
   const today = dateKey();
   const todays = tasksForDay(stage, dayIndexOf());
   const done = doneToday(data, today);
@@ -143,6 +147,57 @@ export function Learn({
           })}
         </ul>
       </section>
+
+      {bilingual && en && (
+        <section className="g-card">
+          <div className="g-card-head">
+            <h2 className="g-h2">英语启蒙</h2>
+            <span className="g-count">和中文一样，只分做没做</span>
+          </div>
+          <p className="g-hint">{en.focus}</p>
+          <ul className="en-list">
+            {en.tasks.map((t) => {
+              const ok = done.includes(t.id);
+              return (
+                <li key={t.id} className={ok ? "on" : ""}>
+                  <button type="button" className="en-tap" onClick={() => onDo(t.id)} aria-pressed={ok}>
+                    <span className={`en-box${ok ? " on" : ""}`}>{ok ? <Check className="size-4" strokeWidth={3.5} /> : null}</span>
+                    <span className="en-text">
+                      <span className="en-title">{t.title}</span>
+                      {t.say && <span className="en-say">{t.say}</span>}
+                      <span className="en-tip">{t.tip}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="g-card-head">
+            <h2 className="g-h2">这个季度听过多少</h2>
+          </div>
+          <ul className="milestone-list">
+            {en.milestones.map((m) => {
+              const ok = data.milestones.includes(m.id);
+              return (
+                <li key={m.id}>
+                  <button
+                    type="button"
+                    className={`milestone${ok ? " on" : ""}`}
+                    onClick={() => onToggleMilestone(m.id)}
+                    aria-pressed={ok}
+                  >
+                    <span className="milestone-title">{m.title}</span>
+                    <span className="milestone-hint">{m.hint}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="g-legal">
+            这里记的是「听过、玩过多少」，不是「会了多少」。英语在这个年纪只求耳朵熟悉，没有进度要赶。
+          </p>
+        </section>
+      )}
 
       <section className="g-card">
         <h2 className="g-h2">本季度发展速览</h2>

@@ -2397,11 +2397,17 @@
   display: none;
 }
 
-/* The page already paints its own wash; the old fixed backdrop would cover it. */
+/* The page already paints its own wash; the old backdrops would cover it. */
+.g-page .party-sky,
 .g-page .cozy-sky,
 .g-page .welcome-sky,
 .g-page .welcome-land {
   display: none;
+}
+
+/* Bigger art inside the tab: the bar took the space the old chrome used. */
+.g-page {
+  --hero: clamp(7rem, 38vmin, 10.5rem);
 }
 
 .g-page .page-shell {
@@ -2504,11 +2510,14 @@
   margin: 0 auto;
 }
 
+/* The source art has a baked backdrop, so it is rounded as a tile rather than
+   cut out. */
 .lw-figure img {
   width: 100%;
   height: 100%;
+  border-radius: var(--r-md);
   object-fit: contain;
-  filter: drop-shadow(0 12px 14px rgba(43, 52, 80, 0.22));
+  box-shadow: 0 10px 18px -10px rgba(43, 52, 80, 0.45);
 }
 
 .lw-bubble {
@@ -2555,6 +2564,7 @@
 .lw-friend svg {
   width: 2.3rem;
   height: 2.3rem;
+  border-radius: 0.5rem;
   object-fit: contain;
 }
 
@@ -2851,8 +2861,9 @@
   box-shadow: 0 4px 0 var(--lip);
 }
 
+/* A text span, not an indicator dot. */
 .g-page .now-dot {
-  background: var(--brand);
+  color: var(--brand-dk);
 }
 
 .g-page .control-round {
@@ -3662,4 +3673,522 @@
   .sum-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/*
+ * `.toggle-row span` flexes the label, but the icon and the knob are spans
+ * too, so on the 我的 rows they competed with the text and broke short labels
+ * across lines.
+ */
+.toggle-row > .me-icon,
+.toggle-row > .toggle-dot {
+  flex: 0 0 auto;
+}
+
+.toggle-row .me-row-name {
+  white-space: nowrap;
+}
+
+/* ---------- 4.5 睡眠与喂养 ---------- */
+
+.tap-sleep {
+  background: linear-gradient(180deg, #a98bf0, #8c6ae0);
+  color: #fff;
+  box-shadow: 0 5px 0 #6f4fc6;
+}
+
+.tap-wake {
+  background: linear-gradient(180deg, #ffd45c, var(--c-yellow));
+  color: #6a4a00;
+  box-shadow: 0 5px 0 var(--c-yellow-dk);
+}
+
+.tap-btn .tap-name {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.tap-btn .tap-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.sleep-total {
+  margin-top: 0.6rem;
+  border-radius: var(--r-md);
+  background: var(--brand-tint);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--brand-dk);
+  text-align: center;
+}
+
+.sleep-total b {
+  font-weight: 900;
+}
+
+.sleep-list,
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  padding-top: 0.5rem;
+}
+
+.sleep-row,
+.feed-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.84rem;
+}
+
+.sleep-row + .sleep-row,
+.feed-entry + .feed-entry {
+  border-top: 1px solid var(--line);
+}
+
+.sleep-when,
+.feed-kind {
+  font-weight: 900;
+}
+
+.sleep-len,
+.feed-time {
+  flex: 1;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.feed-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.feed-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  border-radius: var(--r-md);
+  background: var(--brand-tint);
+  padding: 0.7rem 0.2rem;
+  font-size: 0.76rem;
+  font-weight: 900;
+  color: var(--brand-dk);
+  box-shadow: 0 4px 0 var(--brand-lip);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.feed-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--brand-lip);
+}
+
+/* ---------- 4.6 大运动 ---------- */
+
+.motor-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.motor-face {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-dk);
+}
+
+.motor-age {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.motor-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.motor-row {
+  position: relative;
+  padding: 0.5rem 0;
+}
+
+.motor-row + .motor-row {
+  border-top: 1px solid var(--line);
+}
+
+.motor-tap {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding-right: 3.2rem;
+  text-align: left;
+}
+
+.motor-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.1rem;
+  border-radius: 0.5rem;
+  background: #eef1f8;
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--lip);
+}
+
+.motor-box.on {
+  background: var(--brand);
+  box-shadow: inset 0 -3px 0 var(--brand-dk);
+}
+
+.motor-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.motor-what {
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.motor-range {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.motor-row.on .motor-what {
+  color: var(--brand-dk);
+}
+
+.motor-why {
+  position: absolute;
+  top: 0.6rem;
+  right: 0;
+  border-radius: 999px;
+  background: #f4f6fc;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--ink-soft);
+}
+
+.motor-hint {
+  padding: 0.4rem 0 0.15rem 2.05rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- 4.3 饮食完整版 ---------- */
+
+.meal-tabs {
+  display: flex;
+  gap: 0.3rem;
+  overflow-x: auto;
+  padding: 0.9rem 0 0.2rem;
+}
+
+.meal-tabs .pick {
+  flex: 1 0 auto;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.meal-log {
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-log-row {
+  padding: 0.45rem 0;
+}
+
+.meal-log-row + .meal-log-row {
+  border-top: 1px solid var(--line);
+}
+
+.meal-log-top {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.meal-badge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--brand-dk);
+}
+
+.meal-log-time {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.meal-log-tags {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-mute);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meal-note-btn {
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: #f4f6fc;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--ink-soft);
+}
+
+.meal-tag-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.5rem 0 0.2rem;
+}
+
+.meal-tag-pick .pick {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.76rem;
+}
+
+.meal-tag-pick .g-hint {
+  flex: 1 0 100%;
+}
+
+.stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.2rem 0 0.7rem;
+}
+
+.stage-list li {
+  position: relative;
+  padding-left: 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.stage-list li::before {
+  content: "";
+  position: absolute;
+  top: 0.55rem;
+  left: 0.15rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+.stage-all {
+  display: flex;
+  flex-direction: column;
+}
+
+.stage-all li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+.stage-all li + li {
+  border-top: 1px solid var(--line);
+}
+
+.stage-all li.on {
+  color: var(--brand-dk);
+}
+
+.stage-when {
+  flex-shrink: 0;
+  width: 4.4rem;
+  font-weight: 900;
+}
+
+.stage-name {
+  flex-shrink: 0;
+  font-weight: 900;
+}
+
+.stage-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.allergen-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.allergen-row + .allergen-row {
+  border-top: 1px solid var(--line);
+}
+
+.allergen-top {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.6rem 0;
+}
+
+.allergen-name {
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.allergen-more {
+  border-radius: 999px;
+  background: #f4f6fc;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--ink-soft);
+}
+
+.allergen-body {
+  padding-bottom: 0.6rem;
+}
+
+.allergen-also {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-bottom: 0.35rem;
+}
+
+.allergen-also span {
+  border-radius: 999px;
+  background: var(--brand-tint);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--brand-dk);
+}
+
+.allergen-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  background: #fff4e8;
+  color: #8a5a10;
+}
+
+.allergen-warn p {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+/* ---------- 3.1 英语启蒙 ---------- */
+
+.en-list {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0.4rem;
+}
+
+.en-list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.en-tap {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.55rem 0;
+  text-align: left;
+}
+
+.en-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.1rem;
+  border-radius: 0.5rem;
+  background: #eef1f8;
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--lip);
+}
+
+.en-box.on {
+  background: var(--brand);
+  box-shadow: inset 0 -3px 0 var(--brand-dk);
+}
+
+.en-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.en-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.en-say {
+  align-self: flex-start;
+  border-radius: 0.5rem;
+  background: var(--brand-tint);
+  padding: 0.12rem 0.45rem;
+  font-family: var(--font-rounded), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--brand-dk);
+}
+
+.en-tip {
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.en-list li.on .en-title {
+  color: var(--brand-dk);
 }

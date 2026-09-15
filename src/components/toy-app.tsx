@@ -350,7 +350,7 @@ export function ToyApp({ embedded = false }: { embedded?: boolean } = {}) {
         embedded ? "min-h-full flex-1" : "min-h-dvh"
       }`}
     >
-      {view.name !== "welcome" && <CozyBackdrop />}
+      {!embedded && view.name !== "welcome" && <CozyBackdrop />}
 
       {view.name === "welcome" && (
         <Welcome

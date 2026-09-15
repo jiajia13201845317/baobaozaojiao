@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Camera,
   ChevronLeft,
   ChevronRight,
   Droplet,
+  Footprints,
+  Milk,
+  Moon,
   Ruler,
   Syringe,
   Thermometer,
@@ -15,25 +17,39 @@ import {
   Utensils,
 } from "lucide-react";
 import { GrowthPanel } from "@/components/grow/growth-panel";
+import { MotorPanel } from "@/components/grow/motor-panel";
+import { SleepPanel } from "@/components/grow/sleep-panel";
 import { MealPanel } from "@/components/grow/meal-panel";
 import { NappyPanel } from "@/components/grow/nappy-panel";
 import { TempPanel } from "@/components/grow/temp-panel";
 import { VaccinePanel } from "@/components/grow/vaccine-panel";
 import { ageLabel, monthsBetween } from "@/lib/grow/growth";
 import type { Metric } from "@/lib/grow/growth";
-import { clockOf, countOnDay, eventsOnDay, kindSpec, tempWayName } from "@/lib/grow/records";
-import type { RecordEvent } from "@/lib/grow/records";
+import {
+  asleepNow,
+  clockOf,
+  countOnDay,
+  eventsOnDay,
+  feedName,
+  kindSpec,
+  mealName,
+  napsOf,
+  tempWayName,
+} from "@/lib/grow/records";
+import type { MealId, RecordEvent } from "@/lib/grow/records";
 import type { Baby, BabyData } from "@/lib/grow/store";
 import { VACCINES } from "@/lib/grow/vaccines";
 
-export type RecordView = "hub" | "growth" | "temp" | "nappy" | "meal" | "vaccine";
+export type RecordView = "hub" | "growth" | "temp" | "nappy" | "meal" | "sleep" | "motor" | "vaccine";
 
 const TITLES: Record<RecordView, string> = {
   hub: "记录",
   growth: "身高体重头围",
   temp: "体温",
   nappy: "拉屎尿尿",
-  meal: "吃饭",
+  meal: "饮食",
+  sleep: "睡觉与喂养",
+  motor: "大动作",
   vaccine: "疫苗",
 };
 
@@ -46,6 +62,9 @@ const ROW_ICON: Record<string, typeof Ruler> = {
   poop: Toilet,
   pee: Droplet,
   meal: Utensils,
+  sleep: Moon,
+  feed: Milk,
+  motor: Footprints,
 };
 
 /**
@@ -68,7 +87,12 @@ export function RecordsPage({
   onTagEvent,
   onDeleteEvent,
   onPickMeal,
+  onLogMeal,
+  onSleep,
+  onFeed,
+  onMotor,
   onToggleVaccine,
+  photosOn,
 }: {
   baby: Baby;
   data: BabyData;
@@ -81,13 +105,33 @@ export function RecordsPage({
   onSaveTemp: (temp: number, way: string, at: number) => void;
   onTagEvent: (id: string, tags: string[]) => void;
   onDeleteEvent: (id: string) => void;
-  onPickMeal: (file: File) => void;
+  onPickMeal: (meal: MealId, file: File) => void;
+  onLogMeal: (meal: MealId) => void;
+  onSleep: (state: "down" | "up") => void;
+  onFeed: (what: string) => void;
+  onMotor: (refId: string, what: string) => void;
   onToggleVaccine: (id: string) => void;
+  photosOn: boolean;
 }) {
   if (view === "growth") return <GrowthPanel baby={baby} data={data} onSave={onSaveGrowth} />;
   if (view === "temp") return <TempPanel data={data} onSave={onSaveTemp} onDelete={onDeleteEvent} />;
   if (view === "nappy") return <NappyPanel data={data} onTag={onTagEvent} onDelete={onDeleteEvent} />;
-  if (view === "meal") return <MealPanel data={data} onDelete={onDeleteEvent} onPick={onPickMeal} />;
+  if (view === "sleep")
+    return <SleepPanel data={data} onSleep={onSleep} onFeed={onFeed} onDelete={onDeleteEvent} />;
+  if (view === "motor")
+    return <MotorPanel baby={baby} data={data} onSeen={onMotor} onUnsee={onDeleteEvent} />;
+  if (view === "meal")
+    return (
+      <MealPanel
+        baby={baby}
+        data={data}
+        photosOn={photosOn}
+        onDelete={onDeleteEvent}
+        onPick={onPickMeal}
+        onLog={onLogMeal}
+        onTag={onTagEvent}
+      />
+    );
   if (view === "vaccine") return <VaccinePanel baby={baby} data={data} onToggle={onToggleVaccine} />;
 
   return (
@@ -98,7 +142,7 @@ export function RecordsPage({
       onInstant={onInstant}
       onUndo={onUndo}
       onDeleteEvent={onDeleteEvent}
-      onPickMeal={onPickMeal}
+      onSleep={onSleep}
     />
   );
 }
@@ -124,7 +168,7 @@ function Hub({
   onInstant,
   onUndo,
   onDeleteEvent,
-  onPickMeal,
+  onSleep,
 }: {
   baby: Baby;
   data: BabyData;
@@ -132,12 +176,12 @@ function Hub({
   onInstant: (kind: "poop" | "pee") => string;
   onUndo: (id: string) => void;
   onDeleteEvent: (id: string) => void;
-  onPickMeal: (file: File) => void;
+  onSleep: (state: "down" | "up") => void;
 }) {
   const [undo, setUndo] = useState<{ id: string; label: string } | null>(null);
   const timer = useRef<number | null>(null);
-  const mealInput = useRef<HTMLInputElement>(null);
   const today = eventsOnDay(data.events);
+  const napping = asleepNow(data.events);
   const vaccineDone = VACCINES.filter((v) => data.vaccines.includes(v.id)).length;
 
   useEffect(
@@ -198,27 +242,22 @@ function Hub({
           </div>
         )}
 
-        <input
-          ref={mealInput}
-          id="hub-meal-photo"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="sr-only"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) onPickMeal(file);
-            e.target.value = "";
-          }}
-        />
         <div className="tap-row tap-row-sm">
+          <button
+            type="button"
+            className={`tap-btn ${napping ? "tap-wake" : "tap-sleep"}`}
+            onClick={() => onSleep(napping ? "up" : "down")}
+          >
+            <Moon className="size-6" strokeWidth={2.4} />
+            {napping ? "醒了" : "睡了"}
+          </button>
           <button type="button" className="tap-btn tap-temp" onClick={() => onView("temp")}>
             <Thermometer className="size-6" strokeWidth={2.4} />
             量体温
           </button>
-          <button type="button" className="tap-btn tap-meal" onClick={() => mealInput.current?.click()}>
-            <Camera className="size-6" strokeWidth={2.4} />
-            拍吃的
+          <button type="button" className="tap-btn tap-meal" onClick={() => onView("meal")}>
+            <Utensils className="size-6" strokeWidth={2.4} />
+            记吃饭
           </button>
         </div>
       </section>
@@ -265,10 +304,22 @@ function Hub({
             onClick={() => onView("nappy")}
           />
           <EntryRow
-            icon={Camera}
-            title="吃饭"
-            sub={`${data.events.filter((e) => e.kind === "meal").length} 张 · 拍了就算`}
+            icon={Utensils}
+            title="饮食"
+            sub={`${data.events.filter((e) => e.kind === "meal").length} 笔 · 餐次、时间线、辅食阶段、过敏原`}
             onClick={() => onView("meal")}
+          />
+          <EntryRow
+            icon={Moon}
+            title="睡觉 · 喂奶喝水"
+            sub={`${napsOf(data.events).filter((n) => n.to != null).length} 觉 · ${data.events.filter((e) => e.kind === "feed").length} 次喂`}
+            onClick={() => onView("sleep")}
+          />
+          <EntryRow
+            icon={Footprints}
+            title="大动作"
+            sub={`已记 ${data.events.filter((e) => e.kind === "motor").length} 个 · 按月龄参考区间`}
+            onClick={() => onView("motor")}
           />
           <EntryRow
             icon={Syringe}
@@ -330,8 +381,16 @@ function LogRow({ event, onDelete }: { event: RecordEvent; onDelete: (id: string
             .filter(Boolean)
             .join(" · ")
         : event.kind === "meal"
-          ? "拍了一张"
-          : (event.tags ?? []).join(" · ") || "记下了";
+          ? [mealName(event.pick), ...(event.tags ?? []), event.photo ? "有照片" : null].filter(Boolean).join(" · ")
+          : event.kind === "feed"
+            ? feedName(event.pick)
+            : event.kind === "sleep"
+              ? event.pick === "up"
+                ? "醒了"
+                : "睡下了"
+              : event.kind === "motor"
+                ? (event.note ?? "记下一个新动作")
+                : (event.tags ?? []).join(" · ") || "记下了";
 
   return (
     <li>
