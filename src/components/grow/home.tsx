@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { CheckCheck, ChevronRight, Droplet, Flame, Plus, Ruler, Syringe, Toilet } from "lucide-react";
 import { PetCard } from "@/components/grow/pet-card";
 import { METRIC_UNIT, ageLabel, monthsBetween } from "@/lib/grow/growth";
@@ -222,10 +221,6 @@ export function Home({
           再加一个宝宝
         </button>
       )}
-
-      <Link href="/" className="g-back">
-        回到宝宝听听
-      </Link>
     </div>
   );
 }
