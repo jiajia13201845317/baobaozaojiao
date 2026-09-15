@@ -699,7 +699,7 @@ try {
   check("siblings do not share a point pool", taoPoints !== miPoints && taoPoints > 0, `${miPoints} vs ${taoPoints}`);
   skin = await theme();
   check("switching baby re-skins the whole app", skin.cls.includes("theme-girl"), skin.cls);
-  check("the sister's egg is the pink render", (await page.$eval(".pet-figure img", (i) => i.getAttribute("src"))).includes("pink"), await page.$eval(".pet-figure img", (i) => i.getAttribute("src")));
+  check("the sister's egg is the pink render", (await page.$eval(".pet-face-happy", (i) => i.getAttribute("src"))).includes("pink"), await page.$eval(".pet-face-happy", (i) => i.getAttribute("src")));
 
   state = await readState();
   check("the switch is remembered", state.current === "b2", state.current);
@@ -799,11 +799,18 @@ try {
     page.evaluate(() => ({
       mood: document.querySelector(".pet-mood")?.innerText.trim() ?? null,
       line: document.querySelector(".pet-say")?.innerText.trim() ?? null,
-      act: [...(document.querySelector(".pet-figure")?.classList ?? [])].find((c) => c.startsWith("act-")) ?? null,
+      act: [...(document.querySelector(".pet-pose")?.classList ?? [])].find((c) => c.startsWith("act-")) ?? null,
       window: [...(document.querySelector(".pet-window")?.classList ?? [])].find((c) => c.startsWith("mood-")) ?? null,
       cloud: !!document.querySelector(".pet-cloud"),
       bits: document.querySelector(".pet-bits")?.className ?? null,
       want: document.querySelector(".pet-meter.is-want .pet-meter-top span")?.innerText.trim() ?? null,
+      /* Which expression is actually on screen, rather than which one the
+       * mood chip claims. Every face is in the DOM; only one is opaque. */
+      face:
+        [...document.querySelectorAll(".pet-face")]
+          .filter((img) => Number(getComputedStyle(img).opacity) > 0.5)
+          .map((img) => (img.getAttribute("src") ?? "").replace(/^.*\/|\.webp.*$/g, ""))
+          .join("+") || null,
     }));
   const spendy = { done: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [dateKey(-i), ["s1-m1", "s1-f1"]])) };
 
@@ -812,6 +819,7 @@ try {
   let now = await pet();
   check("a well-kept pet is happy", now.mood === "开心" && now.window === "mood-happy", JSON.stringify(now));
   check("a happy pet gets no rain cloud", !now.cloud, JSON.stringify(now));
+  check("a happy pet wears the grin it was drawn with", now.face === "forest-1", JSON.stringify(now));
 
   // Nine days of drift puts every meter on its floor, which is as low as the
   // model ever goes — there is no sick or dying state below this.
@@ -820,6 +828,13 @@ try {
   now = await pet();
   check("a neglected pet looks down", now.mood === "低落" && now.window === "mood-down", JSON.stringify(now));
   check("a down pet gets the rain cloud", now.cloud, JSON.stringify(now));
+  /*
+   * The complaint this was written for: the chip said 低落 and the card said
+   * the meters change 它的表情, while there was one render per creature and it
+   * was beaming in all of them. Exactly one face may be opaque, and it has to
+   * be the mood's own.
+   */
+  check("a down pet actually pulls a sad face", now.face === "forest-1-sad", JSON.stringify(now));
   check("a down pet is never called sick", !/生病|病了|危险|快死|活不/.test(await bodyText(page)), (await bodyText(page)).slice(0, 700));
   check("the meters are stated as cosmetic only", await hasText(page, "不影响进化"), (await bodyText(page)).slice(0, 900));
   check("neglect is framed as missing you", await hasText(page, "它只是想你了"), (await bodyText(page)).slice(0, 900));
@@ -961,6 +976,101 @@ try {
   now = await pet();
   check("hunger outranks the other two", now.mood === "低落", JSON.stringify(now));
 
+  /*
+   * 变形. Squash and stretch assumes an animator redrawing the volume; a
+   * non-uniform `scale` on a render of a moulded toy only resamples it, so
+   * past a few percent the snout flattens and the eyes go oval. `droop` used
+   * to sit at scale(1.07, 0.88) — an aspect ratio 22% off square, held for as
+   * long as the mood lasted.
+   *
+   * Sampled off the composed matrix rather than the keyframe text, so it also
+   * catches a second transform stacking on top of the pose.
+   */
+  const worstAspect = async (ms) =>
+    page.evaluate(async (span) => {
+      const el = document.querySelector(".pet-pose");
+      let worst = 0;
+      let at = "";
+      for (const t0 = Date.now(); Date.now() - t0 < span; ) {
+        await new Promise((r) => requestAnimationFrame(r));
+        const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+        /* Column lengths of the 2D part: the scale actually applied, with any
+         * rotation already factored out. */
+        const sx = Math.hypot(m.a, m.b);
+        const sy = Math.hypot(m.c, m.d);
+        const off = Math.abs(sx / sy - 1);
+        if (off > worst) {
+          worst = off;
+          at = `${[...el.classList].find((c) => c.startsWith("act-"))} sx=${sx.toFixed(3)} sy=${sy.toFixed(3)}`;
+        }
+      }
+      return { worst, at };
+    }, ms);
+
+  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await waitBody(page, "今日早教");
+  let warp = await worstAspect(2600);
+  check("a low mood does not warp the render", warp.worst < 0.06, JSON.stringify(warp));
+
+  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await waitBody(page, "今日早教");
+  warp = await worstAspect(2600);
+  check("nor does the happy bounce", warp.worst < 0.06, JSON.stringify(warp));
+
+  /* Two days of drift, so the meters are off full and the care buttons are
+   * actually clickable. */
+  await open(seedFor(15, { ...spendy, care: careDays(2) }));
+  await waitBody(page, "今日早教");
+  for (const [i, name] of [
+    [0, "feeding"],
+    [1, "playing"],
+    [2, "bathing"],
+  ]) {
+    await clickSel(page, ".pet-actions .g-chip-btn", i);
+    warp = await worstAspect(1400);
+    /* A landing is allowed more than a held pose: the eye expects compression
+     * on impact and it is gone before it can be examined. */
+    check(`nor ${name}`, warp.worst < 0.12, JSON.stringify(warp));
+  }
+
+  /*
+   * 盯着你看. The lines claimed a gaze the art could not have — it faced dead
+   * ahead in every frame — so this checks the pet is actually turned towards
+   * the pointer, and that with no pointer it faces whatever it is asking for.
+   */
+  const look = () =>
+    page.evaluate(() => {
+      const el = document.querySelector(".pet-look");
+      const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
+      return { x: Number(getComputedStyle(el).getPropertyValue("--look-x")), dx: m.e, rot: Math.atan2(m.b, m.a) };
+    });
+
+  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await waitBody(page, "今日早教");
+  const box = await page.$eval(".pet-card", (el) => {
+    const r = el.getBoundingClientRect();
+    return { left: r.left, right: r.right, mid: r.top + r.height / 2 };
+  });
+
+  await page.mouse.move(box.left + 8, box.mid);
+  await new Promise((r) => setTimeout(r, 500));
+  const leftward = await look();
+  await page.mouse.move(box.right - 8, box.mid);
+  await new Promise((r) => setTimeout(r, 500));
+  const rightward = await look();
+  check("the pet turns towards the pointer", leftward.x < -0.5 && rightward.x > 0.5, JSON.stringify({ leftward, rightward }));
+  check("and the turn reaches the transform", leftward.dx < -1 && rightward.dx > 1, JSON.stringify({ leftward, rightward }));
+  check("it leans rather than lurches", Math.abs(rightward.dx) < 9 && Math.abs(rightward.rot) < 0.1, JSON.stringify(rightward));
+
+  /* On a phone there is no pointer at all, so the resting gaze has to be the
+   * thing the line is describing. The 喂食 button is the leftmost of the
+   * three, so a hungry pet must be facing left. */
+  await open(seedFor(15, { ...spendy, care: only("food") }));
+  await waitBody(page, "今日早教");
+  await new Promise((r) => setTimeout(r, 600));
+  const resting = await look();
+  check("with no pointer it faces what it wants", resting.x < -0.2, JSON.stringify(resting));
+
   // Poking is the first thing anyone tries and the one interaction that is free.
   await open(seedFor(15, { ...spendy, care: careDays(9) }));
   await waitBody(page, "今日早教");
@@ -979,7 +1089,7 @@ try {
     const seen = new Set();
     for (let i = 0; i < 45; i++) {
       await new Promise((r) => setTimeout(r, 400));
-      const f = document.querySelector(".pet-figure");
+      const f = document.querySelector(".pet-pose");
       seen.add([...f.classList].find((c) => c.startsWith("act-")));
     }
     return [...seen];
@@ -995,7 +1105,7 @@ try {
   check("a long history reveals the creature", text.includes("龙"), text.slice(0, 500));
   check("the revealed pet is past level 3", /Lv[45]/.test(text), text.slice(0, 500));
   check("the tease is gone once revealed", !text.includes("破壳那天才知道"), text.slice(0, 600));
-  check("a revealed creature keeps its own colour", !(await page.$eval(".pet-figure img", (i) => i.getAttribute("src"))).includes("pink"));
+  check("a revealed creature keeps its own colour", !(await page.$eval(".pet-face-happy", (i) => i.getAttribute("src"))).includes("pink"));
 
   await clickSel(page, ".pet-book");
   await waitBody(page, "宠物图鉴");

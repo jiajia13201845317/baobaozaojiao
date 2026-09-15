@@ -39,6 +39,27 @@ const EGGS = [
   { id: "egg-3", file: "pet-3-hatch.png" },
 ];
 
+/**
+ * The same cast again, one sheet per mood.
+ *
+ * With a single render each, the pet smiled through everything. The mood was
+ * told by the weather over its head and the light in the room but never by the
+ * face, which is the first place anyone looks, so a pet that had not been fed
+ * in a week still beamed. These sheets were generated from the renders above
+ * as references with only the expression and stance changed, so the same
+ * creature can pull a different face without turning into a different
+ * creature. 开心 keeps the original grin; the rest come from here.
+ */
+const MOODS = ["flat", "sad", "sleepy"];
+
+const MOOD_SHEETS = MOODS.flatMap((mood) =>
+  ["forest", "fire", "ice", "wind", "water", "light", "star", "egg"].map((id) => ({
+    id,
+    mood,
+    file: `${id}-${mood}-sheet.png`,
+  })),
+);
+
 const SRC = process.argv[2] || "/opt/cursor/artifacts/assets";
 const OUT = "public/art/pet";
 
@@ -145,21 +166,31 @@ async function emit(input, name) {
   }
 }
 
+/** Every sheet is one row of three, so the tiles are thirds of the width. */
+async function tiles(src) {
+  const { width, height } = await sharp(src).metadata();
+  const third = Math.floor(width / 3);
+  const out = [];
+  for (let i = 0; i < 3; i++) {
+    out.push(
+      await sharp(src)
+        .extract({ left: i * third, top: 0, width: i === 2 ? width - 2 * third : third, height })
+        .png()
+        .toBuffer(),
+    );
+  }
+  return out;
+}
+
 await mkdir(OUT, { recursive: true });
 
 for (const egg of EGGS) {
   await emit(`${SRC}/${egg.file}`, egg.id);
 }
 
-for (const sheet of SHEETS) {
-  const src = `${SRC}/${sheet.file}`;
-  const { width, height } = await sharp(src).metadata();
-  const third = Math.floor(width / 3);
-  for (let i = 0; i < 3; i++) {
-    const tile = await sharp(src)
-      .extract({ left: i * third, top: 0, width: i === 2 ? width - 2 * third : third, height })
-      .png()
-      .toBuffer();
-    await emit(tile, `${sheet.id}-${i + 1}`);
+for (const sheet of [...SHEETS, ...MOOD_SHEETS]) {
+  const suffix = sheet.mood ? `-${sheet.mood}` : "";
+  for (const [i, tile] of (await tiles(`${SRC}/${sheet.file}`)).entries()) {
+    await emit(tile, `${sheet.id}-${i + 1}${suffix}`);
   }
 }

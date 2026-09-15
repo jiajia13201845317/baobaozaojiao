@@ -22,7 +22,7 @@
  * The meters are also still entirely separate from levelling, so a pet left
  * alone for a week loses no progress. Only the face changes.
  */
-import { CARES, type CareId, type CareState, meterOf } from "./pets";
+import { CARES, type CareId, type CareState, meterOf, themedPetArt } from "./pets";
 
 export type MoodId = "happy" | "content" | "flat" | "down" | "sleepy";
 
@@ -40,6 +40,41 @@ export const MOODS: Record<MoodId, Mood> = {
   down: { id: "down", name: "低落", color: "#7D87CF" },
   sleepy: { id: "sleepy", name: "困了", color: "#6C74B8" },
 };
+
+/**
+ * The render each mood wears.
+ *
+ * 开心 and 舒服 share the original grin — that is the face the creature was
+ * drawn with, and it is the right one for both. The other three have their own
+ * render of the same creature, generated from that one so that changing mood
+ * changes the expression without changing who it is.
+ *
+ * This is the part that used to be missing. The card said 饱腹、心情、干净
+ * 只影响它的表情和动作 while there was exactly one render per creature, so
+ * whatever the chip claimed, the face was always beaming. Posture and weather
+ * were carrying the whole mood, and the face — the first place anyone looks —
+ * was contradicting them.
+ */
+const MOOD_FACE: Record<MoodId, string> = {
+  happy: "",
+  content: "",
+  flat: "-flat",
+  down: "-sad",
+  sleepy: "-sleepy",
+};
+
+/** Every face a creature can pull, so the card can stack and cross-fade them. */
+export const FACES: { mood: MoodId; key: string }[] = [
+  { mood: "happy", key: "happy" },
+  { mood: "flat", key: "flat" },
+  { mood: "down", key: "down" },
+  { mood: "sleepy", key: "sleepy" },
+];
+
+export function moodPetArt(art: string, sex: "boy" | "girl", mood: MoodId) {
+  const face = MOOD_FACE[mood];
+  return themedPetArt(face ? art.replace(/\.webp$/, `${face}.webp`) : art, sex);
+}
 
 /** Night hours, matching the listening app's own idea of bedtime. */
 function isNight(hour: number) {
@@ -189,41 +224,88 @@ export function nextIdleDelay(mood: MoodId) {
   return min + Math.random() * (max - min);
 }
 
-/** What it says while resting. Several per mood, rotated so it is not a slogan. */
+/*
+ * One rule for everything below: a line may only describe something that is
+ * actually on the screen while it is showing.
+ *
+ * It used to promise things the card could not do — it stared at you, it
+ * circled you twice, it nuzzled your finger, it pushed a ball over — none of
+ * which existed as a pose, a prop or a gaze. Read next to a pet that was in
+ * fact breathing in place, the words were not flavour, they were wrong, and
+ * they made the whole thing feel like a slideshow with captions. So each line
+ * now points at a real pose from `grow.css`, a real particle from
+ * `public/art/prop/`, the mood's own render, or the gaze in `use-pet-look.ts`.
+ * If you add a line, name what it is describing first.
+ */
+
+/** What it says while resting: breathing, the mood's posture, its face. */
 const IDLE_LINES: Record<MoodId, string[]> = {
-  happy: ["今天什么都顺！", "它绕着你转了两圈。", "心情好得想跳一下。", "它蹭了蹭你的手指。"],
-  content: ["它靠过来待着。", "这样就挺好。", "它安安静静陪着你。", "它打了个小哈欠，又醒了。"],
-  flat: ["它在发呆。", "它歪着头看你。", "它戳了戳地面。", "有点无聊的样子。"],
-  down: ["它蹲下来了，有点没精神。", "它一直看着门口。", "它今天话很少。", "它好像在等你。"],
-  sleepy: ["它眼睛快睁不开了。", "天黑了，它有点困。", "它缩成了一团。", "它打了个大哈欠。"],
+  /* bounce-idle keeps it off the ground; the sparkles sit over its head. */
+  happy: ["它一直在原地弹。", "它朝你这边转过来了。", "头顶上一闪一闪的。", "心情好得停不下来。"],
+  /* breathe, and the grin it was drawn with. */
+  content: ["它安安静静地呼吸。", "这样就挺好。", "它的眼睛跟着你在动。", "它笑着，一下一下地起伏。"],
+  /* The flat render: eyes open, mouth a straight little line. */
+  flat: ["它在发呆。", "它没什么表情地看着你。", "它慢慢地呼吸。", "有点无聊的样子。"],
+  /* droop sinks and tilts it; the sad render drops its eyes; a rain cloud. */
+  down: ["它蹲下来了，没什么精神。", "它耷着脑袋。", "头顶上飘着一小片雨云。", "它抬起眼看了看你。"],
+  /* doze, and the sleepy render has its eyes closed and its head tipped over. */
+  sleepy: ["它眼睛闭上了。", "它歪着头，一点一点地打瞌睡。", "天黑了，它撑不住了。", "它睡得很安稳。"],
 };
 
-/** What it says when a meter is thin. Asking, never scolding. */
+/**
+ * What it says when a meter is thin. Asking, never scolding.
+ *
+ * With no pointer on the card the gaze rests on whichever care button it
+ * wants, so "往喂食那边看" is describing where it is actually facing.
+ */
 const WANT_LINES: Record<CareId, string[]> = {
-  food: ["肚子有点空空的。", "它盯着你的手看。", "它舔了舔嘴巴。"],
-  play: ["它想跟你玩一会儿。", "它把球推到你面前。", "它在原地转圈，想找点事做。"],
-  bath: ["身上有点痒痒的。", "它抖了抖，想洗洗。", "它蹭了蹭墙角。"],
+  food: ["肚子有点空空的。", "它一直往喂食那边看。", "你的手一动，它就跟着看。"],
+  play: ["它想跟你玩一会儿。", "它朝陪玩那边转过去了。", "它在原地扭来扭去。"],
+  bath: ["身上有点痒痒的。", "它朝洗澡那边看。", "它看看自己，又看看你。"],
 };
 
-/** The immediate answer to being cared for. */
+/** The immediate answer to being cared for, matching each act's own sequence. */
 const CARE_LINES: Record<CareId, string[]> = {
-  food: ["吃饱啦，谢谢你！", "嚼得停不下来。", "它吃完抬头看你，还想要。"],
-  play: ["玩得好开心！", "它跳起来撞了你一下。", "再来一次！再来一次！"],
-  bath: ["洗得香香的。", "它甩了一身水珠。", "干净了，它自己都精神了。"],
+  /* The eat sequence is exactly two bites and a swallow. */
+  food: ["吃饱啦，谢谢你！", "它咬了两口，全吃完了。", "它咽下去，抬头看你。"],
+  /* romp throws it side to side, and hearts come up. */
+  play: ["玩得好开心！", "它左右蹦了好几下。", "它头顶上冒出好多爱心。"],
+  /* shake, with bubbles. */
+  bath: ["洗得香香的。", "它抖了一身的泡泡。", "干净了，它自己都精神了。"],
 };
 
-/** The answer to being poked, which is what a child will do most. */
+/**
+ * The unprompted acts get their own lines, so the caption is describing the
+ * pose that is playing rather than whatever the resting mood would have said.
+ * A pet mid-spin captioned 它在发呆 is the same mismatch in miniature.
+ */
+const ACT_LINES: Partial<Record<ActId, string[]>> = {
+  stretch: ["它伸了个懒腰。", "它把自己抻得长长的。"],
+  hop: ["它蹦了一下。", "它跳起来了！"],
+  wiggle: ["它左右晃了晃。", "它扭了扭身子。"],
+  peek: ["它探出身子往旁边看。", "它伸着头看外面。"],
+  spin: ["它转了一圈。", "它自己转了个圈圈。"],
+  yawn: ["它打了个大哈欠。", "它张着嘴打了个长长的哈欠。"],
+};
+
+/**
+ * The answer to being poked, which is what a child will do most. The poke also
+ * pulls the gaze to wherever the finger landed, which is what "转过头来找你"
+ * is pointing at.
+ */
 const POKE_LINES = [
   "诶？",
   "它被戳得晃了一下。",
-  "它回头看你。",
+  "它转过头来找你。",
   "它以为你要给它吃的。",
-  "它笑了一下。",
+  "它缩了一下又弹回来。",
 ];
 
-const POKE_LINES_SLEEPY = ["别吵…它在睡。", "它眼睛睁了一半又闭上。", "它含含糊糊哼了一声。"];
+/** Asleep, and the sleepy render's eyes stay shut through all of it. */
+const POKE_LINES_SLEEPY = ["别吵…它在睡。", "它动了动，没睁眼。", "它晃了一下，又歪回去了。"];
 
-const POKE_LINES_DOWN = ["它抬头看了你一眼。", "它往你这边挪了挪。", "它轻轻靠了过来。"];
+/** The gaze lean is a real few pixels towards you, which is all this claims. */
+const POKE_LINES_DOWN = ["它抬头看了你一眼。", "它朝你这边挪了一点。", "它轻轻靠了过来。"];
 
 function pick(list: string[], seed: number) {
   return list[seed % list.length]!;
@@ -260,7 +342,8 @@ export function lineFor({
     if (mood === "down") return pick(POKE_LINES_DOWN, seed);
     return pick(POKE_LINES, seed);
   }
-  if (act === "yawn") return "它打了个大哈欠。";
+  const acting = ACT_LINES[act];
+  if (acting) return pick(acting, seed);
   // A thin meter is the most useful thing to say, but not to the exclusion of
   // everything else — every third line stays flavour so it is not a nag.
   if (want && seed % 3 !== 2) return pick(WANT_LINES[want], seed);

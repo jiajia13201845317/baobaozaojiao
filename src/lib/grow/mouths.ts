@@ -40,6 +40,9 @@ const MOUTHS: Record<string, [number, number]> = {
 const FALLBACK: [number, number] = [0.5, 0.48];
 
 export function mouthOf(art: string): [number, number] {
-  const id = art.replace(/^.*\//, "").replace(/\.webp$/, "");
+  const id = art
+    .replace(/^.*\//, "")
+    .replace(/-(flat|sad|sleepy)(?=(-pink)?\.webp$)/, "")
+    .replace(/\.webp$/, "");
   return MOUTHS[id] ?? FALLBACK;
 }

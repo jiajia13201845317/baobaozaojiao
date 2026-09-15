@@ -670,22 +670,73 @@
   height: var(--pet-h);
   place-items: center;
   -webkit-tap-highlight-color: transparent;
-  /* Every pose transforms from the feet, the way a standing creature moves. */
-  transform-origin: 50% 88%;
 }
 
 /*
- * Absolute, not 100%. A percentage height inside a fixed-height grid whose
- * row is auto-sized is a cyclic dependency, so Chrome falls back to auto and
- * the art renders at its natural 448px.
+ * Three transform layers, because three things move the pet at the same time
+ * and one element can only hold one `transform`. A CSS animation and an inline
+ * style on the same element do not compose, they clobber each other, so the
+ * gaze, the pose and the jaw each get their own box:
+ *
+ *   `.pet-look`  turns it towards the pointer — `lib/grow/use-pet-look.ts`
+ *   `.pet-pose`  the mood's resting posture and whatever act is playing
+ *   `.pet-faces` the jaw, which has to work under the body's slower envelope
+ *
+ * Sized absolutely, not in percentages: a percentage height inside a
+ * fixed-height grid whose row is auto-sized is a cyclic dependency, so Chrome
+ * falls back to auto and the art renders at its natural 448px. The art is
+ * square, so one `--pet-h` box does for all three.
  */
-.pet-figure img {
+.pet-look,
+.pet-pose,
+.pet-faces {
   position: relative;
+  display: block;
   height: var(--pet-h);
-  width: auto;
-  max-width: 100%;
-  object-fit: contain;
+  width: var(--pet-h);
+  /* Everything works from the feet, the way a standing creature moves. */
+  transform-origin: 50% 96%;
+}
+
+/*
+ * The gaze. Deliberately small — this is a head turning, not the pet walking
+ * over — and the transition is what makes it a turn at all, since the hook
+ * only ever writes two numbers.
+ */
+.pet-look {
+  transform: translate(calc(var(--look-x, 0) * 5px), calc(var(--look-y, 0) * 2px))
+    rotate(calc(var(--look-x, 0) * 2.4deg));
+  transition: transform 0.26s ease-out;
+}
+
+/* One drop shadow for the stack rather than one per face. */
+.pet-faces {
   filter: drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16));
+}
+
+/*
+ * Every expression is in the DOM at once and only the opacity changes, so a
+ * mood change is one face dissolving into another instead of a swap to an
+ * image that has not been fetched yet. Four small webp files; they are all
+ * wanted within a minute of opening the card anyway.
+ */
+.pet-face {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.42s ease;
+}
+
+/* 开心 and 舒服 share the grin each creature was drawn with. */
+.mood-happy .pet-face-happy,
+.mood-content .pet-face-happy,
+.mood-flat .pet-face-flat,
+.mood-down .pet-face-down,
+.mood-sleepy .pet-face-sleepy {
+  opacity: 1;
 }
 
 @keyframes float {
@@ -721,7 +772,7 @@
   transform: translateX(-50%) rotate(45deg);
 }
 
-.pet-card.is-party .pet-figure {
+.pet-card.is-party .pet-pose {
   animation: cheer 0.6s ease-in-out 3;
 }
 
@@ -4293,26 +4344,50 @@
   opacity: 0.8;
 }
 
+/*
+ * A note on squash and stretch, which is what all of these are doing.
+ *
+ * The technique assumes a drawing: an animator redrawing the volume frame by
+ * frame keeps the character's mass believable while its outline changes. A
+ * non-uniform `scale` on a photograph of a moulded vinyl toy cannot redraw
+ * anything — it just resamples, so the snout flattens, the eyes go oval and
+ * the whole head reads as warped. That was the 变形.
+ *
+ * These numbers started at the values a hand-drawn cartoon uses: `droop` was
+ * scale(1.07, 0.88), an aspect ratio 22% off square, held permanently on
+ * screen for a low mood. Nothing survives that. The ceiling now is about 5%
+ * for anything you hold a pose at and about 10% for the one or two frames of
+ * a landing, where the eye expects compression and it is gone before it can
+ * be examined. What the poses lost in squash they take back in translate and
+ * rotate, which move a rendered figure without deforming it, and from a
+ * `transform-origin` at the feet, which is what makes a compression read as
+ * weight instead of as a warp.
+ */
+
 @keyframes breathe {
   0%, 100% { transform: translateY(0) scale(1, 1); }
   50% { transform: translateY(-5px) scale(1.012, 1.024); }
 }
 
+/* The landing stays inside the held-pose ceiling rather than the impact one:
+ * this runs on a loop, so you see it as often as a posture. */
 @keyframes bounce-idle {
   0%, 100% { transform: translateY(0) scale(1, 1); }
-  30% { transform: translateY(-11px) scale(0.97, 1.05); }
-  55% { transform: translateY(0) scale(1.06, 0.94); }
-  75% { transform: translateY(-3px) scale(0.99, 1.01); }
+  30% { transform: translateY(-12px) scale(0.985, 1.025); }
+  55% { transform: translateY(0) scale(1.022, 0.978); }
+  75% { transform: translateY(-4px) scale(0.995, 1.008); }
 }
 
+/* Sunk and tilted. The slump is the translate and the rotate; the squash is
+ * only there to stop it looking like the whole card was nudged. */
 @keyframes droop {
-  0%, 100% { transform: translateY(9px) scale(1.07, 0.88) rotate(-6deg); }
-  50% { transform: translateY(11px) scale(1.08, 0.86) rotate(-7deg); }
+  0%, 100% { transform: translateY(9px) scale(1.022, 0.978) rotate(-6deg); }
+  50% { transform: translateY(11px) scale(1.026, 0.974) rotate(-7deg); }
 }
 
 @keyframes doze {
-  0%, 100% { transform: translateY(8px) scale(1.06, 0.9) rotate(7deg); }
-  50% { transform: translateY(4px) scale(1.02, 0.98) rotate(7deg); }
+  0%, 100% { transform: translateY(8px) scale(1.02, 0.98) rotate(7deg); }
+  50% { transform: translateY(4px) scale(1.006, 0.994) rotate(7deg); }
 }
 
 /* ---------- unprompted idle acts ---------- */
@@ -4324,16 +4399,18 @@
 .act-spin { animation: spin-step 0.5s ease-in-out infinite; }
 .act-yawn { animation: yawn 2s ease-in-out infinite; }
 
+/* Reaching up, so most of it is the rise rather than the stretch. */
 @keyframes stretch {
   0%, 100% { transform: translateY(0) scale(1, 1); }
-  35% { transform: translateY(-2px) scale(0.93, 1.12); }
-  70% { transform: translateY(2px) scale(1.07, 0.94); }
+  35% { transform: translateY(-8px) scale(0.975, 1.045); }
+  70% { transform: translateY(3px) scale(1.03, 0.97); }
 }
 
 @keyframes hop {
   0%, 100% { transform: translateY(0) scale(1, 1); }
-  25% { transform: translateY(-18px) scale(0.94, 1.08); }
-  70% { transform: translateY(0) scale(1.08, 0.9); }
+  25% { transform: translateY(-20px) scale(0.978, 1.04); }
+  /* The landing, and the only frame allowed to go past 5%. */
+  70% { transform: translateY(0) scale(1.05, 0.95); }
 }
 
 @keyframes wiggle {
@@ -4350,14 +4427,14 @@
 
 @keyframes spin-step {
   0% { transform: rotateY(0) scale(1, 1); }
-  50% { transform: rotateY(180deg) scale(0.9, 1.04); }
+  50% { transform: rotateY(180deg) scale(0.97, 1.015); }
   100% { transform: rotateY(360deg) scale(1, 1); }
 }
 
 @keyframes yawn {
-  0%, 100% { transform: translateY(4px) scale(1.02, 0.97); }
-  30% { transform: translateY(-4px) scale(0.94, 1.1); }
-  60% { transform: translateY(5px) scale(1.06, 0.92); }
+  0%, 100% { transform: translateY(4px) scale(1.012, 0.985); }
+  30% { transform: translateY(-7px) scale(0.975, 1.04); }
+  60% { transform: translateY(6px) scale(1.03, 0.97); }
 }
 
 /* ---------- answers to the parent ---------- */
@@ -4381,16 +4458,16 @@
 @keyframes eat-body {
   0% { transform: translateY(0) scale(1, 1) rotate(0); }
   /* Leaning down towards what is being offered. */
-  22% { transform: translateY(3px) scale(1.015, 0.985) rotate(-1deg); }
-  30% { transform: translateY(6px) scale(1.05, 0.94) rotate(-1.5deg); }
-  37% { transform: translateY(-1px) scale(0.985, 1.025) rotate(0); }
-  54% { transform: translateY(2px) scale(1.015, 0.985) rotate(-1deg); }
-  60% { transform: translateY(5px) scale(1.04, 0.955) rotate(-1deg); }
-  67% { transform: translateY(-1px) scale(0.99, 1.02) rotate(0); }
+  22% { transform: translateY(3px) scale(1.012, 0.988) rotate(-1deg); }
+  30% { transform: translateY(7px) scale(1.03, 0.97) rotate(-1.5deg); }
+  37% { transform: translateY(-1px) scale(0.99, 1.014) rotate(0); }
+  54% { transform: translateY(2px) scale(1.012, 0.988) rotate(-1deg); }
+  60% { transform: translateY(6px) scale(1.026, 0.974) rotate(-1deg); }
+  67% { transform: translateY(-1px) scale(0.994, 1.01) rotate(0); }
   84% { transform: translateY(0) scale(1, 1) rotate(0); }
   /* The swallow: everything goes up and narrow, then drops back. */
-  90% { transform: translateY(-5px) scale(0.95, 1.07) rotate(0); }
-  96% { transform: translateY(2px) scale(1.035, 0.965) rotate(0); }
+  90% { transform: translateY(-7px) scale(0.972, 1.04) rotate(0); }
+  96% { transform: translateY(3px) scale(1.022, 0.98) rotate(0); }
   100% { transform: translateY(0) scale(1, 1) rotate(0); }
 }
 
@@ -4399,8 +4476,7 @@
  * empty mouth while the biscuit is still on its way up is exactly the kind of
  * thing that makes the whole act look wrong — and runs to the end of the act.
  */
-.act-eat img {
-  transform-origin: 50% 88%;
+.act-eat .pet-faces {
   animation: eat-chew 0.3s ease-in-out 0.85s 7 both;
 }
 
@@ -4411,9 +4487,9 @@
 
 @keyframes romp {
   0%, 100% { transform: translateY(0) rotate(0) scale(1, 1); }
-  20% { transform: translateY(-15px) rotate(-8deg) scale(0.95, 1.07); }
-  50% { transform: translateY(0) rotate(0) scale(1.07, 0.92); }
-  75% { transform: translateY(-11px) rotate(8deg) scale(0.97, 1.04); }
+  20% { transform: translateY(-16px) rotate(-8deg) scale(0.978, 1.035); }
+  50% { transform: translateY(0) rotate(0) scale(1.04, 0.96); }
+  75% { transform: translateY(-12px) rotate(8deg) scale(0.985, 1.02); }
 }
 
 @keyframes shake {
@@ -4424,14 +4500,16 @@
 
 @keyframes poked {
   0% { transform: scale(1, 1) translateY(0); }
-  30% { transform: scale(1.1, 0.88) translateY(4px); }
-  60% { transform: scale(0.96, 1.06) translateY(-3px); }
+  30% { transform: scale(1.05, 0.95) translateY(5px); }
+  60% { transform: scale(0.982, 1.024) translateY(-4px); }
   100% { transform: scale(1, 1) translateY(0); }
 }
 
-.pet-figure:active {
+/* Pressed. Held for as long as a finger is down, so it stays inside the
+ * ceiling the poses keep to. */
+.pet-figure:active .pet-pose {
   animation-play-state: paused;
-  transform: scale(1.08, 0.9) translateY(4px);
+  transform: scale(1.03, 0.97) translateY(5px);
 }
 
 /* ---------- particles ---------- */
@@ -4663,8 +4741,8 @@
  * posture differences stay, because that is information; the movement goes.
  */
 @media (prefers-reduced-motion: reduce) {
-  .pet-figure,
-  .pet-figure img,
+  .pet-pose,
+  .pet-faces,
   .pet-mood i,
   .pet-bits i,
   .pet-bits b,
@@ -4672,44 +4750,44 @@
     animation: none !important;
   }
 
-  .mood-down .act-idle { transform: translateY(6px) scale(1.05, 0.92) rotate(-3deg); }
-  .mood-sleepy .act-idle { transform: translateY(3px) scale(1.02, 0.98) rotate(4deg); }
+  /* The gaze is movement too, and the hook stops writing to it. */
+  .pet-look {
+    transition: none;
+  }
+
+  .mood-down .act-idle { transform: translateY(6px) scale(1.02, 0.98) rotate(-3deg); }
+  .mood-sleepy .act-idle { transform: translateY(3px) scale(1.012, 0.988) rotate(4deg); }
   .pet-bits i { opacity: 1; }
 }
 
 /* ---------- 情绪的氛围 ---------- */
 
 /*
- * The hard constraint here: there is exactly one render per creature, and it
- * is beaming. Twenty-one creatures plus three egg stages in two colours is
- * far too many images to redraw per mood, and pasting eyelids or a sweat drop
- * over the art needs per-creature coordinates that no single rule can supply.
- *
- * So the expression is carried by everything around the face instead, which
- * is both cheap and uniform: the grade of the image, the light in the window,
- * and one prop placed above the head, where every one of the 24 images has
- * empty space. A rain cloud over a smiling dinosaur still reads as miserable
- * — the weather wins over the face.
+ * The light in the room, which used to be doing more work than it should
+ * have. With one beaming render per creature the grade and the weather were
+ * the only things left to carry a mood, so they had to shout: saturation
+ * pulled right down, a rain cloud parked over a grinning dinosaur. Now that
+ * each mood has its own face, this layer goes back to what it is good at —
+ * agreeing with the expression — so every value here is gentler than it was.
  */
 
 .pet-window { transition: background 0.5s; }
 
-.mood-happy .pet-figure img { filter: saturate(1.12) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
-.mood-flat .pet-figure img { filter: saturate(0.92) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
+.mood-happy .pet-faces { filter: saturate(1.1) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
+.mood-flat .pet-faces { filter: saturate(0.96) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
 
 /*
- * Only lightly drained. The first pass pulled saturation to 0.45, which did
- * read as low — but as ill rather than wistful, an olive-grey creature that
- * looked like something had gone wrong with it. The mood is already carried by
- * the cloud, the slump and the dusk light, so the grade only has to take the
- * shine off. A cute pet sulking should still be cute.
+ * Barely drained now. An early pass pulled saturation to 0.45, which read as
+ * ill rather than wistful — an olive-grey creature that looked like something
+ * had gone wrong with it. A sulking pet should still be cute, and the drooping
+ * eyes and downturned mouth in the render say it far better than a filter can.
  */
-.mood-down .pet-figure img {
-  filter: saturate(0.76) brightness(0.97) drop-shadow(0 5px 8px rgba(64, 62, 106, 0.18));
+.mood-down .pet-faces {
+  filter: saturate(0.9) brightness(0.985) drop-shadow(0 5px 8px rgba(64, 62, 106, 0.18));
 }
 
-.mood-sleepy .pet-figure img {
-  filter: saturate(0.82) brightness(0.93) drop-shadow(0 6px 9px rgba(64, 62, 106, 0.2));
+.mood-sleepy .pet-faces {
+  filter: saturate(0.92) brightness(0.96) drop-shadow(0 6px 9px rgba(64, 62, 106, 0.2));
 }
 
 /*

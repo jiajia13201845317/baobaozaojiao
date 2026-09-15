@@ -97,8 +97,16 @@ export const REVEAL_LV = 4;
  * follow the baby's theme. A revealed creature already carries its element
  * colour and is left alone.
  */
+/**
+ * The girl's egg. Only the shared incubation stages have a themed pair; a
+ * revealed creature already carries its own element colour. The mood suffix is
+ * allowed through because the pink render is made from each mood's own render
+ * — see `scripts/build-pets.mjs`.
+ */
+const EGG_ART = /^\/art\/pet\/egg-[123](-(flat|sad|sleepy))?\.webp$/;
+
 export function themedPetArt(art: string, sex: "boy" | "girl") {
-  return sex === "girl" && /^\/art\/pet\/egg-[123]\.webp$/.test(art) ? art.replace(".webp", "-pink.webp") : art;
+  return sex === "girl" && EGG_ART.test(art) ? art.replace(".webp", "-pink.webp") : art;
 }
 
 export type OwnedPet = {

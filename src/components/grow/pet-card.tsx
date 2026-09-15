@@ -6,9 +6,10 @@ import { Bath, ChevronRight, Cookie, Gamepad2 } from "lucide-react";
 import { POINTS } from "@/lib/grow/pet";
 import { CARES, type CareId, type PetView, meterOf, themedPetArt } from "@/lib/grow/pets";
 import type { CareState } from "@/lib/grow/pets";
-import { CARE_ACT, MOODS, lineFor, moodFor, wantOf } from "@/lib/grow/mood";
+import { CARE_ACT, FACES, MOODS, lineFor, moodFor, moodPetArt, wantOf } from "@/lib/grow/mood";
 import { mouthOf } from "@/lib/grow/mouths";
 import { usePetAct } from "@/lib/grow/use-pet-act";
+import { usePetLook } from "@/lib/grow/use-pet-look";
 
 const ICONS: Record<CareId, typeof Cookie> = { food: Cookie, play: Gamepad2, bath: Bath };
 
@@ -42,6 +43,9 @@ export function PetCard({
 }) {
   const [party, setParty] = useState(false);
   const seenLevel = useRef<string | null>(null);
+  const cardRef = useRef<HTMLElement>(null);
+  const figureRef = useRef<HTMLButtonElement>(null);
+  const lookRef = useRef<HTMLSpanElement>(null);
 
   const resting = moodFor(care);
   const want = wantOf(care);
@@ -50,6 +54,8 @@ export function PetCard({
   const { act, seed, play, pleased } = usePetAct(resting.id, !party);
   const mood = pleased ? MOODS.happy : resting;
   const overcast = mood.id === "down" || mood.id === "sleepy";
+
+  usePetLook({ card: cardRef, figure: figureRef, look: lookRef, want });
 
   useEffect(() => {
     const key = `${view.pet.id}:${view.level.lv}`;
@@ -80,7 +86,7 @@ export function PetCard({
   });
 
   return (
-    <section className={`g-card pet-card ${party ? "is-party" : ""}`}>
+    <section ref={cardRef} className={`g-card pet-card ${party ? "is-party" : ""}`}>
       <div className="pet-card-top">
         <span className="pet-name">{view.name}</span>
         <span className="pet-lv" style={view.revealed ? { background: view.series.color } : undefined}>
@@ -119,15 +125,48 @@ export function PetCard({
          * Tapping the pet is the first thing anyone tries, and a pet that does
          * not answer a poke is the fastest way to stop feeling like a pet.
          * Free, so a child can do it as much as they like.
+         *
+         * Three nested wrappers, because three things move the pet at once and
+         * a CSS animation and a style both writing `transform` to one element
+         * silently overwrite each other. Outside in: `pet-look` turns it
+         * towards you, `pet-pose` runs the mood's posture and whatever act is
+         * playing, `pet-faces` works the jaw. The shadow stays outside all of
+         * them, on the ground, where a lean should not drag it.
          */}
         <button
+          ref={figureRef}
           type="button"
-          className={`pet-figure act-${act}`}
+          className="pet-figure"
           onClick={() => play("poke")}
           aria-label={`戳一下${view.name}`}
         >
           <span className="pet-shadow" aria-hidden />
-          <Image src={themedPetArt(view.art, sex)} alt={view.name} width={448} height={448} priority />
+          {/* While eating it looks at its food, which also keeps the mouth
+           * where `bits-eat` aims the biscuit. */}
+          <span ref={lookRef} className={`pet-look${act === "eat" ? " is-fixed" : ""}`}>
+            <span className={`pet-pose act-${act}`}>
+              {/*
+               * Every face is in the DOM at once and the stylesheet fades
+               * between them, so a mood change is the same creature changing
+               * expression rather than one image being swapped for another
+               * that has not loaded yet.
+               */}
+              <span className="pet-faces">
+                {FACES.map((face) => (
+                  <Image
+                    key={face.key}
+                    className={`pet-face pet-face-${face.key}`}
+                    src={moodPetArt(view.art, sex, face.mood)}
+                    alt={face.mood === "happy" ? view.name : ""}
+                    aria-hidden={face.mood !== "happy"}
+                    width={448}
+                    height={448}
+                    priority={face.mood === "happy"}
+                  />
+                ))}
+              </span>
+            </span>
+          </span>
         </button>
 
         <Weather mood={mood.id} act={act} />
@@ -210,10 +249,9 @@ export function PetCard({
 /**
  * The mood symbol above the pet's head.
  *
- * There is one render per creature and it is always smiling, so the mood has
- * to be told somewhere other than the face. Above the head is the one region
- * every creature's art leaves empty, and a grey rain cloud there reads as
- * miserable no matter what the face below it is doing.
+ * Now that the face changes too this is no longer carrying the mood on its
+ * own, but it is still the thing you can read from across the room, and above
+ * the head is the one region every creature's art leaves empty.
  *
  * Hidden while an act is playing — the act is already saying something more
  * specific, and a rain cloud over a pet mid-hop is just noise.

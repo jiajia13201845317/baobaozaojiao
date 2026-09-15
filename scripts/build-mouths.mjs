@@ -53,7 +53,16 @@ async function faceOf(file) {
   return { x: sx / n / info.width, y: sy / n / info.height + DROP, n };
 }
 
-const files = (await readdir(SRC)).filter((f) => f.endsWith(".webp")).sort();
+/*
+ * Only the grinning render is measured. Feeding always happens on that face —
+ * being fed puts the pet in 开心 for the whole act — and the other moods have
+ * their eyes half shut or drawn as arcs, which the centroid would read as a
+ * lower, narrower face and aim the biscuit at the chin. `mouthOf` strips the
+ * suffix so every mood shares its creature's one measurement.
+ */
+const MOOD_ART = /-(flat|sad|sleepy)(-pink)?\.webp$/;
+
+const files = (await readdir(SRC)).filter((f) => f.endsWith(".webp") && !MOOD_ART.test(f)).sort();
 const rows = [];
 for (const file of files) {
   const { x, y, n } = await faceOf(file);
@@ -79,7 +88,10 @@ ${rows.join("\n")}
 const FALLBACK: [number, number] = [0.5, 0.48];
 
 export function mouthOf(art: string): [number, number] {
-  const id = art.replace(/^.*\\//, "").replace(/\\.webp$/, "");
+  const id = art
+    .replace(/^.*\\//, "")
+    .replace(/-(flat|sad|sleepy)(?=(-pink)?\\.webp$)/, "")
+    .replace(/\\.webp$/, "");
   return MOUTHS[id] ?? FALLBACK;
 }
 `,
