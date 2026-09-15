@@ -15,7 +15,7 @@
  */
 import { type CareState, type OwnedPet, type SeriesId, pickCreature, viewPet } from "./pets";
 import { POINTS } from "./pet";
-import { type RecordEvent, type RecordKind, dayOf, recordPoints } from "./records";
+import { KINDS, type RecordEvent, type RecordKind, dayOf, recordPoints } from "./records";
 import {
   type Carer,
   type LogEntry,
@@ -112,7 +112,9 @@ function asNumberMap(value: unknown) {
 
 function readEvents(value: unknown): RecordEvent[] {
   if (!Array.isArray(value)) return [];
-  const kinds = new Set<RecordKind>(["growth", "temp", "poop", "pee", "meal"]);
+  // Derived from KINDS rather than listed here: a hardcoded copy silently
+  // dropped every record of a newly added kind on the next reload.
+  const kinds = new Set<RecordKind>(KINDS.map((k) => k.id));
   return value
     .filter((e): e is RecordEvent => !!e && typeof e.id === "string" && typeof e.at === "number" && kinds.has(e.kind))
     .map((e) => ({

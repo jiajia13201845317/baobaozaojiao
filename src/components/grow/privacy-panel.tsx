@@ -55,16 +55,16 @@ export function PrivacyPanel({
         </div>
         <div className="stat-row">
           <div className="stat-tile">
-            <span className="mini-label">宝宝档案</span>
-            <span className="mini-value">{state.babies.length}</span>
+            <b>{state.babies.length}</b>
+            <i>宝宝档案</i>
           </div>
           <div className="stat-tile">
-            <span className="mini-label">记录</span>
-            <span className="mini-value">{events}</span>
+            <b>{events}</b>
+            <i>条记录</i>
           </div>
           <div className="stat-tile">
-            <span className="mini-label">照片</span>
-            <span className="mini-value">{photos}</span>
+            <b>{photos}</b>
+            <i>张照片</i>
           </div>
         </div>
         <p className="g-hint">

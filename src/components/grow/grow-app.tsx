@@ -176,15 +176,25 @@ export function GrowApp() {
   /** One tap, one record. The id comes back so the undo has a target. */
   const logInstant = (kind: "poop" | "pee") => {
     const id = newId();
-    update((prev) => ({ ...prev, events: [...prev.events, { id, kind, at: Date.now() }] }));
+    update((prev) => ({
+      ...prev,
+      events: [...prev.events, { id, kind, at: Date.now(), by: state.by ?? undefined }],
+    }));
     return id;
   };
 
   const saveGrowth = (values: Partial<Record<Metric, number>>, date: string) =>
-    update((prev) => addEvent(prev, { kind: "growth", at: new Date(`${date}T12:00:00`).getTime(), num: values }));
+    update((prev) =>
+      addEvent(prev, {
+        kind: "growth",
+        at: new Date(`${date}T12:00:00`).getTime(),
+        num: values,
+        by: state.by ?? undefined,
+      }),
+    );
 
   const saveTemp = (temp: number, way: string, at: number) =>
-    update((prev) => addEvent(prev, { kind: "temp", at, num: { temp }, pick: way }));
+    update((prev) => addEvent(prev, { kind: "temp", at, num: { temp }, pick: way, by: state.by ?? undefined }));
 
   const tagEvent = (id: string, tags: string[]) =>
     update((prev) => ({

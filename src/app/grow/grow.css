@@ -1840,8 +1840,8 @@
 }
 
 .tap-meal {
-  background: var(--c-purple);
-  box-shadow: 0 4px 0 #8064c9;
+  background: var(--c-grass);
+  box-shadow: 0 4px 0 #5cb04c;
 }
 
 .tap-more {
@@ -3692,9 +3692,9 @@
 /* ---------- 4.5 睡眠与喂养 ---------- */
 
 .tap-sleep {
-  background: linear-gradient(180deg, #a98bf0, #8c6ae0);
+  background: linear-gradient(180deg, #7d78d8, #5f59c2);
   color: #fff;
-  box-shadow: 0 5px 0 #6f4fc6;
+  box-shadow: 0 5px 0 #4a44a4;
 }
 
 .tap-wake {

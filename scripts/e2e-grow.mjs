@@ -38,8 +38,26 @@ async function clickText(page, needle) {
     hit.click();
     return true;
   }, needle);
-  if (!ok) throw new Error(`no enabled control containing ${needle}`);
+  if (!ok) {
+    const body = await page.evaluate(() => document.body.innerText.replace(/\s+/g, " "));
+    throw new Error(`no enabled control containing ${needle} — page says: ${body.slice(0, 300)}`);
+  }
   await new Promise((r) => setTimeout(r, 320));
+}
+
+/**
+ * Tabs are clicked through the tab bar rather than by text, because 我的 has a
+ * 照片记录 toggle whose label also contains 记录 and sits earlier in the DOM.
+ */
+async function clickTab(page, name) {
+  const ok = await page.evaluate((want) => {
+    const hit = [...document.querySelectorAll(".g-tabs button")].find((n) => (n.innerText || "").includes(want));
+    if (!hit) return false;
+    hit.click();
+    return true;
+  }, name);
+  if (!ok) throw new Error(`no tab named ${name}`);
+  await new Promise((r) => setTimeout(r, 340));
 }
 
 async function clickSel(page, selector, index = 0) {
@@ -143,8 +161,45 @@ function dataWith(extra = {}) {
   };
 }
 
-function seedFor(months, extra = {}, babyExtra = {}) {
-  return { babies: [babyFor(months, babyExtra)], current: "b1", data: { b1: dataWith(extra) } };
+/** Consent is granted in seeds so each test exercises its own screen, not the gate. */
+function settingsWith(extra = {}) {
+  return {
+    mode: "full",
+    bilingual: false,
+    lockPin: null,
+    tempReminder: { on: false, every: 60 },
+    ...extra,
+    consent: {
+      basic: true,
+      personalized: true,
+      photos: true,
+      notify: false,
+      guardianAt: 1,
+      ...(extra.consent ?? {}),
+    },
+  };
+}
+
+function seedFor(months, extra = {}, babyExtra = {}, settingsExtra = {}) {
+  return {
+    babies: [babyFor(months, babyExtra)],
+    current: "b1",
+    data: { b1: dataWith(extra) },
+    settings: settingsWith(settingsExtra),
+    carers: [],
+    by: null,
+    log: [],
+  };
+}
+
+/** Clears the consent gate, for the tests whose subject is what comes after it. */
+async function openFresh() {
+  await open(null);
+  await clickText(page, "基础记录");
+  await clickText(page, "照片记录");
+  await clickText(page, "我是这个孩子的父母或监护人");
+  await clickText(page, "知道了，开始用");
+  await new Promise((r) => setTimeout(r, 400));
 }
 
 async function readState() {
@@ -200,7 +255,7 @@ async function theme() {
 
 try {
   // --- onboarding -------------------------------------------------------
-  await open(null);
+  await openFresh();
   let text = await bodyText(page);
   check("onboarding is shown on a fresh device", text.includes("先认识一下宝宝"), text.slice(0, 200));
   check("onboarding states the non-diagnostic boundary", text.includes("不提供任何诊断或治疗建议"), text.slice(0, 400));
@@ -278,7 +333,7 @@ try {
   check("the record carries a real timestamp", typeof data.events[0].at === "number" && data.events[0].at > 0, JSON.stringify(data.events[0]));
 
   // --- learn ------------------------------------------------------------
-  await clickText(page, "早教");
+  await clickTab(page, "早教");
   await waitBody(page, "今天的三个玩法");
   text = await bodyText(page);
   check("learn greets by time of day", /早上好|中午好|下午好|晚上好|还没睡呀/.test(text), text.slice(0, 200));
@@ -317,7 +372,7 @@ try {
   text = await bodyText(page);
   // 1 for the day's 拉屎, 20 for first use of the feature. Five taps, one point.
   check("five taps of one kind still score once", /\b21 累计/.test(text), text.slice(0, 400));
-  await clickText(page, "早教");
+  await clickTab(page, "早教");
   await clickText(page, "看看分是怎么来的");
   check("the cap is stated in the breakdown", await hasText(page, "每类每天只算一次"), await bodyText(page));
 
@@ -354,7 +409,7 @@ try {
   check("the hub says nothing is uploaded", text.includes("不上传"), text.slice(-400));
   check("the hub has an empty state for today", text.includes("今天还是空的"), text.slice(0, 900));
   check("missing a day is explicitly forgiven", text.includes("积分不会掉"), text.slice(0, 900));
-  check("every record type has an entry", (await page.$$eval(".entry-row", (e) => e.length)) === 5, text.slice(0, 1400));
+  check("every record type has an entry", (await page.$$eval(".entry-row", (e) => e.length)) === 7, text.slice(0, 1400));
 
   // --- 4.4 排便排尿: one tap, and a few seconds to take it back ----------
   await clickSel(page, ".tap-row .tap-btn", 0);
@@ -545,17 +600,17 @@ try {
   await waitBody(page, "疫苗打卡墙");
   check("vaccines stay on chronological age", await hasText(page, "按出生日期算的实际月龄"), (await bodyText(page)).slice(0, 900));
 
-  // --- 4.3.2 饮食: a photo and a timestamp, nothing else ----------------
+  // --- 4.3 饮食: labels the parent picked, and nothing inferred ---------
   await open(seedFor(15));
   await clickText(page, "记录");
-  await clickText(page, "吃饭");
-  await waitBody(page, "拍一下吃了什么");
+  await clickText(page, "饮食");
+  await waitBody(page, "哪一餐");
   text = await bodyText(page);
-  check("meals have an empty state", text.includes("还没有照片"), text.slice(0, 600));
-  check("meals ask for nothing but a photo", text.includes("不用选食材"), text.slice(0, 600));
+  check("the diet page has an empty state", text.includes("今天还没记"), text.slice(0, 600));
+  check("a meal can be logged without a photo", text.includes("记下这一餐"), text.slice(0, 600));
   check("no dish recognition is promised", text.includes("不做菜品识别") && text.includes("不做营养分析"), text.slice(-500));
   for (const banned of ["均衡", "热量", "蛋白质", "营养不足", "识别菜品"]) {
-    const body = (await bodyText(page)).replace("不做菜品识别，不做营养分析，也不会说这一餐均衡不均衡。", "");
+    const body = (await bodyText(page)).replace("不做菜品识别，不做营养分析，也不会说哪一餐够不够均衡。", "");
     check(`meals pass no verdict with "${banned}"`, !body.includes(banned), body.slice(-400));
   }
 
@@ -564,6 +619,7 @@ try {
   await new Promise((r) => setTimeout(r, 1200));
   data = await readData();
   check("a meal photo writes a record", data.events.length === 1 && data.events[0].kind === "meal", JSON.stringify(data.events));
+  check("the photo is filed under a 餐次", typeof data.events[0].pick === "string", JSON.stringify(data.events[0]));
   check("the record keeps a media key, not the bytes", typeof data.events[0].photo === "string", JSON.stringify(data.events[0]));
   check("the record gets an automatic timestamp", data.events[0].at > at(0, 0), JSON.stringify(data.events[0]));
   const rawStore = await page.evaluate(() => localStorage.getItem("grow-state").length);
@@ -589,6 +645,8 @@ try {
   check("the photo is in IndexedDB", stored !== null, JSON.stringify(stored));
   check("a thumbnail is written alongside the full size", stored?.thumb > 0 && stored?.full > 0, JSON.stringify(stored));
 
+  await clickText(page, "时间线");
+  await waitBody(page, "今天");
   await clickSel(page, ".meal-del", 0);
   check("deleting a photo asks first", await hasText(page, "连照片一起删掉？"), await bodyText(page));
   await clickText(page, "删掉");
@@ -689,7 +747,7 @@ try {
       done: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [dateKey(-i), ["s1-m1"]])),
     }),
   );
-  await clickText(page, "宠物");
+  await clickSel(page, ".pet-book");
   await waitBody(page, "宠物图鉴");
   text = await bodyText(page);
   check("the collection page lists every creature", (await page.$$eval(".book-grid li", (e) => e.length)) === 21);
@@ -712,7 +770,7 @@ try {
   check("the adopted creature is from the chosen series", data.pets[1].creature.startsWith("water-"), data.pets[1].creature);
   check("no duplicate creatures", new Set(data.pets.map((p) => p.creature)).size === data.pets.length);
 
-  await clickText(page, "首页");
+  await clickTab(page, "首页");
   await waitBody(page, "今日早教");
   text = await bodyText(page);
   const cumulative = Number(text.match(/(\d+) 累计/)?.[1] ?? -1);
@@ -740,7 +798,7 @@ try {
   check("the tease is gone once revealed", !text.includes("破壳那天才知道"), text.slice(0, 600));
   check("a revealed creature keeps its own colour", !(await page.$eval(".pet-figure img", (i) => i.getAttribute("src"))).includes("pink"));
 
-  await clickText(page, "宠物");
+  await clickSel(page, ".pet-book");
   await waitBody(page, "宠物图鉴");
   check("the revealed creature fills its collection slot", (await page.$$eval(".book-grid li.on", (e) => e.length)) === 1);
   check("no pet art is oversized in the collection", (await oversizedArt(page)).length === 0, JSON.stringify(await oversizedArt(page)));
@@ -761,14 +819,18 @@ try {
 
   // --- month-age gating -------------------------------------------------
   await open(seedFor(22));
-  await clickText(page, "早教");
+  await clickTab(page, "早教");
   await waitBody(page, "今天的三个玩法");
   check("a 22-month child gets the later stage", await hasText(page, "Q3-Q4"), (await bodyText(page)).slice(0, 300));
 
   await open(seedFor(30));
-  await clickText(page, "早教");
+  await clickTab(page, "早教");
   await waitBody(page, "今天的三个玩法");
-  check("the next-stage note is shown past 24 months", await hasText(page, "还在制作中"), (await bodyText(page)).slice(0, 900));
+  check(
+    "a family past 24 months is told the content is complete",
+    await hasText(page, "陪到 3 岁就齐了"),
+    (await bodyText(page)).slice(0, 900),
+  );
 
   await open(seedFor(40, { events: [{ id: "m1", kind: "growth", at: at(0, 12), num: { height: 100 } }] }));
   await clickText(page, "记录");
@@ -814,7 +876,9 @@ try {
   await page.evaluate(() => localStorage.setItem("grow-state", "{not json"));
   await page.reload({ waitUntil: "domcontentloaded" });
   await new Promise((r) => setTimeout(r, 600));
-  check("a corrupt store falls back to onboarding", await hasText(page, "先认识一下宝宝"), await bodyText(page));
+  // An unreadable store means we no longer know what was agreed to, so the
+  // gate is the right landing place rather than straight into onboarding.
+  check("a corrupt store falls back to the consent gate", await hasText(page, "先说清楚数据的事"), await bodyText(page));
 
   // The single-baby shape, and the even older day-tick shape inside it.
   await open({
@@ -858,13 +922,14 @@ try {
         ],
       }),
     );
-    for (const tab of ["首页", "宠物", "早教", "记录"]) {
-      await clickText(page, tab);
+    for (const tab of ["首页", "早教", "记录", "我的"]) {
+      await clickTab(page, tab);
       await new Promise((r) => setTimeout(r, 350));
       const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       check(`${tab} does not overflow at ${label}`, over <= 1, `${over}px`);
     }
-    for (const panel of ["身高 · 体重", "体温", "拉屎 · 尿尿", "吃饭", "疫苗"]) {
+    await clickTab(page, "记录");
+    for (const panel of ["身高 · 体重", "体温", "拉屎 · 尿尿", "饮食", "睡觉 · 喂奶喝水", "大动作", "疫苗"]) {
       await clickText(page, panel);
       await new Promise((r) => setTimeout(r, 350));
       const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -874,10 +939,386 @@ try {
     }
   }
 
-  await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
-  await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
-  await new Promise((r) => setTimeout(r, 700));
-  check("the listening app still loads", await hasText(page, "宝宝听听"), (await bodyText(page)).slice(0, 200));
+
+  // ---------- 7.1 consent gate ----------
+  {
+    await open(null);
+    const gated = await hasText(page, "先说清楚数据的事");
+    check("a fresh install meets the consent gate first", gated, (await bodyText(page)).slice(0, 120));
+
+    const preTicked = await page.evaluate(
+      () => document.querySelectorAll('.consent-box.on, .toggle-row.on').length,
+    );
+    check("nothing on the consent gate is pre-ticked", preTicked === 0, `${preTicked} already on`);
+
+    const blocked = await page.evaluate(() =>
+      [...document.querySelectorAll("button")].some((b) => b.innerText.includes("知道了") && b.disabled),
+    );
+    check("the gate will not open until the parent chooses", blocked);
+
+    await clickText(page, "基础记录");
+    await clickText(page, "我是这个孩子的父母或监护人");
+    await clickText(page, "知道了，开始用");
+    await new Promise((r) => setTimeout(r, 400));
+    check("agreeing to the minimum reaches onboarding", await hasText(page, "先认识一下宝宝"));
+
+    const saved = await readState();
+    check("only the chosen consents are stored", saved?.settings?.consent?.basic === true, JSON.stringify(saved?.settings?.consent));
+    check("photos stay off unless asked for", saved?.settings?.consent?.photos === false);
+    check("the guardian confirmation is timestamped", typeof saved?.settings?.consent?.guardianAt === "number");
+  }
+
+  // ---------- legacy states are not re-gated ----------
+  {
+    await open({
+      babies: [babyFor(15)],
+      current: "b1",
+      data: { b1: dataWith({ events: [{ id: "n1", kind: "poop", at: at(0, 8) }] }) },
+    });
+    check("a saved file from before consent existed still opens", await hasText(page, "小米"), (await bodyText(page)).slice(0, 120));
+    const s2 = await readState();
+    check("the two consents such a family already gave are kept", s2?.settings?.consent?.basic === true);
+    check("the two that are new stay off", s2?.settings?.consent?.photos === false && s2?.settings?.consent?.notify === false);
+  }
+
+  // ---------- 4.5 sleep ----------
+  {
+    await open(seedFor(15));
+    await clickTab(page, "记录");
+    await clickText(page, "睡觉 · 喂奶喝水");
+    await waitBody(page, "喂奶喝水");
+    await clickText(page, "睡了");
+    await new Promise((r) => setTimeout(r, 350));
+    check("a nap in progress says so rather than showing a duration", await hasText(page, "醒了"));
+
+    const mid = await readData();
+    check("the first tap writes one sleep event", mid.events.filter((e) => e.kind === "sleep").length === 1);
+
+    await clickText(page, "醒了");
+    await new Promise((r) => setTimeout(r, 350));
+    const after = await readData();
+    check("the second tap closes the nap", after.events.filter((e) => e.kind === "sleep").length === 2);
+    check("the closed nap is totalled for the day", await hasText(page, "今天睡了"), (await bodyText(page)).slice(0, 200));
+
+    // The disclaimer is dropped first: it is the sentence that promises the
+    // app sets no target, so it necessarily contains the words banned here.
+    const noTarget = (await bodyText(page)).replace(
+      "这里只把你按下的时间加起来，不设应该睡多久，也不和别的宝宝比。",
+      "",
+    );
+    check(
+      "sleep never states a target or a shortfall",
+      !/应该睡|睡眠不足|不够|达标|偏少|偏多/.test(noTarget),
+      noTarget.slice(0, 200),
+    );
+
+    await clickText(page, "母乳");
+    await new Promise((r) => setTimeout(r, 300));
+    const fed = await readData();
+    check("a feed is one tap", fed.events.filter((e) => e.kind === "feed").length === 1);
+    check("feeds record no volume", !("ml" in (fed.events.find((e) => e.kind === "feed")?.num ?? {})));
+  }
+
+  // ---------- sleep pairing survives stray taps ----------
+  {
+    await open(
+      seedFor(15, {
+        events: [
+          { id: "s1", kind: "sleep", at: at(0, 9), pick: "down" },
+          { id: "s2", kind: "sleep", at: at(0, 9, 30), pick: "down" },
+          { id: "s3", kind: "sleep", at: at(0, 10), pick: "up" },
+          { id: "s4", kind: "sleep", at: at(0, 11), pick: "up" },
+        ],
+      }),
+    );
+    await clickTab(page, "记录");
+    await clickText(page, "睡觉 · 喂奶喝水");
+    await waitBody(page, "今天");
+    const text = await bodyText(page);
+    check("a double 睡了 does not become two naps", text.includes("今天 1 觉"), text.slice(0, 200));
+    check("a stray 醒了 with nobody asleep is ignored", !text.includes("还在睡"), text.slice(0, 200));
+  }
+
+  // ---------- 4.6 motor ----------
+  {
+    await open(seedFor(19));
+    await clickTab(page, "记录");
+    await clickText(page, "大动作");
+    await waitBody(page, "这段时间常出现");
+    const text = await bodyText(page);
+    check("motor items show a range, not a deadline", text.includes("常在") && text.includes("月龄出现"), text.slice(0, 200));
+    const noOverdue = text.replace("没点的就是还没点，这里没有「欠着」这回事。", "");
+    check(
+      "a motor item not yet recorded is never marked overdue",
+      !/超过|逾期|落后|迟缓|未达|应该会|欠/.test(noOverdue),
+      noOverdue.slice(0, 300),
+    );
+
+    await clickSel(page, ".motor-tap");
+    await new Promise((r) => setTimeout(r, 350));
+    const data = await readData();
+    const hit = data.events.find((e) => e.kind === "motor");
+    check("tapping a motor item records the date", Boolean(hit), JSON.stringify(data.events.slice(0, 2)));
+    check("the reference id and its wording are stored separately", Boolean(hit?.pick && hit?.note));
+    check("the recorded day is shown back", await hasText(page, "你记的是"), (await bodyText(page)).slice(0, 200));
+  }
+
+  // ---------- 4.3 diet ----------
+  {
+    await open(seedFor(15));
+    await clickTab(page, "记录");
+    await clickText(page, "饮食");
+    await waitBody(page, "哪一餐");
+    await clickText(page, "记下这一餐");
+    await new Promise((r) => setTimeout(r, 350));
+    const logged = await readData();
+    const meal = logged.events.find((e) => e.kind === "meal");
+    check("a meal can be recorded without a photo", Boolean(meal), JSON.stringify(logged.events.slice(0, 2)));
+    check("the meal carries the 餐次 the parent picked", Boolean(meal?.pick));
+
+    await clickText(page, "备注");
+    await new Promise((r) => setTimeout(r, 300));
+    await clickText(page, "吃得香");
+    await new Promise((r) => setTimeout(r, 300));
+    const tagged = await readData();
+    check("the parent's own words are stored as tags", (tagged.events.find((e) => e.kind === "meal")?.tags ?? []).includes("吃得香"));
+
+    await clickText(page, "辅食阶段");
+    await waitBody(page, "性状参考");
+    const stage = await bodyText(page);
+    check("the weaning stage is reference text", stage.includes("月"), stage.slice(0, 160));
+    check(
+      "the weaning page gives no quantity or schedule instruction",
+      !/必须|应该吃|每天要|克\/天|建议吃|不能吃/.test(stage),
+      stage.slice(0, 300),
+    );
+
+    await clickText(page, "过敏原");
+    await waitBody(page, "常被留意的几样");
+    const all = await bodyText(page);
+    check("allergens are a label-reading aid", all.includes("只帮你在食品标签上"), all.slice(0, 200));
+    check("the allergen page defers to a doctor", all.includes("联系医生") || all.includes("问医生"), all.slice(0, 300));
+    check(
+      "the allergen page makes no diagnosis",
+      !/宝宝过敏|确诊|说明.{0,4}过敏|判断.{0,4}过敏/.test(all),
+      all.slice(0, 300),
+    );
+  }
+
+  // ---------- 照片默认关闭 ----------
+  {
+    await open(seedFor(15, {}, {}, { consent: { photos: false } }));
+    await clickTab(page, "记录");
+    await clickText(page, "饮食");
+    await waitBody(page, "哪一餐");
+    check("with photos off there is no camera button", !(await hasText(page, "顺手拍一张")));
+    check("and the screen says where to turn it on", await hasText(page, "照片记录"), (await bodyText(page)).slice(0, 200));
+  }
+
+  // ---------- 3.1 bilingual ----------
+  {
+    await open(seedFor(15, {}, {}, { bilingual: false }));
+    await clickTab(page, "早教");
+    await new Promise((r) => setTimeout(r, 350));
+    check("English is absent until switched on", !(await hasText(page, "英语启蒙")));
+
+    await open(seedFor(15, {}, {}, { bilingual: true }));
+    await clickTab(page, "早教");
+    await waitBody(page, "英语启蒙");
+    const text = await bodyText(page);
+    check("the English track sits under the same stage", text.includes("英语启蒙"));
+    check(
+      "English milestones count exposure, not ability",
+      text.includes("听过") || text.includes("玩过"),
+      text.slice(0, 400),
+    );
+  }
+
+  // ---------- 12.6 纯记录版 ----------
+  {
+    await open(seedFor(15, {}, {}, { mode: "records" }));
+    const tabs = await page.evaluate(() => [...document.querySelectorAll(".g-tabs button")].map((n) => n.innerText.trim()));
+    check("records-only mode hides 早教 and 听听", !tabs.includes("早教") && !tabs.includes("听听"), tabs.join("/"));
+    check("records-only mode keeps 记录 and 我的", tabs.includes("记录") && tabs.includes("我的"), tabs.join("/"));
+  }
+
+  // ---------- 7.3 privacy and export ----------
+  {
+    await open(
+      seedFor(15, {
+        events: [{ id: "n1", kind: "poop", at: at(0, 8), tags: ["成形"] }],
+      }),
+    );
+    await clickTab(page, "我的");
+    await clickText(page, "隐私与数据");
+    await waitBody(page, "存了什么");
+    const text = await bodyText(page);
+    check("the privacy page counts what is actually stored", text.includes("条记录"), text.slice(0, 200));
+    check("the delete scope is itemised", text.includes("删除范围"), text.slice(0, 300));
+    check("consent items can be revoked here", text.includes("分项同意"));
+    check(
+      "a wipe cannot be triggered by one stray tap",
+      await page.evaluate(() => !document.body.innerText.includes("确认删除")),
+    );
+
+    await clickText(page, "我要删掉全部数据");
+    await new Promise((r) => setTimeout(r, 300));
+    const armed = await page.evaluate(() =>
+      [...document.querySelectorAll("button")].some((b) => b.innerText.includes("确认删除") && b.disabled),
+    );
+    check("the wipe stays disabled until the word is typed", armed);
+  }
+
+  // ---------- 6.1 carers and the log ----------
+  {
+    await open(seedFor(15));
+    await clickTab(page, "我的");
+    await clickText(page, "成员与记录人");
+    await waitBody(page, "成员");
+    await clickText(page, "加一个人");
+    await setField(".carer-form input", "外婆");
+    await clickText(page, "加进来");
+    await new Promise((r) => setTimeout(r, 350));
+    const state = await readState();
+    check("a carer can be named", state?.carers?.length === 1, JSON.stringify(state?.carers));
+    check("naming someone is written to the log", (state?.log ?? []).some((e) => e.what.includes("成员")), JSON.stringify(state?.log));
+    check("the new carer becomes the current recorder", state?.by === state?.carers?.[0]?.id);
+
+    await clickTab(page, "记录");
+    await new Promise((r) => setTimeout(r, 300));
+    await clickText(page, "拉屎");
+    await new Promise((r) => setTimeout(r, 350));
+    const data = await readData();
+    check("records carry who made them", Boolean(data.events.find((e) => e.kind === "poop")?.by));
+  }
+
+  // ---------- 7.5 kid mode ----------
+  {
+    await open(seedFor(15));
+    await clickTab(page, "我的");
+    await clickText(page, "宝宝观看模式");
+    await waitBody(page, "退出密码");
+    await setField(".g-sheet input", "1234");
+    await clickText(page, "进入");
+    await waitBody(page, "宝宝观看模式");
+    const tabs = await page.evaluate(() => document.querySelectorAll(".g-tabs button").length);
+    check("kid mode leaves nothing but playback on screen", tabs === 0, `${tabs} tabs`);
+    check("kid mode still shows the listening app", await hasText(page, "宝宝听听"), (await bodyText(page)).slice(0, 200));
+
+    await clickText(page, "退出");
+    await new Promise((r) => setTimeout(r, 300));
+    check("leaving kid mode asks for the pin", await hasText(page, "输入退出密码"));
+    for (const d of ["9", "9", "9", "9"]) await clickText(page, d);
+    await new Promise((r) => setTimeout(r, 300));
+    check("a wrong pin does not let go", await hasText(page, "不对，再试一次"));
+    for (const d of ["1", "2", "3", "4"]) await clickText(page, d);
+    await new Promise((r) => setTimeout(r, 400));
+    check("the right pin returns to the app", (await page.evaluate(() => document.querySelectorAll(".g-tabs button").length)) > 0);
+  }
+
+  // ---------- 10.3 summary ----------
+  {
+    await open(
+      seedFor(19, {
+        done: { [dateKey(0)]: ["q3-m1"], [dateKey(-1)]: ["q3-m2"] },
+        events: [
+          { id: "g1", kind: "growth", at: at(-30, 12), num: { height: 76, weight: 9.8 } },
+          { id: "g2", kind: "growth", at: at(0, 12), num: { height: 79, weight: 10.6 } },
+        ],
+      }),
+    );
+    await clickTab(page, "我的");
+    await clickText(page, "成长总结与海报");
+    await waitBody(page, "量出来的变化");
+    const text = await bodyText(page);
+    check("the summary counts what the family did", text.includes("打卡天数"), text.slice(0, 300));
+    const noRank = text.replace("只报你自己量到的数和变化量，不给百分位，也不和别的宝宝比。", "");
+    check("growth changes are shown without percentiles", !noRank.includes("百分位"), noRank.slice(0, 400));
+    check(
+      "the summary passes no judgement",
+      !/优秀|不错|落后|达标|排名|超过.{0,6}%/.test(text),
+      text.slice(0, 400),
+    );
+  }
+
+  // ---------- 7.6 reminders are opt-in ----------
+  {
+    await open(seedFor(15, {}, {}, { consent: { notify: false } }));
+    check("no reminder card appears before consent", !(await hasText(page, "这类不用提醒")));
+    await clickTab(page, "我的");
+    await clickText(page, "提醒");
+    await waitBody(page, "提醒总开关");
+    let text = await bodyText(page);
+    check("reminders start switched off", text.includes("已关闭"), text.slice(0, 200));
+    check(
+      "the reminder page admits a static app cannot notify in the background",
+      text.includes("打开着这个页面"),
+      text.slice(0, 300),
+    );
+
+    await clickText(page, "已关闭");
+    await waitBody(page, "安静时段");
+    text = await bodyText(page);
+    check("quiet hours are stated once reminders are on", /不提醒/.test(text), text.slice(0, 400));
+    check("each reminder kind can be muted on its own", text.includes("疫苗月龄") && text.includes("体温复测"), text.slice(0, 500));
+    await clickText(page, "量过之后提醒再量一次");
+    await waitBody(page, "只按时间间隔提醒");
+    check(
+      "the temperature reminder is time-based, not value-based",
+      await hasText(page, "和量出来的数字没有关系"),
+      (await bodyText(page)).slice(0, 600),
+    );
+  }
+
+  // ---------- the SDK inventory ----------
+  {
+    await open(seedFor(15));
+    await clickTab(page, "我的");
+    await clickText(page, "第三方清单");
+    await waitBody(page, "第三方");
+    const text = await bodyText(page);
+    check("every third party that touches data is listed", text.includes("localStorage") || text.includes("本地存储"), text.slice(0, 300));
+    check("the page states there is no tracking SDK", /没有接入|一个都没接/.test(text), text.slice(0, 400));
+  }
+
+  // ---------- 宝宝听听 as a tab ----------
+  {
+    await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+    await open(seedFor(15));
+    await clickTab(page, "听听");
+    await waitBody(page, "宝宝听听");
+    check("the listening app is reachable as a tab", await hasText(page, "开始听"));
+
+    const skinned = await page.evaluate(() => {
+      const card = document.querySelector(".lw-card");
+      const page_ = document.querySelector(".g-page");
+      return {
+        inside: Boolean(card && page_?.contains(card)),
+        theme: page_?.className ?? "",
+        oldSky: document.querySelectorAll(".party-sky:not([style*='display: none'])").length,
+      };
+    });
+    check("it renders inside the themed shell", skinned.inside, JSON.stringify(skinned));
+    check("it inherits the chosen 蛋仔 colour", /theme-(boy|girl)/.test(skinned.theme), skinned.theme);
+
+    check("the gate is kept, so sound needs a deliberate tap", await hasText(page, "开始听"));
+    await clickText(page, "开始听");
+    await new Promise((r) => setTimeout(r, 1500));
+    check("starting playback keeps the tab bar", (await page.evaluate(() => document.querySelectorAll(".g-tabs button").length)) > 0);
+
+    const stayed = await page.evaluate(() => Boolean(document.querySelector(".listen-tab")));
+    await clickText(page, "记录");
+    await new Promise((r) => setTimeout(r, 400));
+    const mounted = await page.evaluate(() => Boolean(document.querySelector(".listen-tab.is-off")));
+    check("the listening app stays mounted so a song survives a tab change", stayed && mounted);
+
+    const noNames = await bodyText(page);
+    check(
+      "no competitor or borrowed brand name reaches the UI",
+      !/蛋仔派对|贝乐虎|火火兔|宝宝巴士|巧虎|佩奇|Peppa|汪汪队|PAW/i.test(noNames),
+      noNames.slice(0, 200),
+    );
+  }
 
   check("no page errors", pageErrors.length === 0, pageErrors.slice(0, 3).join(" | "));
 } catch (err) {
