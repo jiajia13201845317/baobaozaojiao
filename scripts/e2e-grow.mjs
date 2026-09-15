@@ -845,6 +845,15 @@ try {
   check("the rain stops when it is fed", !now.cloud, JSON.stringify(now));
   check("feeding says something about eating", /吃|嚼/.test(now.line), JSON.stringify(now));
 
+  // One feed cannot honestly lift a pet left for a week — two meters are still
+  // on the floor — so the delight is held rather than faked. At the first tail
+  // length the rain cloud came back about four seconds after feeding, while
+  // the parent was still looking at the card, which read as the feeding having
+  // accomplished nothing.
+  await new Promise((r) => setTimeout(r, 7000));
+  now = await pet();
+  check("the reward outlasts the glance", now.mood === "开心" && !now.cloud, JSON.stringify(now));
+
   await clickSel(page, ".pet-actions .g-chip-btn", 1);
   await new Promise((r) => setTimeout(r, 300));
   now = await pet();
@@ -854,6 +863,21 @@ try {
   await new Promise((r) => setTimeout(r, 300));
   now = await pet();
   check("bathing plays its own pose", now.act === "act-bath" && now.bits === "pet-bits bits-bath", JSON.stringify(now));
+
+  // Hunger outranks the other two, the way it would for a real animal: a pet
+  // that has not been fed in a week is miserable however clean it is, while
+  // one that is merely bored or grubby is only flat.
+  const only = (low) => ({ p1: Object.fromEntries(["food", "play", "bath"].map((k) => [k, { at: Date.now() - (k === low ? 9 : 0) * DAY, value: 100 }])) });
+  await open(seedFor(15, { ...spendy, care: only("bath") }));
+  await waitBody(page, "今日早教");
+  now = await pet();
+  check("being grubby alone is not misery", now.mood === "一般" && !now.cloud, JSON.stringify(now));
+  check("but it is still the marked want", now.want === "干净", JSON.stringify(now));
+
+  await open(seedFor(15, { ...spendy, care: only("food") }));
+  await waitBody(page, "今日早教");
+  now = await pet();
+  check("hunger outranks the other two", now.mood === "低落", JSON.stringify(now));
 
   // Poking is the first thing anyone tries and the one interaction that is free.
   await open(seedFor(15, { ...spendy, care: careDays(9) }));

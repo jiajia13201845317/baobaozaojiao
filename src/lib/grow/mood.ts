@@ -52,14 +52,21 @@ function isNight(hour: number) {
  * Not the plain average, which hides the thing you most want to see: a pet
  * with an empty stomach and two full meters averages out to fine, and then
  * reads as fine, and "it says it is hungry while looking pleased" is the exact
- * contradiction that breaks the illusion. So the worst meter is allowed to
- * drag the whole mood down to near its own level — one empty meter is enough
- * to make the pet visibly flat, which is how a real want gets communicated.
+ * contradiction that breaks the illusion.
+ *
+ * So three things can each hold the mood down, and the lowest wins:
+ *
+ *   the average, which is the general picture;
+ *   an empty stomach, which outranks everything — a pet that has not been fed
+ *     in a week is miserable however clean it is, the way a real one would be;
+ *   the worst meter, loosely, so any single neglected thing still registers
+ *     without being as decisive as hunger.
  */
 export function scoreOf(care: CareState, now = Date.now()) {
   const values = CARES.map((c) => meterOf(care, c.id, now));
   const avg = values.reduce((a, b) => a + b, 0) / values.length;
-  return Math.round(Math.min(avg, Math.min(...values) + 10));
+  const food = meterOf(care, "food", now);
+  return Math.round(Math.min(avg, food + 8, Math.min(...values) + 22));
 }
 
 /**
@@ -139,8 +146,17 @@ export const CARE_ACT: Record<CareId, ActId> = { food: "eat", play: "play", bath
 /** The acts that mean the parent just did something nice. */
 export const KIND_ACTS: ActId[] = ["eat", "play", "bath"];
 
-/** How long the pet stays visibly delighted after the act itself finishes. */
-export const PLEASED_TAIL = 3200;
+/**
+ * How long the pet stays visibly delighted after the act itself finishes.
+ *
+ * Long, and deliberately so. One feed cannot lift a pet that has been left a
+ * week: two meters are still on the floor, so the resting mood is honestly
+ * still low. At the first value — around three seconds — the rain cloud came
+ * back while the parent was still looking at the card, which reads as the
+ * feeding having accomplished nothing. Holding it this long means the reward
+ * outlasts the glance, and any further care resets the timer.
+ */
+export const PLEASED_TAIL = 18000;
 
 /**
  * The unprompted idle actions, weighted by mood. A down pet does not hop, and

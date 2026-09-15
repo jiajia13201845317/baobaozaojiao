@@ -4430,11 +4430,11 @@
  * one of them.
  */
 .bits-eat i {
-  top: 42%;
-  width: 0.62rem;
-  height: 0.62rem;
+  top: 40%;
+  width: 0.85rem;
+  height: 0.85rem;
   background-image: url("/art/prop/crumb.webp");
-  animation: crumb 0.8s ease-in calc(var(--i) * 140ms) infinite both;
+  animation: crumb 0.95s ease-in calc(var(--i) * 150ms) infinite both;
 }
 
 /*
