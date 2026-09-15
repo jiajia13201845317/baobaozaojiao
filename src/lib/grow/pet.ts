@@ -9,13 +9,15 @@
  * at 8 points is ~720 a quarter, weekly streaks add ~360, milestones ~150, so
  * a quarter yields about 1000-1200. The level thresholds in pets.ts sit below
  * that on purpose, so a parent who misses days still gets the reveal within a
- * quarter. Health logging is scored low deliberately — it should never become
- * the cheapest way to farm points, or the numbers stop being true.
+ * quarter.
+ *
+ * Health logging is scored low and capped per day in records.ts — it should
+ * never become the cheapest way to farm points, or the numbers stop being
+ * true, which is the whole asset this app is trying to protect.
  */
 export const POINTS = {
   task: 8,
   milestone: 75,
-  health: 4,
   streakBonus: 30,
   streakEvery: 7,
   firstTime: 20,

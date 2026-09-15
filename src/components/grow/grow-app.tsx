@@ -1,57 +1,91 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { Backpack, GraduationCap, HeartPulse, House } from "lucide-react";
-import { Health } from "@/components/grow/health";
+import { Backpack, ClipboardList, GraduationCap, House } from "lucide-react";
 import { Home } from "@/components/grow/home";
 import { Learn } from "@/components/grow/learn";
-import { Onboard } from "@/components/grow/onboard";
+import { Onboard, type BabyFields } from "@/components/grow/onboard";
 import { PetsPage } from "@/components/grow/pets-page";
+import { RecordsHeader, RecordsPage, type RecordView, recordTitle } from "@/components/grow/records-page";
+import type { Metric } from "@/lib/grow/growth";
 import { CARES, type CareId, type SeriesId, afterCare, viewPet } from "@/lib/grow/pets";
+import { dropPhoto, putPhoto } from "@/lib/grow/media";
+import type { RecordKind } from "@/lib/grow/records";
 import {
-  type GrowState,
-  type Measure,
-  type Profile,
+  type BabyData,
   activePet,
+  addBaby,
+  addEvent,
   adopt,
+  currentBaby,
+  currentData,
   doneToday,
+  editBaby,
   hydrated,
   newId,
   notHydrated,
+  removeBaby,
+  removeEvent,
   saveState,
   serverSnapshot,
+  setData,
   snapshot,
   spendablePoints,
   subscribe,
   totalPoints,
-  withFirstEgg,
 } from "@/lib/grow/store";
 import { dateKey } from "@/lib/grow/tasks";
 
-type Tab = "home" | "pets" | "learn" | "health";
+type Tab = "home" | "pets" | "learn" | "records";
 
 const TABS: { id: Tab; label: string; icon: typeof House }[] = [
   { id: "home", label: "首页", icon: House },
   { id: "pets", label: "宠物", icon: Backpack },
   { id: "learn", label: "早教", icon: GraduationCap },
-  { id: "health", label: "健康", icon: HeartPulse },
+  { id: "records", label: "记录", icon: ClipboardList },
 ];
 
-const TITLES: Record<Tab, string> = { home: "首页", pets: "宠物", learn: "早教", health: "健康" };
+const TITLES: Record<Tab, string> = { home: "首页", pets: "宠物", learn: "早教", records: "记录" };
 
 export function GrowApp() {
   const state = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const ready = useSyncExternalStore(subscribe, hydrated, notHydrated);
   const [tab, setTab] = useState<Tab>("home");
+  const [view, setView] = useState<RecordView>("hub");
   const [editing, setEditing] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [previewSex, setPreviewSex] = useState<"boy" | "girl" | null>(null);
 
-  const update = useCallback((next: (prev: GrowState) => GrowState) => {
-    saveState(next(snapshot()));
+  const baby = currentBaby(state);
+  const data = currentData(state);
+  const themeSex = editing || adding ? (previewSex ?? baby?.sex) : (baby?.sex ?? previewSex);
+  const theme = themeSex === "girl" ? "theme-girl" : "theme-boy";
+
+  /** Every mutation goes through the current baby's slice; siblings never mix. */
+  const update = useCallback((next: (prev: BabyData) => BabyData) => {
+    const now = snapshot();
+    const id = currentBaby(now)?.id;
+    if (!id) return;
+    saveState(setData(now, id, next(currentData(now))));
   }, []);
 
-  const start = (profile: Profile) => {
-    update((prev) => withFirstEgg({ ...prev, profile }));
+  const saveBaby = (fields: BabyFields) => {
+    const now = snapshot();
+    const id = currentBaby(now)?.id;
+    saveState(editing && id ? editBaby(now, id, fields) : addBaby(now, fields));
+    setPreviewSex(fields.sex);
     setEditing(false);
+    setAdding(false);
+  };
+
+  const deleteBaby = () => {
+    const now = snapshot();
+    const id = currentBaby(now)?.id;
+    if (!id) return;
+    saveState(removeBaby(now, id));
+    setEditing(false);
+    setPreviewSex(null);
+    setTab("home");
   };
 
   const doTask = (taskId: string) =>
@@ -77,8 +111,41 @@ export function GrowApp() {
       vaccines: prev.vaccines.includes(id) ? prev.vaccines.filter((v) => v !== id) : [...prev.vaccines, id],
     }));
 
-  const addMeasure = (m: Omit<Measure, "id">) =>
-    update((prev) => ({ ...prev, measures: [...prev.measures, { ...m, id: newId() }] }));
+  /** One tap, one record. The id comes back so the undo has a target. */
+  const logInstant = (kind: "poop" | "pee") => {
+    const id = newId();
+    update((prev) => ({ ...prev, events: [...prev.events, { id, kind, at: Date.now() }] }));
+    return id;
+  };
+
+  const saveGrowth = (values: Partial<Record<Metric, number>>, date: string) =>
+    update((prev) => addEvent(prev, { kind: "growth", at: new Date(`${date}T12:00:00`).getTime(), num: values }));
+
+  const saveTemp = (temp: number, way: string, at: number) =>
+    update((prev) => addEvent(prev, { kind: "temp", at, num: { temp }, pick: way }));
+
+  const tagEvent = (id: string, tags: string[]) =>
+    update((prev) => ({
+      ...prev,
+      events: prev.events.map((e) => (e.id === id ? { ...e, tags: tags.length ? tags : undefined } : e)),
+    }));
+
+  /** 12.4 — the bytes go too, not just the reference. */
+  const deleteEvent = (id: string) => {
+    const photo = currentData(snapshot()).events.find((e) => e.id === id)?.photo;
+    if (photo) void dropPhoto(photo);
+    update((prev) => removeEvent(prev, id));
+  };
+
+  const pickMeal = async (file: File) => {
+    const key = newId();
+    try {
+      await putPhoto(key, file);
+    } catch {
+      return;
+    }
+    update((prev) => addEvent(prev, { kind: "meal", at: Date.now(), photo: key }));
+  };
 
   const doCare = (careId: CareId) =>
     update((prev) => {
@@ -97,9 +164,14 @@ export function GrowApp() {
 
   const setActive = (id: string) => update((prev) => ({ ...prev, active: id }));
 
+  const openRecord = (kind: RecordKind) => {
+    setTab("records");
+    setView(kind === "poop" || kind === "pee" ? "nappy" : kind === "growth" ? "growth" : kind);
+  };
+
   if (!ready) {
     return (
-      <main className="g-page">
+      <main className={`g-page ${theme}`}>
         <div className="g-shell g-boot" aria-busy="true">
           <span className="g-boot-egg" />
           <p>正在把记录取出来…</p>
@@ -108,11 +180,22 @@ export function GrowApp() {
     );
   }
 
-  if (!state.profile) {
+  if (!baby || adding) {
     return (
-      <main className="g-page">
+      <main className={`g-page ${theme}`}>
         <div className="g-shell">
-          <Onboard onDone={start} />
+          <Onboard
+            onDone={saveBaby}
+            onSexChange={setPreviewSex}
+            onCancel={
+              baby
+                ? () => {
+                    setAdding(false);
+                    setPreviewSex(baby.sex);
+                  }
+                : undefined
+            }
+          />
         </div>
       </main>
     );
@@ -120,37 +203,75 @@ export function GrowApp() {
 
   if (editing) {
     return (
-      <main className="g-page">
+      <main className={`g-page ${theme}`}>
         <div className="g-shell">
-          <Onboard initial={state.profile} onDone={start} onCancel={() => setEditing(false)} />
+          <Onboard
+            initial={baby}
+            onDone={saveBaby}
+            onSexChange={setPreviewSex}
+            onDelete={deleteBaby}
+            canDelete={state.babies.length > 1}
+            onCancel={() => {
+              setPreviewSex(baby.sex);
+              setEditing(false);
+            }}
+          />
         </div>
       </main>
     );
   }
 
-  const pet = activePet(state);
-  const view = pet ? viewPet(pet, totalPoints(state)) : null;
+  const pet = activePet(data);
+  const petView = pet ? viewPet(pet, totalPoints(data)) : null;
 
   return (
-    <main className="g-page">
+    <main className={`g-page ${theme}`}>
       <header className="g-topbar">
-        <h1>{TITLES[tab]}</h1>
+        <h1>{tab === "records" ? recordTitle(view) : TITLES[tab]}</h1>
+        {tab === "records" && <RecordsHeader view={view} onBack={() => setView("hub")} />}
       </header>
 
       <div className="g-shell">
-        {tab === "home" && view && (
+        {tab === "home" && petView && (
           <Home
-            state={state}
-            view={view}
-            care={state.care[view.pet.id] ?? {}}
+            baby={baby}
+            babies={state.babies}
+            data={data}
+            view={petView}
+            care={data.care[petView.pet.id] ?? {}}
             onCare={doCare}
             onGo={setTab}
-            onEditProfile={() => setEditing(true)}
+            onRecord={openRecord}
+            onQuick={logInstant}
+            onEditProfile={() => {
+              setPreviewSex(baby.sex);
+              setEditing(true);
+            }}
+            onAddBaby={() => {
+              setPreviewSex(null);
+              setAdding(true);
+            }}
+            onSwitchBaby={(id) => saveState({ ...snapshot(), current: id })}
           />
         )}
-        {tab === "pets" && <PetsPage state={state} onAdopt={takeIn} onSetActive={setActive} />}
-        {tab === "learn" && <Learn state={state} onDo={doTask} onToggleMilestone={toggleMilestone} />}
-        {tab === "health" && <Health state={state} onAdd={addMeasure} onToggleVaccine={toggleVaccine} />}
+        {tab === "pets" && <PetsPage data={data} sex={baby.sex} onAdopt={takeIn} onSetActive={setActive} />}
+        {tab === "learn" && <Learn baby={baby} data={data} onDo={doTask} onToggleMilestone={toggleMilestone} />}
+        {tab === "records" && (
+          <RecordsPage
+            baby={baby}
+            data={data}
+            view={view}
+            onView={setView}
+            onInstant={logInstant}
+            onUndo={deleteEvent}
+            onSaveGrowth={saveGrowth}
+            onSaveTemp={saveTemp}
+            onTagEvent={tagEvent}
+            onDeleteEvent={deleteEvent}
+            onPickMeal={pickMeal}
+            onToggleVaccine={toggleVaccine}
+          />
+        )}
       </div>
 
       <nav className="g-tabs" aria-label="主导航">
@@ -160,7 +281,10 @@ export function GrowApp() {
             <button
               key={t.id}
               type="button"
-              onClick={() => setTab(t.id)}
+              onClick={() => {
+                setTab(t.id);
+                if (t.id === "records") setView("hub");
+              }}
               className={tab === t.id ? "on" : ""}
               aria-current={tab === t.id ? "page" : undefined}
             >

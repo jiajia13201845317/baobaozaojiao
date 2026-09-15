@@ -2,10 +2,12 @@
 
 import { useMemo } from "react";
 import {
+  METRIC_SHORT,
   METRIC_UNIT,
   type Metric,
   type Sex,
   bandCurve,
+  correctedMonths,
   monthsBetween,
   valueAtZ,
 } from "@/lib/grow/growth";
@@ -27,19 +29,23 @@ export function GrowthCurve({
   sex,
   birthday,
   points,
+  pretermWeeks = null,
 }: {
   metric: Metric;
   sex: Sex;
   birthday: string;
   points: Point[];
+  /** 4.7 — plot a preterm baby against corrected age, not the calendar. */
+  pretermWeeks?: number | null;
 }) {
   const chart = useMemo(() => {
+    const age = (date?: string) => correctedMonths(monthsBetween(birthday, date), pretermWeeks);
     const mine = points
-      .map((p) => ({ month: monthsBetween(birthday, p.date), value: p.value }))
+      .map((p) => ({ month: age(p.date), value: p.value }))
       .filter((p) => Number.isFinite(p.month) && p.month >= 0 && p.month <= WHO_MAX_MONTH)
       .sort((a, b) => a.month - b.month);
 
-    const now = monthsBetween(birthday);
+    const now = age();
     // The reference data stops at 36 months, so the window has to stay inside
     // it even when the child is older — otherwise from would run past to and
     // every band would come back empty.
@@ -100,11 +106,11 @@ export function GrowthCurve({
       nowX: now >= from && now <= to ? x(now) : null,
       medianNow: valueAtZ(metric, sex, Math.min(WHO_MAX_MONTH, now), 0),
     };
-  }, [metric, sex, birthday, points]);
+  }, [metric, sex, birthday, points, pretermWeeks]);
 
   return (
     <figure className="grow-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${metric === "height" ? "身长身高" : "体重"}生长曲线`}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${METRIC_SHORT[metric]}生长曲线`}>
         <path d={chart.outer} className="curve-outer" />
         <path d={chart.band} className="curve-band" />
         {chart.yTicks.map((v) => (

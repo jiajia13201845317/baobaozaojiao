@@ -11,10 +11,11 @@ import {
   type SeriesId,
   creaturesOf,
   seriesById,
+  themedPetArt,
   viewPet,
 } from "@/lib/grow/pets";
 import {
-  type GrowState,
+  type BabyData,
   activePet,
   ownedCreatures,
   revealedCreatures,
@@ -23,21 +24,23 @@ import {
 } from "@/lib/grow/store";
 
 export function PetsPage({
-  state,
+  data,
+  sex,
   onAdopt,
   onSetActive,
 }: {
-  state: GrowState;
+  data: BabyData;
+  sex: "boy" | "girl";
   onAdopt: (series: SeriesId, cost: number) => void;
   onSetActive: (id: string) => void;
 }) {
-  const total = totalPoints(state);
-  const spendable = spendablePoints(state);
-  const owned = ownedCreatures(state);
-  const active = activePet(state);
+  const total = totalPoints(data);
+  const spendable = spendablePoints(data);
+  const owned = ownedCreatures(data);
+  const active = activePet(data);
   const [confirm, setConfirm] = useState<SeriesId | null>(null);
 
-  const revealed = revealedCreatures(state);
+  const revealed = revealedCreatures(data);
   const nothingAffordable = SERIES.every((s) => {
     const pool = creaturesOf(s.id);
     return pool.every((c) => owned.includes(c.id)) || spendable < s.cost;
@@ -51,7 +54,7 @@ export function PetsPage({
           宠物图鉴
         </h1>
         <p className="g-hero-sub">
-          已领养 {state.pets.length} 只，破壳 {revealed.size} 只，一共 {CREATURES.length} 只
+          已领养 {data.pets.length} 只，破壳 {revealed.size} 只，一共 {CREATURES.length} 只
         </p>
       </header>
 
@@ -61,7 +64,7 @@ export function PetsPage({
           <span className="g-count">点一下换出场</span>
         </div>
         <div className="mine-row">
-          {state.pets.map((p) => {
+          {data.pets.map((p) => {
             const v = viewPet(p, total);
             return (
               <button
@@ -72,7 +75,7 @@ export function PetsPage({
                 onClick={() => onSetActive(p.id)}
                 aria-pressed={active?.id === p.id}
               >
-                <Image src={v.art} alt={v.name} width={224} height={224} />
+                <Image src={themedPetArt(v.art, sex)} alt={v.name} width={224} height={224} />
                 <span className="mine-name">{v.name}</span>
                 <span className="mine-lv" style={{ background: v.series.color }}>
                   Lv{v.level.lv}
@@ -156,7 +159,7 @@ export function PetsPage({
                     <Image src={`/art/pet/${c.id}.webp`} alt={c.name} width={224} height={224} />
                   ) : (
                     <Image
-                      src={LEVELS[0]!.art!}
+                      src={themedPetArt(LEVELS[0]!.art!, sex)}
                       alt={incubating ? "孵化中" : "还没领养"}
                       width={224}
                       height={224}
@@ -175,6 +178,7 @@ export function PetsPage({
       {confirm && (
         <AdoptSheet
           series={confirm}
+          sex={sex}
           spendable={spendable}
           onClose={() => setConfirm(null)}
           onConfirm={() => {
@@ -190,11 +194,13 @@ export function PetsPage({
 
 function AdoptSheet({
   series,
+  sex,
   spendable,
   onClose,
   onConfirm,
 }: {
   series: SeriesId;
+  sex: "boy" | "girl";
   spendable: number;
   onClose: () => void;
   onConfirm: () => void;
@@ -205,7 +211,7 @@ function AdoptSheet({
       <button type="button" className="g-sheet-back" aria-label="关掉" onClick={onClose} />
       <div className="g-sheet">
         <div className="adopt-egg" style={{ background: s.tint }}>
-          <Image src={LEVELS[0]!.art!} alt="一颗蛋" width={224} height={224} />
+          <Image src={themedPetArt(LEVELS[0]!.art!, sex)} alt="一颗蛋" width={224} height={224} />
         </div>
         <h3 className="g-h2 text-center">领一颗{s.name}的蛋</h3>
         <p className="g-body text-center">

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Bath, ChevronRight, Cookie, Gamepad2 } from "lucide-react";
 import { POINTS } from "@/lib/grow/pet";
-import { CARES, type CareId, type PetView, meterOf } from "@/lib/grow/pets";
+import { CARES, type CareId, type PetView, meterOf, themedPetArt } from "@/lib/grow/pets";
 import type { CareState } from "@/lib/grow/pets";
 
 const ICONS: Record<CareId, typeof Cookie> = { food: Cookie, play: Gamepad2, bath: Bath };
@@ -15,6 +15,7 @@ const ICONS: Record<CareId, typeof Cookie> = { food: Cookie, play: Gamepad2, bat
  */
 export function PetCard({
   view,
+  sex,
   care,
   spendable,
   collected,
@@ -23,6 +24,7 @@ export function PetCard({
   onOpenPets,
 }: {
   view: PetView;
+  sex: "boy" | "girl";
   care: CareState;
   spendable: number;
   collected: number;
@@ -68,7 +70,7 @@ export function PetCard({
       <div className="pet-window" style={{ background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` }}>
         <span className="pet-window-glow" style={{ background: view.series.color }} />
         <div className="pet-figure">
-          <Image src={view.art} alt={view.name} width={448} height={448} priority />
+          <Image src={themedPetArt(view.art, sex)} alt={view.name} width={448} height={448} priority />
         </div>
         {party && (
           <div className="pet-confetti" aria-hidden>

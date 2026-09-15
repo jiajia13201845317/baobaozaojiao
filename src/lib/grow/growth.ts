@@ -1,4 +1,6 @@
 import {
+  WHO_HEAD_BOYS,
+  WHO_HEAD_GIRLS,
   WHO_HEIGHT_BOYS,
   WHO_HEIGHT_GIRLS,
   WHO_MAX_MONTH,
@@ -8,19 +10,28 @@ import {
 } from "./who-data";
 
 export type Sex = "boy" | "girl";
-export type Metric = "height" | "weight";
+export type Metric = "height" | "weight" | "head";
 
-export const METRIC_LABEL: Record<Metric, string> = { height: "身长/身高", weight: "体重" };
-export const METRIC_UNIT: Record<Metric, string> = { height: "cm", weight: "kg" };
+export const METRICS: Metric[] = ["height", "weight", "head"];
+
+export const METRIC_LABEL: Record<Metric, string> = {
+  height: "身长/身高",
+  weight: "体重",
+  head: "头围",
+};
+export const METRIC_SHORT: Record<Metric, string> = { height: "身高", weight: "体重", head: "头围" };
+export const METRIC_UNIT: Record<Metric, string> = { height: "cm", weight: "kg", head: "cm" };
 
 /** Plausible entry range, wide enough for any 0-3 year old, tight enough to catch a typo. */
 export const METRIC_RANGE: Record<Metric, { min: number; max: number; step: number }> = {
   height: { min: 40, max: 120, step: 0.1 },
   weight: { min: 1.5, max: 30, step: 0.1 },
+  head: { min: 30, max: 60, step: 0.1 },
 };
 
 function table(metric: Metric, sex: Sex): readonly Lms[] {
   if (metric === "weight") return sex === "boy" ? WHO_WEIGHT_BOYS : WHO_WEIGHT_GIRLS;
+  if (metric === "head") return sex === "boy" ? WHO_HEAD_BOYS : WHO_HEAD_GIRLS;
   return sex === "boy" ? WHO_HEIGHT_BOYS : WHO_HEIGHT_GIRLS;
 }
 
@@ -90,6 +101,16 @@ export function monthsBetween(birthday: string, at: Date | string = new Date()) 
   if (Number.isNaN(born.getTime()) || Number.isNaN(now.getTime())) return 0;
   const days = (now.getTime() - born.getTime()) / 86400000;
   return Math.max(0, days / 30.4375);
+}
+
+/**
+ * 4.7 矫正月龄. Term is 40 weeks, so a baby born at 32 weeks is eight weeks
+ * behind the calendar. WHO's standards describe term infants, so comparing a
+ * preterm baby on chronological age reads as a shortfall that is not one.
+ */
+export function correctedMonths(months: number, pretermWeeks: number | null) {
+  if (pretermWeeks == null || pretermWeeks >= 40) return months;
+  return Math.max(0, months - ((40 - pretermWeeks) * 7) / 30.4375);
 }
 
 export function ageLabel(months: number) {

@@ -65,20 +65,84 @@ function cutout(data, width, height) {
   }
 }
 
+function rgbToHsl(r, g, b) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const light = (max + min) / 2;
+  if (max === min) return [0, 0, light];
+  const d = max - min;
+  const sat = light > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let hue;
+  if (max === r) hue = (g - b) / d + (g < b ? 6 : 0);
+  else if (max === g) hue = (b - r) / d + 2;
+  else hue = (r - g) / d + 4;
+  return [(hue * 60) % 360, sat, light];
+}
+
+function hslToRgb(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = l - c / 2;
+  let rgb;
+  if (h < 60) rgb = [c, x, 0];
+  else if (h < 120) rgb = [x, c, 0];
+  else if (h < 180) rgb = [0, c, x];
+  else if (h < 240) rgb = [0, x, c];
+  else if (h < 300) rgb = [x, 0, c];
+  else rgb = [c, 0, x];
+  return rgb.map((v) => Math.round((v + m) * 255));
+}
+
+/**
+ * The 蛋仔 is a girl's egg too, and one render is cheaper than two.
+ *
+ * Rotating only the mint hues to pink keeps the parts that carry the
+ * character: the eyes stay black, the cream shell spots stay cream, the blush
+ * stays blush. Anything already outside the green-cyan band, or too dark or
+ * too grey to be body colour, is left alone.
+ */
+function mintToPink(data) {
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] === 0) continue;
+    const [h, s, l] = rgbToHsl(data[i], data[i + 1], data[i + 2]);
+    if (h < 105 || h > 205 || s < 0.08 || l < 0.18) continue;
+    const [r, g, b] = hslToRgb(338, Math.min(0.72, Math.max(0.24, s * 1.12)), l);
+    data[i] = r;
+    data[i + 1] = g;
+    data[i + 2] = b;
+  }
+}
+
 async function emit(input, name) {
   const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   cutout(data, info.width, info.height);
-  await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
+  const trimmed = await sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } })
     .png()
     .toBuffer()
     .then((buf) =>
       sharp(buf)
         .trim({ threshold: 8 })
         .resize(SIZE, SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .webp({ quality: 86, alphaQuality: 90, effort: 6 })
-        .toFile(`${OUT}/${name}.webp`),
+        .png()
+        .toBuffer(),
     );
+
+  await sharp(trimmed).webp({ quality: 86, alphaQuality: 90, effort: 6 }).toFile(`${OUT}/${name}.webp`);
   console.log(`${name}.webp`);
+
+  // Only the shared incubation stages get a themed pair; a revealed creature
+  // already carries its own element colour.
+  if (name.startsWith("egg-")) {
+    const pink = await sharp(trimmed).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    mintToPink(pink.data);
+    await sharp(pink.data, { raw: { width: pink.info.width, height: pink.info.height, channels: 4 } })
+      .webp({ quality: 86, alphaQuality: 90, effort: 6 })
+      .toFile(`${OUT}/${name}-pink.webp`);
+    console.log(`${name}-pink.webp`);
+  }
 }
 
 await mkdir(OUT, { recursive: true });

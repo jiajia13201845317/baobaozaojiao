@@ -3,7 +3,8 @@
 Source (downloaded, not redistributed as spreadsheets):
   weight-for-age   wfa-<sex>-zscore-expanded-tables.xlsx
   length/height-for-age  lhfa-<sex>-zscore-expanded-tables.xlsx
-Both are daily tables carrying the LMS parameters. We keep one row per month
+  head-circumference-for-age  hcfa-<sex>-zscore-expanded-tables.xlsx
+All are daily tables carrying the LMS parameters. We keep one row per month
 from 0 to 36, which is all a 1-3 year old app needs, and derive every
 percentile at runtime from L, M and S.
 """
@@ -46,6 +47,7 @@ data = {}
 for sex in ("boys", "girls"):
     data[("weight", sex)] = lms_by_month(SRC / f"wfa-{sex}.xlsx")
     data[("height", sex)] = lms_by_month(SRC / f"lhfa-{sex}.xlsx")
+    data[("head", sex)] = lms_by_month(SRC / f"hcfa-{sex}.xlsx")
 
 # sanity check against the published month tables
 checks = [
@@ -63,6 +65,14 @@ checks = [
     (("weight", "girls"), 36, 13.9),
     (("weight", "boys"), 18, 10.9),
     (("height", "boys"), 18, 82.3),
+    (("head", "boys"), 0, 34.5),
+    (("head", "girls"), 0, 33.9),
+    (("head", "boys"), 12, 46.1),
+    (("head", "girls"), 12, 44.9),
+    (("head", "boys"), 24, 48.3),
+    (("head", "girls"), 24, 47.2),
+    (("head", "boys"), 36, 49.5),
+    (("head", "girls"), 36, 48.5),
 ]
 for key, month, expected in checks:
     median = data[key][month][1]
@@ -97,6 +107,14 @@ export const WHO_HEIGHT_BOYS: readonly Lms[] = [
 
 export const WHO_HEIGHT_GIRLS: readonly Lms[] = [
 {fmt(data[("height", "girls")])}
+];
+
+export const WHO_HEAD_BOYS: readonly Lms[] = [
+{fmt(data[("head", "boys")])}
+];
+
+export const WHO_HEAD_GIRLS: readonly Lms[] = [
+{fmt(data[("head", "girls")])}
 ];
 
 export const WHO_MAX_MONTH = {MAX_MONTH};

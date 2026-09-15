@@ -5,7 +5,8 @@ import { Check, Info } from "lucide-react";
 import { ageLabel, monthsBetween } from "@/lib/grow/growth";
 import { POINTS, streakOf } from "@/lib/grow/pet";
 import {
-  type GrowState,
+  type Baby,
+  type BabyData,
   activeDays,
   doneToday,
   pointBreakdown,
@@ -34,32 +35,33 @@ function greeting(hour = new Date().getHours()) {
 }
 
 export function Learn({
-  state,
+  baby,
+  data,
   onDo,
   onToggleMilestone,
 }: {
-  state: GrowState;
+  baby: Baby;
+  data: BabyData;
   onDo: (taskId: string) => void;
   onToggleMilestone: (id: string) => void;
 }) {
-  const profile = state.profile!;
-  const months = monthsBetween(profile.birthday);
+  const months = monthsBetween(baby.birthday);
   const stage = stageForMonths(months);
   const today = dateKey();
   const todays = tasksForDay(stage, dayIndexOf());
-  const done = doneToday(state, today);
-  const streak = streakOf(activeDays(state), today);
+  const done = doneToday(data, today);
+  const streak = streakOf(activeDays(data), today);
   const [filter, setFilter] = useState<Dimension | "all">("all");
   const [openPoints, setOpenPoints] = useState(false);
 
   const library = filter === "all" ? stage.tasks : stage.tasks.filter((t) => t.dim === filter);
-  const lines = pointBreakdown(state);
+  const lines = pointBreakdown(data);
 
   return (
     <div className="g-scroll">
       <header className="g-hero">
         <h1 className="g-hero-title">
-          {greeting()}，{profile.name} 👋
+          {greeting()}，{baby.name} 👋
         </h1>
         <p className="g-hero-sub">
           {stage.quarters} · {stage.name} · {ageLabel(months)}
@@ -91,7 +93,7 @@ export function Learn({
           <i>今日积分</i>
         </div>
         <div className="g-card stat-tile">
-          <b>{taskCount(state)}</b>
+          <b>{taskCount(data)}</b>
           <i>累计任务</i>
         </div>
         <div className="g-card stat-tile">
@@ -179,7 +181,7 @@ export function Learn({
         </p>
         <ul className="milestone-list">
           {stage.milestones.map((m) => {
-            const ok = state.milestones.includes(m.id);
+            const ok = data.milestones.includes(m.id);
             return (
               <li key={m.id}>
                 <button
@@ -240,7 +242,7 @@ export function Learn({
       <section className="g-card">
         <button type="button" className="points-head" onClick={() => setOpenPoints((v) => !v)} aria-expanded={openPoints}>
           <div>
-            <h2 className="g-h2 mb-0">累计 {totalPoints(state)} · 可用 {spendablePoints(state)}</h2>
+            <h2 className="g-h2 mb-0">累计 {totalPoints(data)} · 可用 {spendablePoints(data)}</h2>
             <p className="g-sub">{openPoints ? "收起明细" : "看看分是怎么来的"}</p>
           </div>
           <Info className="size-5 shrink-0 opacity-40" />
@@ -258,7 +260,7 @@ export function Learn({
               <li className="points-spent">
                 <span className="points-label">领养和照顾花掉</span>
                 <span className="points-detail">只扣可用，不扣累计</span>
-                <span className="points-value">-{state.spent}</span>
+                <span className="points-value">-{data.spent}</span>
               </li>
             </ul>
             <p className="g-note">

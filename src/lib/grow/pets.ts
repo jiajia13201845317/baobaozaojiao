@@ -92,6 +92,15 @@ export const LEVELS: Level[] = [
 
 export const REVEAL_LV = 4;
 
+/**
+ * The incubation stages are the one piece of art every baby shares, so they
+ * follow the baby's theme. A revealed creature already carries its element
+ * colour and is left alone.
+ */
+export function themedPetArt(art: string, sex: "boy" | "girl") {
+  return sex === "girl" && /^\/art\/pet\/egg-[123]\.webp$/.test(art) ? art.replace(".webp", "-pink.webp") : art;
+}
+
 export type OwnedPet = {
   id: string;
   creature: string;
