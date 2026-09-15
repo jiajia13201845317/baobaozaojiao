@@ -1042,7 +1042,17 @@ try {
     page.evaluate(() => {
       const el = document.querySelector(".pet-look");
       const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-      return { x: Number(getComputedStyle(el).getPropertyValue("--look-x")), dx: m.e, rot: Math.atan2(m.b, m.a) };
+      /* Where the head ends up, which is the only part of this anyone sees.
+       * The origin is at the feet, so most of the movement comes out of the
+       * rotation rather than the translation, and reporting the translation
+       * alone badly understates it. The head sits at the top of the box. */
+      const h = el.getBoundingClientRect().height || 1;
+      return {
+        x: Number(getComputedStyle(el).getPropertyValue("--look-x")),
+        dx: m.e,
+        rot: Math.atan2(m.b, m.a),
+        head: m.c * -0.96 * h + m.e,
+      };
     });
 
   await open(seedFor(15, { ...spendy, care: careDays(0) }));
@@ -1060,7 +1070,16 @@ try {
   const rightward = await look();
   check("the pet turns towards the pointer", leftward.x < -0.5 && rightward.x > 0.5, JSON.stringify({ leftward, rightward }));
   check("and the turn reaches the transform", leftward.dx < -1 && rightward.dx > 1, JSON.stringify({ leftward, rightward }));
-  check("it leans rather than lurches", Math.abs(rightward.dx) < 9 && Math.abs(rightward.rot) < 0.1, JSON.stringify(rightward));
+  /*
+   * A lower bound, because the first version of this passed every check above
+   * while being invisible: two degrees and five pixels on a 448px creature is
+   * a number changing in the DOM and nothing happening on screen, which is
+   * the same bug as not having built it. The head has to cross a distance a
+   * person would notice between looking one way and the other.
+   */
+  const swing = Math.abs(rightward.head - leftward.head);
+  check("the turn is big enough to see", swing > 40, JSON.stringify({ swing, leftward, rightward }));
+  check("but it leans rather than lurches", swing < 160 && Math.abs(rightward.rot) < 0.18, JSON.stringify({ swing, rightward }));
 
   /* On a phone there is no pointer at all, so the resting gaze has to be the
    * thing the line is describing. The 喂食 button is the leftmost of the

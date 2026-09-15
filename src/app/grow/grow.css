@@ -699,13 +699,23 @@
 }
 
 /*
- * The gaze. Deliberately small — this is a head turning, not the pet walking
- * over — and the transition is what makes it a turn at all, since the hook
- * only ever writes two numbers.
+ * The gaze.
+ *
+ * This started at 2.4deg and 5px, which on a 448px creature is about one
+ * percent of it — the numbers in the DOM were changing and nothing on screen
+ * was. Since the complaint was precisely that it claims to be watching you
+ * and visibly is not, too subtle to notice is the same bug as not
+ * implemented, and the working version has to be big enough to read at a
+ * glance on a phone.
+ *
+ * Rotation does most of the work because the origin is at the feet, so a few
+ * degrees swing the head a long way while the toes stay put — which is how a
+ * body leans. The translate is a top-up so the lean carries the whole
+ * creature rather than just pivoting it.
  */
 .pet-look {
-  transform: translate(calc(var(--look-x, 0) * 5px), calc(var(--look-y, 0) * 2px))
-    rotate(calc(var(--look-x, 0) * 2.4deg));
+  transform: translate(calc(var(--look-x, 0) * 14px), calc(var(--look-y, 0) * 7px))
+    rotate(calc(var(--look-x, 0) * 6deg));
   transition: transform 0.26s ease-out;
 }
 
