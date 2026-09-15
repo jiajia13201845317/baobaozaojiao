@@ -699,6 +699,20 @@
   box-shadow: 0 3px 0 var(--lip);
 }
 
+/* A tail pointing back up at the pet, so the pill reads as the pet talking
+ * rather than as a caption underneath it. */
+.pet-say::before {
+  content: "";
+  position: absolute;
+  top: -0.3rem;
+  left: 50%;
+  height: 0.55rem;
+  width: 0.55rem;
+  border-radius: 0.14rem 0.5rem 0.14rem 0.14rem;
+  background: rgba(255, 255, 255, 0.94);
+  transform: translateX(-50%) rotate(45deg);
+}
+
 .pet-card.is-party .pet-figure {
   animation: cheer 0.6s ease-in-out 3;
 }
@@ -4245,11 +4259,11 @@
   position: absolute;
   bottom: 0.35rem;
   left: 50%;
-  width: 5.2rem;
-  height: 0.7rem;
+  width: 4.6rem;
+  height: 0.6rem;
   border-radius: 999px;
-  background: rgba(43, 52, 80, 0.16);
-  filter: blur(3px);
+  background: rgba(43, 52, 80, 0.1);
+  filter: blur(4px);
   transform: translateX(-50%);
   transition: width 0.2s, opacity 0.2s;
 }
@@ -4379,6 +4393,16 @@
 
 /* ---------- particles ---------- */
 
+/*
+ * Every particle is a rendered prop from `public/art/prop/`, not a CSS shape.
+ *
+ * The first version drew them geometrically — crumbs were 5px brown squares,
+ * bubbles were 9px ringed circles, hearts were a clip-path path() at 8px. Next
+ * to a glossy 3D blind-box dinosaur they read as dust and scratches, and that
+ * mismatch in rendering quality was the whole of why the card looked cheap.
+ * See `scripts/build-props.mjs`.
+ */
+
 .pet-bits {
   position: absolute;
   inset: 0;
@@ -4389,74 +4413,105 @@
   position: absolute;
   left: 50%;
   display: block;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  /*
+   * Without this the pale props vanish. A bubble is translucent white and a
+   * heart is light pink; both were disappearing into the creature's body on
+   * the way past it and into the window's own light background after.
+   */
+  filter: drop-shadow(0 1px 2px rgba(53, 50, 86, 0.28));
 }
 
-/* Crumbs, falling from the mouth. Roughly — mouth height differs across the
+/*
+ * Crumbs fall from the mouth. Roughly — mouth height differs across the
  * twenty-one creatures, so this is the middle of that spread rather than any
- * one of them. */
+ * one of them.
+ */
 .bits-eat i {
-  top: 44%;
-  width: 0.3rem;
-  height: 0.3rem;
-  border-radius: 0.1rem;
-  background: #d8973c;
-  animation: crumb 0.75s ease-in calc(var(--i) * 130ms) infinite both;
+  top: 42%;
+  width: 0.62rem;
+  height: 0.62rem;
+  background-image: url("/art/prop/crumb.webp");
+  animation: crumb 0.8s ease-in calc(var(--i) * 140ms) infinite both;
 }
 
+/*
+ * Narrow on purpose — crumbs come from the mouth, so a wide spread would read
+ * as the pet exploding rather than eating. They do need to fall far enough to
+ * clear the belly, or they look like flecks stuck to it.
+ */
 @keyframes crumb {
-  0% { opacity: 0; transform: translate(calc(var(--i) * 6px - 15px), 0) rotate(0); }
-  25% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--i) * 9px - 22px), 34px) rotate(180deg); }
-}
-
-/* Hearts, rising. */
-.bits-play i {
-  top: 44%;
-  width: 0.5rem;
-  height: 0.5rem;
-  background: var(--c-pink);
-  clip-path: path("M4 7.5 C1 5.5 0 4 0 2.6 A2.6 2.6 0 0 1 4 1.2 A2.6 2.6 0 0 1 8 2.6 C8 4 7 5.5 4 7.5 Z");
-  animation: heart-up 1.3s ease-out calc(var(--i) * 180ms) infinite both;
-}
-
-@keyframes heart-up {
-  0% { opacity: 0; transform: translate(calc(var(--i) * 11px - 28px), 10px) scale(0.5); }
+  0% { opacity: 0; transform: translate(calc(var(--i) * 12px - 24px), -4px) rotate(0) scale(0.55); }
   20% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--i) * 15px - 38px), -52px) scale(1.2); }
+  100% { opacity: 0; transform: translate(calc(var(--i) * 16px - 32px), 62px) rotate(220deg) scale(1); }
 }
 
-/* Bubbles, drifting up and popping. */
+/* Hearts rise and drift apart. */
+.bits-play i {
+  top: 50%;
+  width: 1.35rem;
+  height: 1.23rem;
+  background-image: url("/art/prop/heart.webp");
+  animation: heart-up 1.5s ease-out calc(var(--i) * 200ms) infinite both;
+}
+
+/*
+ * Spread wide enough to leave the silhouette. Kept tight to the middle, the
+ * hearts and bubbles landed on the pet's chest and read as stickers stuck to
+ * it rather than as anything floating in the air around it.
+ */
+@keyframes heart-up {
+  0% { opacity: 0; transform: translate(calc(var(--i) * 30px - 75px), 18px) scale(0.3) rotate(-14deg); }
+  20% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--i) * 38px - 95px), -78px) scale(1.05) rotate(14deg); }
+}
+
+/* Broken off the arithmetic row so six hearts do not rise in formation. */
+.bits-play i:nth-child(2n) { top: 58%; }
+.bits-play i:nth-child(3n) { top: 44%; }
+
+/* Bubbles drift up and swell slightly before they go. */
 .bits-bath i {
-  top: 60%;
-  width: 0.55rem;
-  height: 0.55rem;
-  border: 2px solid rgba(255, 255, 255, 0.95);
-  border-radius: 999px;
-  background: rgba(174, 216, 240, 0.5);
-  animation: bubble-up 1.5s ease-out calc(var(--i) * 170ms) infinite both;
+  top: 66%;
+  width: 1.2rem;
+  height: 1.21rem;
+  background-image: url("/art/prop/bubble.webp");
+  animation: bubble-up 1.8s ease-out calc(var(--i) * 170ms) infinite both;
 }
 
 @keyframes bubble-up {
-  0% { opacity: 0; transform: translate(calc(var(--i) * 13px - 39px), 14px) scale(0.4); }
-  25% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--i) * 17px - 51px), -60px) scale(1.25); }
+  0% { opacity: 0; transform: translate(calc(var(--i) * 28px - 84px), 22px) scale(0.25); }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--i) * 34px - 102px), -92px) scale(1.15); }
 }
 
+.bits-bath i:nth-child(2n) { top: 74%; }
+.bits-bath i:nth-child(3n) { top: 58%; }
+
+/*
+ * Kept as type. A 3D "Z" would have to be a letterform rather than an object,
+ * and a rendered one looks like a logo sitting on the pet's head — the six
+ * props are all things, and z is not one.
+ */
 .bits-zzz i {
-  top: 30%;
-  font-size: 0.85rem;
+  top: 26%;
+  font-size: 1rem;
   font-weight: 900;
   font-style: normal;
   line-height: 1;
-  color: var(--ink-mute);
-  animation: zzz 1.8s ease-out calc(var(--i) * 420ms) infinite both;
+  color: #8f97c9;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: zzz 1.9s ease-out calc(var(--i) * 440ms) infinite both;
 }
 
 @keyframes zzz {
-  0% { opacity: 0; transform: translate(14px, 8px) scale(0.6) rotate(-8deg); }
-  30% { opacity: 0.9; }
-  100% { opacity: 0; transform: translate(40px, -26px) scale(1.25) rotate(12deg); }
+  0% { opacity: 0; transform: translate(16px, 10px) scale(0.55) rotate(-10deg); }
+  30% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(46px, -30px) scale(1.3) rotate(14deg); }
 }
 
 /* ---------- what it wants ---------- */
@@ -4518,112 +4573,127 @@
  *
  * So the expression is carried by everything around the face instead, which
  * is both cheap and uniform: the grade of the image, the light in the window,
- * and one symbol placed above the head, where every one of the 24 images has
- * empty space. A grey cloud over a smiling dinosaur still reads as miserable
+ * and one prop placed above the head, where every one of the 24 images has
+ * empty space. A rain cloud over a smiling dinosaur still reads as miserable
  * — the weather wins over the face.
  */
 
 .pet-window { transition: background 0.5s; }
 
-.mood-happy .pet-figure img { filter: saturate(1.1) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
-.mood-flat .pet-figure img { filter: saturate(0.88) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
+.mood-happy .pet-figure img { filter: saturate(1.12) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
+.mood-flat .pet-figure img { filter: saturate(0.92) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
 
+/*
+ * Only lightly drained. The first pass pulled saturation to 0.45, which did
+ * read as low — but as ill rather than wistful, an olive-grey creature that
+ * looked like something had gone wrong with it. The mood is already carried by
+ * the cloud, the slump and the dusk light, so the grade only has to take the
+ * shine off. A cute pet sulking should still be cute.
+ */
 .mood-down .pet-figure img {
-  filter: saturate(0.45) brightness(0.93) contrast(0.96) drop-shadow(0 5px 7px rgba(43, 52, 80, 0.2));
+  filter: saturate(0.76) brightness(0.97) drop-shadow(0 5px 8px rgba(64, 62, 106, 0.18));
 }
 
 .mood-sleepy .pet-figure img {
-  filter: saturate(0.7) brightness(0.88) drop-shadow(0 6px 9px rgba(43, 52, 80, 0.2));
+  filter: saturate(0.82) brightness(0.93) drop-shadow(0 6px 9px rgba(64, 62, 106, 0.2));
 }
 
-/* The light in the room goes with it: overcast when low, dusk when sleepy. */
-.mood-down.pet-window { background: linear-gradient(165deg, #e6e8ef, #f4f5f8 78%); }
-.mood-sleepy.pet-window { background: linear-gradient(165deg, #dfe1f2, #eceef8 78%); }
+/*
+ * The light in the room goes with it. Lavender dusk rather than the flat
+ * office grey it started as: still a saturated, pretty colour, so the card
+ * stays in the same world as the rest of the app instead of looking broken.
+ */
+.mood-down.pet-window { background: linear-gradient(165deg, #dfddf6, #f3f1fb 76%); }
+.mood-sleepy.pet-window { background: linear-gradient(165deg, #d4d4f0, #eae9f8 76%); }
+
 /*
  * The glow defaults to the baby's theme colour, so leaving it lit would put a
- * bright pink or green wash over the overcast window and undo it. Recoloured
+ * bright pink or green wash over the dusk window and undo it. Recoloured
  * rather than hidden, so the window keeps its depth.
  */
 .mood-down .pet-window-glow,
 .mood-sleepy .pet-window-glow {
-  background: #8f97b5;
-  opacity: 0.2;
+  background: #9b93d8;
+  opacity: 0.22;
 }
 
-/* ---------- the symbol above the head ---------- */
+/* ---------- the prop above the head ---------- */
 
+/*
+ * Nudged off centre. Several creatures wear something tall — the forest one
+ * has a sprout on its head — and a dead-centre cloud sat right on it. Over the
+ * shoulder still reads as the pet's own weather and clears every silhouette.
+ */
 .pet-weather {
   position: absolute;
-  top: 0.5rem;
+  top: 0.1rem;
   left: 50%;
   pointer-events: none;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% - 1.35rem));
 }
 
-/* A rain cloud. Three overlapping lobes, because a real cloud outline at this
- * size is indistinguishable from a rounded rectangle. */
 .pet-cloud {
-  position: relative;
   display: block;
-  width: 3.4rem;
-  height: 1.3rem;
-  border-radius: 999px;
-  background: #aeb5c9;
-  animation: cloud-drift 4.5s ease-in-out infinite;
+  width: 3.5rem;
+  height: 2.59rem;
+  background: url("/art/prop/cloud.webp") center / contain no-repeat;
+  filter: drop-shadow(0 4px 6px rgba(74, 70, 120, 0.18));
+  animation: cloud-drift 5s ease-in-out infinite;
 }
-
-.pet-cloud::before, .pet-cloud::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  background: #aeb5c9;
-}
-
-.pet-cloud::before { top: -0.5rem; left: 0.5rem; width: 1.3rem; height: 1.3rem; }
-.pet-cloud::after { top: -0.75rem; left: 1.4rem; width: 1.7rem; height: 1.7rem; }
 
 @keyframes cloud-drift {
-  0%, 100% { transform: translateX(-3px); }
-  50% { transform: translateX(3px); }
+  0%, 100% { transform: translateX(-4px) rotate(-1.5deg); }
+  50% { transform: translateX(4px) rotate(1.5deg); }
 }
 
 .pet-rain i {
   position: absolute;
-  top: 1.1rem;
-  left: calc(0.7rem + var(--i) * 1.1rem);
-  width: 0.14rem;
-  height: 0.5rem;
-  border-radius: 999px;
-  background: #9aa3bb;
-  animation: rain 1.1s linear calc(var(--i) * 320ms) infinite both;
+  top: 2.15rem;
+  left: calc(0.75rem + var(--i) * 1.05rem);
+  display: block;
+  width: 0.56rem;
+  height: 0.87rem;
+  background: url("/art/prop/drop.webp") center / contain no-repeat;
+  animation: rain 1.25s ease-in calc(var(--i) * 340ms) infinite both;
 }
 
 @keyframes rain {
-  0% { opacity: 0; transform: translateY(0) scaleY(0.5); }
-  30% { opacity: 0.85; }
-  100% { opacity: 0; transform: translateY(18px) scaleY(1); }
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(30px) scale(1); }
 }
 
 /* Sparkles, for the other end of the scale. */
-.pet-spark { display: block; width: 3.95rem; height: 1.3rem; }
+/* The sparkles have no tall silhouette to dodge, so they stay centred. */
+.pet-spark {
+  display: block;
+  width: 5.15rem;
+  height: 1.4rem;
+  margin-left: 0.8rem;
+}
 
 .pet-spark i {
   position: absolute;
-  top: 0.4rem;
-  left: calc(var(--i) * 1.5rem);
-  width: 0.45rem;
-  height: 0.45rem;
-  background: var(--c-yellow);
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
-  animation: spark 1.9s ease-in-out calc(var(--i) * 300ms) infinite both;
+  top: -0.15rem;
+  left: calc(var(--i) * 2.05rem);
+  display: block;
+  width: 1.05rem;
+  height: 1.13rem;
+  background: url("/art/prop/star.webp") center / contain no-repeat;
+  filter: drop-shadow(0 1px 2px rgba(53, 50, 86, 0.2));
+  animation: spark 2s ease-in-out calc(var(--i) * 320ms) infinite both;
 }
 
+/* Staggered vertically so three stars do not read as a level meter. */
+.pet-spark i:nth-child(2) { top: -0.7rem; }
+.pet-spark i:nth-child(3) { top: 0.25rem; }
+
 @keyframes spark {
-  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0); }
-  50% { opacity: 1; transform: scale(1.15) rotate(90deg); }
+  0%, 100% { opacity: 0; transform: scale(0.35) rotate(-20deg); }
+  50% { opacity: 1; transform: scale(1.05) rotate(25deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pet-cloud, .pet-rain i, .pet-spark i { animation: none !important; }
-  .pet-rain i, .pet-spark i { opacity: 0.8; }
+  .pet-rain i, .pet-spark i { opacity: 1; transform: none; }
 }
