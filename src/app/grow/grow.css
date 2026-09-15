@@ -635,11 +635,19 @@
 }
 
 .pet-window {
+  /*
+   * The art is square, so this is the figure's width as well as its height,
+   * and `--pet-top` is the gap above it. Feeding needs both to work out where
+   * the mouth is — see `.bits-eat` — so they live here rather than being
+   * written out twice and drifting apart at the tablet breakpoint.
+   */
+  --pet-h: 11.5rem;
+  --pet-top: 0.6rem;
   position: relative;
   overflow: hidden;
   border-radius: var(--r-lg);
   background: linear-gradient(160deg, var(--brand-tint), #ffffff 78%);
-  padding: 0.6rem 0 0.9rem;
+  padding: var(--pet-top) 0 0.9rem;
 }
 
 .pet-window-glow {
@@ -659,7 +667,7 @@
   position: relative;
   display: grid;
   width: 100%;
-  height: 11.5rem;
+  height: var(--pet-h);
   place-items: center;
   -webkit-tap-highlight-color: transparent;
   /* Every pose transforms from the feet, the way a standing creature moves. */
@@ -673,7 +681,7 @@
  */
 .pet-figure img {
   position: relative;
-  height: 11.5rem;
+  height: var(--pet-h);
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -2379,9 +2387,8 @@
     width: min(30rem, calc(100% - 1.4rem));
     bottom: 1.1rem;
   }
-  .pet-figure,
-  .pet-figure img {
-    height: 13.5rem;
+  .pet-window {
+    --pet-h: 13.5rem;
   }
   .book-grid {
     grid-template-columns: repeat(6, 1fr);
@@ -4374,12 +4381,12 @@
 @keyframes eat-body {
   0% { transform: translateY(0) scale(1, 1) rotate(0); }
   /* Leaning down towards what is being offered. */
-  14% { transform: translateY(3px) scale(1.015, 0.985) rotate(-1deg); }
-  20% { transform: translateY(6px) scale(1.05, 0.94) rotate(-1.5deg); }
-  27% { transform: translateY(-1px) scale(0.985, 1.025) rotate(0); }
-  44% { transform: translateY(2px) scale(1.015, 0.985) rotate(-1deg); }
-  50% { transform: translateY(5px) scale(1.04, 0.955) rotate(-1deg); }
-  57% { transform: translateY(-1px) scale(0.99, 1.02) rotate(0); }
+  22% { transform: translateY(3px) scale(1.015, 0.985) rotate(-1deg); }
+  30% { transform: translateY(6px) scale(1.05, 0.94) rotate(-1.5deg); }
+  37% { transform: translateY(-1px) scale(0.985, 1.025) rotate(0); }
+  54% { transform: translateY(2px) scale(1.015, 0.985) rotate(-1deg); }
+  60% { transform: translateY(5px) scale(1.04, 0.955) rotate(-1deg); }
+  67% { transform: translateY(-1px) scale(0.99, 1.02) rotate(0); }
   84% { transform: translateY(0) scale(1, 1) rotate(0); }
   /* The swallow: everything goes up and narrow, then drops back. */
   90% { transform: translateY(-5px) scale(0.95, 1.07) rotate(0); }
@@ -4394,7 +4401,7 @@
  */
 .act-eat img {
   transform-origin: 50% 88%;
-  animation: eat-chew 0.3s ease-in-out 0.52s 8 both;
+  animation: eat-chew 0.3s ease-in-out 0.85s 7 both;
 }
 
 @keyframes eat-chew {
@@ -4465,8 +4472,8 @@
  *
  * `--mouth-x` and `--mouth-y` come from the component, measured off the art
  * itself in `lib/grow/mouths.ts`. They are fractions of the image, and the
- * image is a known 11.5rem square centred in a window with 0.6rem of padding
- * above it, so they turn into the window's own coordinates exactly.
+ * image is a `--pet-h` square centred in a window with `--pet-top` above it,
+ * so they turn into the window's own coordinates exactly.
  *
  * Assuming the mouth was simply in the middle put the biscuit on the cheek:
  * every revealed creature is posed with its head turned, as much as 9.5% of
@@ -4474,8 +4481,8 @@
  * between the shortest face and the tallest.
  */
 .bits-eat {
-  --mx: calc(50% + (var(--mouth-x) - 0.5) * 11.5rem);
-  --my: calc(0.6rem + var(--mouth-y) * 11.5rem);
+  --mx: calc(50% + (var(--mouth-x) - 0.5) * var(--pet-h));
+  --my: calc(var(--pet-top) + var(--mouth-y) * var(--pet-h));
 }
 
 .bits-eat b {
@@ -4497,19 +4504,31 @@
  * taken away in two bites with chewing in between, the way a biscuit actually
  * disappears. It never travels back out of the mouth.
  */
+/*
+ * Starts level with the feet, not below the window. The first version began
+ * 122px under the mouth, which on a phone is past the bottom edge of a window
+ * that clips its overflow — so the biscuit spent most of its climb hidden and
+ * only became visible two frames from the mouth. Watched at speed that reads
+ * as the biscuit popping onto the pet's chest rather than being carried up,
+ * which is exactly the thing this animation exists to avoid.
+ *
+ * The climb also takes most of a second now. At 510ms it was over before the
+ * eye had followed it.
+ */
 @keyframes eat-food {
-  0% { opacity: 0; transform: translate(-1.5rem, 122px) rotate(-22deg) scale(0.66); }
-  7% { opacity: 1; }
-  17% { transform: translate(-0.15rem, 10px) rotate(-4deg) scale(1); }
-  20% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+  0% { opacity: 0; transform: translate(-1.6rem, 88px) rotate(-24deg) scale(0.62); }
+  3% { opacity: 1; }
+  14% { transform: translate(-1.1rem, 56px) rotate(-16deg) scale(0.8); }
+  26% { transform: translate(-0.2rem, 9px) rotate(-4deg) scale(1); }
+  30% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
   /* First bite, then held — bobbing slightly, because a biscuit pinned
    * perfectly still while the pet chews looks frozen rather than held. */
-  24% { transform: translate(0.06rem, 1px) rotate(7deg) scale(0.6); }
-  34% { transform: translate(0.02rem, 3px) rotate(2deg) scale(0.6); }
-  46% { transform: translate(0.06rem, 0) rotate(8deg) scale(0.6); }
+  34% { transform: translate(0.06rem, 1px) rotate(7deg) scale(0.6); }
+  45% { transform: translate(0.02rem, 3px) rotate(2deg) scale(0.6); }
+  56% { transform: translate(0.06rem, 0) rotate(8deg) scale(0.6); }
   /* Second bite: gone. */
-  51% { opacity: 1; transform: translate(0, 2px) rotate(14deg) scale(0.16); }
-  54% { opacity: 0; transform: translate(0, 2px) rotate(14deg) scale(0); }
+  61% { opacity: 1; transform: translate(0, 2px) rotate(14deg) scale(0.16); }
+  64% { opacity: 0; transform: translate(0, 2px) rotate(14deg) scale(0); }
   100% { opacity: 0; transform: translate(0, 2px) rotate(14deg) scale(0); }
 }
 
@@ -4522,18 +4541,18 @@
 .bits-eat i {
   top: var(--my);
   left: var(--mx);
-  width: 0.5rem;
-  height: 0.5rem;
-  margin: -0.25rem 0 0 -0.25rem;
+  width: 0.62rem;
+  height: 0.62rem;
+  margin: -0.31rem 0 0 -0.31rem;
   background-image: url("/art/prop/crumb.webp");
   animation: crumb-fly 0.5s ease-out 1 both;
 }
 
 /* nth-of-type, not nth-child: the biscuit is the first child. */
-.bits-eat i:nth-of-type(1) { --dx: -19px; animation-delay: 0.64s; }
-.bits-eat i:nth-of-type(2) { --dx: 15px; animation-delay: 0.71s; }
-.bits-eat i:nth-of-type(3) { --dx: -13px; animation-delay: 1.56s; }
-.bits-eat i:nth-of-type(4) { --dx: 21px; animation-delay: 1.63s; }
+.bits-eat i:nth-of-type(1) { --dx: -21px; animation-delay: 0.96s; }
+.bits-eat i:nth-of-type(2) { --dx: 17px; animation-delay: 1.04s; }
+.bits-eat i:nth-of-type(3) { --dx: -15px; animation-delay: 1.83s; }
+.bits-eat i:nth-of-type(4) { --dx: 23px; animation-delay: 1.91s; }
 
 @keyframes crumb-fly {
   0% { opacity: 0; transform: translate(0, 0) rotate(0) scale(0.35); }

@@ -889,13 +889,20 @@ try {
           if (el) {
             const w = win.getBoundingClientRect();
             const r = el.getBoundingClientRect();
-            const my = Number(getComputedStyle(document.querySelector(".bits-eat")).getPropertyValue("--mouth-y"));
+            // Read the figure's geometry rather than assuming it: it grows at
+            // the tablet breakpoint, and a test that hardcodes the phone size
+            // would pass while the food landed on the pet's chest.
+            const cs = getComputedStyle(document.querySelector(".bits-eat"));
+            const top = parseFloat(cs.getPropertyValue("--pet-top"));
+            const h = parseFloat(cs.getPropertyValue("--pet-h"));
+            const my = Number(cs.getPropertyValue("--mouth-y"));
             out.push({
               t: Math.round(performance.now() - t0),
               y: (r.top + r.height / 2 - w.top) / w.height,
-              mouth: (0.6 * rem + my * 11.5 * rem) / w.height,
+              mouth: ((top + my * h) * rem) / w.height,
               size: Math.round(r.width),
               op: Number(getComputedStyle(el).opacity),
+              inside: r.top >= w.top - 1 && r.bottom <= w.bottom + 1,
               crumbs: [...document.querySelectorAll(".bits-eat i")].filter((e) => Number(getComputedStyle(e).opacity) > 0.15).length,
             });
           }
@@ -911,6 +918,17 @@ try {
   check("the food starts below the pet", trace[0].y - mouth > 0.3, JSON.stringify(trace[0]));
   const arrives = trace.findIndex((f) => Math.abs(f.y - mouth) < 0.04);
   check("the food travels up to the mouth", arrives > 0, JSON.stringify(trace.map((f) => Number((f.y - mouth).toFixed(2)))));
+
+  /*
+   * The climb has to be watchable, not merely happen. It first began below a
+   * window that clips its overflow, so the biscuit spent the whole rise hidden
+   * and appeared two frames from the mouth — which at speed looks like it
+   * popped onto the pet's chest, the exact impression this replaced.
+   */
+  const shown = trace.filter((f) => f.op > 0.5 && f.size > 0);
+  const climbing = shown.filter((f) => f.y - f.mouth > 0.03);
+  check("the climb is on screen, not clipped away", shown.every((f) => f.inside), JSON.stringify(shown.filter((f) => !f.inside).slice(0, 3)));
+  check("the climb lasts long enough to follow", climbing.length > 12, `${climbing.length} visible frames climbing`);
 
   // The whole point of the rewrite. Food that comes back down past the chin is
   // food being dropped, which is what the first version looked like.
