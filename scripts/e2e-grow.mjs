@@ -788,6 +788,99 @@ try {
   check("care costs spendable points", data.spent === 246, `${data.spent}`);
   check("care never touches the records", Object.keys(data.done).length === 40);
 
+  // --- moods and acts ---------------------------------------------------
+  // Everything here is behaviour, so it is asserted through what the pose and
+  // the words actually are at a given moment rather than through the store.
+  const DAY = 86400000;
+  const careDays = (ago) => ({
+    p1: { food: { at: Date.now() - ago * DAY, value: 100 }, play: { at: Date.now() - ago * DAY, value: 100 }, bath: { at: Date.now() - ago * DAY, value: 100 } },
+  });
+  const pet = () =>
+    page.evaluate(() => ({
+      mood: document.querySelector(".pet-mood")?.innerText.trim() ?? null,
+      line: document.querySelector(".pet-say")?.innerText.trim() ?? null,
+      act: [...(document.querySelector(".pet-figure")?.classList ?? [])].find((c) => c.startsWith("act-")) ?? null,
+      window: [...(document.querySelector(".pet-window")?.classList ?? [])].find((c) => c.startsWith("mood-")) ?? null,
+      cloud: !!document.querySelector(".pet-cloud"),
+      bits: document.querySelector(".pet-bits")?.className ?? null,
+      want: document.querySelector(".pet-meter.is-want .pet-meter-top span")?.innerText.trim() ?? null,
+    }));
+  const spendy = { done: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [dateKey(-i), ["s1-m1", "s1-f1"]])) };
+
+  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await waitBody(page, "今日早教");
+  let now = await pet();
+  check("a well-kept pet is happy", now.mood === "开心" && now.window === "mood-happy", JSON.stringify(now));
+  check("a happy pet gets no rain cloud", !now.cloud, JSON.stringify(now));
+
+  // Nine days of drift puts every meter on its floor, which is as low as the
+  // model ever goes — there is no sick or dying state below this.
+  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await waitBody(page, "今日早教");
+  now = await pet();
+  check("a neglected pet looks down", now.mood === "低落" && now.window === "mood-down", JSON.stringify(now));
+  check("a down pet gets the rain cloud", now.cloud, JSON.stringify(now));
+  check("a down pet is never called sick", !/生病|病了|危险|快死|活不/.test(await bodyText(page)), (await bodyText(page)).slice(0, 700));
+  check("the meters are stated as cosmetic only", await hasText(page, "不影响进化"), (await bodyText(page)).slice(0, 900));
+  check("neglect is framed as missing you", await hasText(page, "它只是想你了"), (await bodyText(page)).slice(0, 900));
+
+  // The point of the split-out score: one empty meter has to read as low even
+  // while the other two are full, or the pet says it is hungry and looks fine.
+  await open(seedFor(15, { ...spendy, care: { p1: { food: { at: Date.now() - 9 * DAY, value: 100 }, play: { at: Date.now(), value: 100 }, bath: { at: Date.now(), value: 100 } } } }));
+  await waitBody(page, "今日早教");
+  now = await pet();
+  check("one empty meter is enough to look down", now.mood === "低落", JSON.stringify(now));
+  check("the thinnest meter is marked", now.want === "饱腹", JSON.stringify(now));
+  check("a hungry pet says so", /肚子|嘴巴|你的手/.test(now.line), JSON.stringify(now));
+
+  // Feeding has to read as a win immediately, even from the floor.
+  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await waitBody(page, "今日早教");
+  await clickSel(page, ".pet-actions .g-chip-btn", 0);
+  await new Promise((r) => setTimeout(r, 300));
+  now = await pet();
+  check("feeding plays an eating pose", now.act === "act-eat", JSON.stringify(now));
+  check("feeding drops crumbs", now.bits === "pet-bits bits-eat", JSON.stringify(now));
+  check("feeding makes it happy on the spot", now.mood === "开心", JSON.stringify(now));
+  check("the rain stops when it is fed", !now.cloud, JSON.stringify(now));
+  check("feeding says something about eating", /吃|嚼/.test(now.line), JSON.stringify(now));
+
+  await clickSel(page, ".pet-actions .g-chip-btn", 1);
+  await new Promise((r) => setTimeout(r, 300));
+  now = await pet();
+  check("playing plays its own pose", now.act === "act-play" && now.bits === "pet-bits bits-play", JSON.stringify(now));
+
+  await clickSel(page, ".pet-actions .g-chip-btn", 2);
+  await new Promise((r) => setTimeout(r, 300));
+  now = await pet();
+  check("bathing plays its own pose", now.act === "act-bath" && now.bits === "pet-bits bits-bath", JSON.stringify(now));
+
+  // Poking is the first thing anyone tries and the one interaction that is free.
+  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await waitBody(page, "今日早教");
+  const beforePoke = await readData();
+  await clickSel(page, ".pet-figure");
+  await new Promise((r) => setTimeout(r, 200));
+  now = await pet();
+  check("the pet answers a poke", now.act === "act-poke", JSON.stringify(now));
+  check("poking costs nothing", (await readData()).spent === beforePoke.spent);
+  check("a poked low pet is not scolded back", !/别碰|讨厌|烦/.test(now.line), JSON.stringify(now));
+
+  // It has to move on its own, which is the whole difference between a pet and
+  // a picture. Sampled over a window rather than at one instant, because the
+  // idle timer is deliberately randomised.
+  const poses = await page.evaluate(async () => {
+    const seen = new Set();
+    for (let i = 0; i < 45; i++) {
+      await new Promise((r) => setTimeout(r, 400));
+      const f = document.querySelector(".pet-figure");
+      seen.add([...f.classList].find((c) => c.startsWith("act-")));
+    }
+    return [...seen];
+  });
+  check("the pet acts on its own without being touched", poses.length > 1, poses.join(", "));
+  check("unprompted acts come from the idle set", poses.every((p) => ["act-idle", "act-stretch", "act-hop", "act-wiggle", "act-peek", "act-spin", "act-yawn"].includes(p)), poses.join(", "));
+
   // --- levelling and the reveal ----------------------------------------
   const bigDays = Object.fromEntries(Array.from({ length: 120 }, (_, i) => [dateKey(-i), ["s1-m1", "s1-f1"]]));
   await open(seedFor(15, { done: bigDays }));
