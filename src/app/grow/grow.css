@@ -4430,22 +4430,26 @@
  * one of them.
  */
 .bits-eat i {
-  top: 40%;
-  width: 0.85rem;
-  height: 0.85rem;
+  top: 38%;
+  width: 1.05rem;
+  height: 1.05rem;
   background-image: url("/art/prop/crumb.webp");
-  animation: crumb 0.95s ease-in calc(var(--i) * 150ms) infinite both;
+  animation: crumb 1.1s ease-in calc(var(--i) * 170ms) infinite both;
 }
 
 /*
- * Narrow on purpose — crumbs come from the mouth, so a wide spread would read
- * as the pet exploding rather than eating. They do need to fall far enough to
- * clear the belly, or they look like flecks stuck to it.
+ * Narrow at the mouth, then fanning out and down past the feet. The first
+ * version dropped them about 60px, which left them sitting on the creature's
+ * cheek and chest: a tan cookie on a mid-green body has almost no contrast,
+ * and two separate reviewers read them as "small yellow stars" rather than as
+ * food. Falling clear of the silhouette puts them against the pale floor of
+ * the window, where they actually look like crumbs.
  */
 @keyframes crumb {
-  0% { opacity: 0; transform: translate(calc(var(--i) * 12px - 24px), -4px) rotate(0) scale(0.55); }
-  20% { opacity: 1; }
-  100% { opacity: 0; transform: translate(calc(var(--i) * 16px - 32px), 62px) rotate(220deg) scale(1); }
+  0% { opacity: 0; transform: translate(calc(var(--i) * 11px - 22px), -6px) rotate(0) scale(0.5); }
+  18% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--i) * 24px - 48px), 104px) rotate(260deg) scale(1.05); }
 }
 
 /* Hearts rise and drift apart. */
@@ -4619,23 +4623,26 @@
 
 /* ---------- the prop above the head ---------- */
 
-/*
- * Nudged off centre. Several creatures wear something tall — the forest one
- * has a sprout on its head — and a dead-centre cloud sat right on it. Over the
- * shoulder still reads as the pet's own weather and clears every silhouette.
- */
 .pet-weather {
   position: absolute;
   top: 0.1rem;
   left: 50%;
   pointer-events: none;
-  transform: translateX(calc(-50% - 1.35rem));
+  transform: translateX(-50%);
 }
 
+/*
+ * The cloud is nudged off centre, and the offset lives here rather than on the
+ * container so the sparkles do not inherit a shift they then have to cancel.
+ * Several creatures wear something tall — the forest one has a sprout on its
+ * head — and a dead-centre cloud sat right on it. Over the shoulder still
+ * reads as the pet's own weather and clears every silhouette.
+ */
 .pet-cloud {
   display: block;
   width: 3.5rem;
   height: 2.59rem;
+  margin-left: -1.35rem;
   background: url("/art/prop/cloud.webp") center / contain no-repeat;
   filter: drop-shadow(0 4px 6px rgba(74, 70, 120, 0.18));
   animation: cloud-drift 5s ease-in-out infinite;
@@ -4649,7 +4656,7 @@
 .pet-rain i {
   position: absolute;
   top: 2.15rem;
-  left: calc(0.75rem + var(--i) * 1.05rem);
+  left: calc(-0.6rem + var(--i) * 1.05rem);
   display: block;
   width: 0.56rem;
   height: 0.87rem;
@@ -4664,29 +4671,34 @@
 }
 
 /* Sparkles, for the other end of the scale. */
-/* The sparkles have no tall silhouette to dodge, so they stay centred. */
+/* Centred and wide, so the stars land either side of the head rather than
+ * bunching up on one shoulder. */
 .pet-spark {
   display: block;
-  width: 5.15rem;
+  width: 6.4rem;
   height: 1.4rem;
-  margin-left: 0.8rem;
 }
 
+/*
+ * Every offset here stays positive. The window clips its overflow, so a star
+ * placed above the top of `.pet-weather` was getting sliced in half by the
+ * edge of the card.
+ */
 .pet-spark i {
   position: absolute;
-  top: -0.15rem;
-  left: calc(var(--i) * 2.05rem);
+  top: 0.5rem;
+  left: calc(var(--i) * 2.65rem);
   display: block;
-  width: 1.05rem;
-  height: 1.13rem;
+  width: 1.15rem;
+  height: 1.24rem;
   background: url("/art/prop/star.webp") center / contain no-repeat;
   filter: drop-shadow(0 1px 2px rgba(53, 50, 86, 0.2));
   animation: spark 2s ease-in-out calc(var(--i) * 320ms) infinite both;
 }
 
 /* Staggered vertically so three stars do not read as a level meter. */
-.pet-spark i:nth-child(2) { top: -0.7rem; }
-.pet-spark i:nth-child(3) { top: 0.25rem; }
+.pet-spark i:nth-child(2) { top: 0.05rem; }
+.pet-spark i:nth-child(3) { top: 0.95rem; }
 
 @keyframes spark {
   0%, 100% { opacity: 0; transform: scale(0.35) rotate(-20deg); }
