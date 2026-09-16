@@ -174,7 +174,7 @@ export function PetCard({
           </span>
         </button>
 
-        <Weather mood={mood.id} act={act} />
+        <Weather act={act} />
         <Bits act={act} mouth={mouthOf(themedPetArt(view.art, sex))} />
 
         {party && (
@@ -261,11 +261,23 @@ export function PetCard({
  * Hidden while an act is playing — the act is already saying something more
  * specific, and a rain cloud over a pet mid-hop is just noise.
  */
-function Weather({ mood, act }: { mood: string; act: string }) {
-  if (act !== "idle") return null;
-  if (mood === "down") {
-    return (
-      <span className="pet-weather" aria-hidden>
+/**
+ * The weather over its head.
+ *
+ * Both sets stay mounted and the stylesheet fades whichever the mood calls
+ * for — which is why the mood is not a prop here any more; the class the card
+ * already carries picks the winner. Returning `null` for the wrong mood meant
+ * the cloud blinked out of existence on a single frame while the face, the
+ * light and the grade were all still easing across, and the cloud is the
+ * largest, highest-contrast thing on the card, so that one pop was most of
+ * what made a change of mood read as a state machine flipping rather than a
+ * creature cheering up.
+ */
+function Weather({ act }: { act: string }) {
+  const busy = act !== "idle" ? " is-busy" : "";
+  return (
+    <>
+      <span className={`pet-weather pet-weather-rain${busy}`} aria-hidden>
         <span className="pet-cloud" />
         <span className="pet-rain">
           {[0, 1, 2].map((i) => (
@@ -273,18 +285,13 @@ function Weather({ mood, act }: { mood: string; act: string }) {
           ))}
         </span>
       </span>
-    );
-  }
-  if (mood === "happy") {
-    return (
-      <span className="pet-weather pet-spark" aria-hidden>
+      <span className={`pet-weather pet-spark pet-weather-spark${busy}`} aria-hidden>
         {[0, 1, 2].map((i) => (
           <i key={i} style={{ ["--i" as string]: i }} />
         ))}
       </span>
-    );
-  }
-  return null;
+    </>
+  );
 }
 
 /**

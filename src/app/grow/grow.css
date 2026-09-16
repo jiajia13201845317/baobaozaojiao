@@ -4915,6 +4915,24 @@
   left: 50%;
   pointer-events: none;
   transform: translateX(-50%);
+  /* Both sets are always here; the mood picks one and they cross-fade. Slower
+   * on the way out than in, so the new weather is arriving before the old has
+   * quite finished leaving. */
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.mood-down .pet-weather-rain,
+.mood-happy .pet-weather-spark {
+  opacity: 1;
+  transition: opacity 0.5s ease 0.15s;
+}
+
+/* Out of the way while it is busy doing something, since the act has its own
+ * particles and two sets at once is a mess. */
+.pet-weather.is-busy {
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 /*

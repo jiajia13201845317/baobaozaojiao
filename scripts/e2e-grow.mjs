@@ -842,7 +842,10 @@ try {
       line: document.querySelector(".pet-say")?.innerText.trim() ?? null,
       act: [...(document.querySelector(".pet-pose")?.classList ?? [])].find((c) => c.startsWith("act-")) ?? null,
       window: [...(document.querySelector(".pet-window")?.classList ?? [])].find((c) => c.startsWith("mood-")) ?? null,
-      cloud: !!document.querySelector(".pet-cloud"),
+      /* Visible, not merely present: both weather sets stay mounted now so
+       * they can cross-fade, so asking whether the node exists would always
+       * say yes. */
+      cloud: Number(getComputedStyle(document.querySelector(".pet-weather-rain")).opacity) > 0.5,
       bits: document.querySelector(".pet-bits")?.className ?? null,
       want: document.querySelector(".pet-meter.is-want .pet-meter-top span")?.innerText.trim() ?? null,
       /* Which expression is actually on screen, rather than which one the
