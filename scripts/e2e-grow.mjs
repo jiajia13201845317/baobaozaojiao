@@ -149,7 +149,6 @@ await page.evaluateOnNewDocument(() => {
   const wanted = new Real();
   wanted.setHours(hour, 30, 0, 0);
   const skew = wanted.getTime() - Real.now();
-  // eslint-disable-next-line no-global-assign
   Date = class extends Real {
     constructor(...args) {
       super(...(args.length ? args : [Real.now() + skew]));
@@ -1121,6 +1120,9 @@ try {
         /* Sideways shear, which is what does most of the leaning now. */
         shear: Math.atan2(-m.c, m.d),
         head: m.c * -0.96 * h + m.e,
+        /* And the same sum taken at the ground instead of at the head. The
+         * origin sits at 96% of the box, so the soles are a touch below it. */
+        toes: m.c * 0.04 * h + m.e,
       };
     });
 
@@ -1138,7 +1140,10 @@ try {
   await new Promise((r) => setTimeout(r, 500));
   const rightward = await look();
   check("the pet turns towards the pointer", leftward.x < -0.5 && rightward.x > 0.5, JSON.stringify({ leftward, rightward }));
-  check("and the turn reaches the transform", leftward.dx < -1 && rightward.dx > 1, JSON.stringify({ leftward, rightward }));
+  /* Reaching the rendered transform, and in the right direction: the head
+   * goes the way the pointer went. Measured at the head rather than from the
+   * translate, which is deliberately zero now. */
+  check("and the turn reaches the transform", leftward.head < -8 && rightward.head > 8, JSON.stringify({ leftward, rightward }));
   /*
    * A lower bound, because the first version of this passed every check above
    * while being invisible: two degrees and five pixels on a 448px creature is
@@ -1160,6 +1165,18 @@ try {
   const deg = (rad) => Math.abs((rad * 180) / Math.PI);
   check("and it bends rather than tips over", deg(rightward.rot) < 3.5, JSON.stringify(rightward));
   check("the bend is what carries it", deg(rightward.shear) > deg(rightward.rot) * 1.5, JSON.stringify(rightward));
+  /*
+   * And it is anchored while it does it. There used to be a sideways
+   * translate in the lean, which shifts every row by the same amount — so the
+   * feet slid along the ground with the head and the whole creature skated
+   * rather than leaned. A lean has to pivot from whatever is touching the
+   * floor, so the soles may barely move however far the head goes.
+   */
+  check(
+    "and the feet stay planted while it leans",
+    Math.abs(rightward.toes) < 3 && Math.abs(leftward.toes) < 3,
+    JSON.stringify({ toes: [leftward.toes, rightward.toes], head: [leftward.head, rightward.head] }),
+  );
 
   /* On a phone there is no pointer at all, so the resting gaze has to be the
    * thing the line is describing. The 喂食 button is the leftmost of the

@@ -722,8 +722,17 @@
  * a touch of overshoot. Arriving all at once, in lockstep, is most of what
  * made this look mechanical.
  */
+/*
+ * No sideways translate, which is the difference between leaning and sliding.
+ * A translate moves every row by the same amount, feet included, so the
+ * creature skates along the ground while it leans and nothing is anchored.
+ * The shear and the rotation both leave the row at the transform origin
+ * exactly where it was, so with the origin down at the feet the toes stay
+ * put and everything above them is what moves. The only translate left is
+ * the small vertical one for looking up and down.
+ */
 .pet-look {
-  transform: translate(calc(var(--look-x, 0) * 7px), calc(var(--look-y, 0) * 5px))
+  transform: translateY(calc(var(--look-y, 0) * 4px))
     skewX(calc(var(--look-x, 0) * -4deg))
     rotate(calc(var(--look-x, 0) * 1.8deg));
   transition: transform 0.22s cubic-bezier(0.32, 0.72, 0.4, 1);

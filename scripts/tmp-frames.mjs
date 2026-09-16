@@ -44,8 +44,24 @@ const b = await puppeteer.launch({ executablePath: "/usr/bin/google-chrome", hea
 const page = await b.newPage();
 await page.setViewport({ width: 460, height: 1000, deviceScaleFactor: 1.6 });
 
+await page.evaluateOnNewDocument(() => {
+  const asked = new URLSearchParams(location.search).get("e2e-hour");
+  const hour = Number(asked);
+  if (asked === null || !Number.isFinite(hour)) return;
+  const Real = Date;
+  const wanted = new Real();
+  wanted.setHours(hour, 30, 0, 0);
+  const skew = wanted.getTime() - Real.now();
+  Date = class extends Real {
+    constructor(...args) { super(...(args.length ? args : [Real.now() + skew])); }
+    static now() { return Real.now() + skew; }
+  };
+  Date.UTC = Real.UTC;
+  Date.parse = Real.parse;
+});
+
 const load = async (ago) => {
-  await page.goto(`${BASE}/grow/`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${BASE}/grow/?e2e-hour=10`, { waitUntil: "domcontentloaded" });
   await page.evaluate((v) => localStorage.setItem("grow-state", v), JSON.stringify(seedFor(ago)));
   await page.reload({ waitUntil: "domcontentloaded" });
   await wait(2200);
