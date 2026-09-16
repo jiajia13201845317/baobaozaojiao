@@ -126,12 +126,13 @@ export function PetCard({
          * not answer a poke is the fastest way to stop feeling like a pet.
          * Free, so a child can do it as much as they like.
          *
-         * Three nested wrappers, because three things move the pet at once and
-         * a CSS animation and a style both writing `transform` to one element
-         * silently overwrite each other. Outside in: `pet-look` turns it
+         * Four nested wrappers, because four things move the pet at once and a
+         * CSS animation and a style both writing `transform` to one element
+         * silently overwrite each other. Outside in: `pet-look` leans the body
          * towards you, `pet-pose` runs the mood's posture and whatever act is
-         * playing, `pet-faces` works the jaw. The shadow stays outside all of
-         * them, on the ground, where a lean should not drag it.
+         * playing, `pet-lag` is the head arriving a moment after the body,
+         * `pet-faces` works the jaw. The shadow stays outside all of them, on
+         * the ground, where a lean should not drag it.
          */}
         <button
           ref={figureRef}
@@ -145,25 +146,29 @@ export function PetCard({
            * where `bits-eat` aims the biscuit. */}
           <span ref={lookRef} className={`pet-look${act === "eat" ? " is-fixed" : ""}`}>
             <span className={`pet-pose act-${act}`}>
-              {/*
-               * Every face is in the DOM at once and the stylesheet fades
-               * between them, so a mood change is the same creature changing
-               * expression rather than one image being swapped for another
-               * that has not loaded yet.
-               */}
-              <span className="pet-faces">
-                {FACES.map((face) => (
-                  <Image
-                    key={face.key}
-                    className={`pet-face pet-face-${face.key}`}
-                    src={moodPetArt(view.art, sex, face.mood)}
-                    alt={face.mood === "happy" ? view.name : ""}
-                    aria-hidden={face.mood !== "happy"}
-                    width={448}
-                    height={448}
-                    priority={face.mood === "happy"}
-                  />
-                ))}
+              {/* Nothing of its own to say: it carries the same lean as the
+               * body, a beat later, which is the whole of looking heavy. */}
+              <span className="pet-lag">
+                {/*
+                 * Every face is in the DOM at once and the stylesheet fades
+                 * between them, so a mood change is the same creature changing
+                 * expression rather than one image being swapped for another
+                 * that has not loaded yet.
+                 */}
+                <span className="pet-faces">
+                  {FACES.map((face) => (
+                    <Image
+                      key={face.key}
+                      className={`pet-face pet-face-${face.key}`}
+                      src={moodPetArt(view.art, sex, face.mood)}
+                      alt={face.mood === "happy" ? view.name : ""}
+                      aria-hidden={face.mood !== "happy"}
+                      width={448}
+                      height={448}
+                      priority={face.mood === "happy"}
+                    />
+                  ))}
+                </span>
               </span>
             </span>
           </span>

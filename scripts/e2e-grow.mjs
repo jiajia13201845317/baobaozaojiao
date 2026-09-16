@@ -124,8 +124,47 @@ page.on("console", (msg) => {
   if (msg.type() === "error") pageErrors.push(msg.text());
 });
 
-async function open(seed) {
-  await page.goto(`${BASE}/grow/`, { waitUntil: "domcontentloaded" });
+/**
+ * Move the page's clock to a chosen hour of today, without stopping it.
+ *
+ * The pet goes 困了 between 21:00 and 07:00 whatever its meters say, which is
+ * the right behaviour and made six of the mood checks fail every night: a
+ * suite that only agrees with itself during office hours is not a suite.
+ *
+ * Offset rather than frozen, which matters more than it sounds. Pinning
+ * `Date.now()` to a constant hung the page outright — plenty of ordinary code
+ * waits for time to pass, and if it never does, that wait never ends. So the
+ * clock still runs at one second per second and is simply shifted, and only
+ * the no-argument forms are touched, so a date built from a stored timestamp
+ * still parses normally.
+ *
+ * Gated on a query parameter and installed before the page's own scripts, so
+ * it applies to exactly the navigations that ask for it and no others.
+ */
+await page.evaluateOnNewDocument(() => {
+  const asked = new URLSearchParams(location.search).get("e2e-hour");
+  const hour = Number(asked);
+  if (asked === null || !Number.isFinite(hour)) return;
+  const Real = Date;
+  const wanted = new Real();
+  wanted.setHours(hour, 30, 0, 0);
+  const skew = wanted.getTime() - Real.now();
+  // eslint-disable-next-line no-global-assign
+  Date = class extends Real {
+    constructor(...args) {
+      super(...(args.length ? args : [Real.now() + skew]));
+    }
+    static now() {
+      return Real.now() + skew;
+    }
+  };
+  Date.UTC = Real.UTC;
+  Date.parse = Real.parse;
+});
+
+async function open(seed, hour = null) {
+  const at = hour === null ? "" : `?e2e-hour=${hour}`;
+  await page.goto(`${BASE}/grow/${at}`, { waitUntil: "domcontentloaded" });
   await page.evaluate((v) => {
     if (v === null) localStorage.removeItem("grow-state");
     else localStorage.setItem("grow-state", v);
@@ -792,6 +831,9 @@ try {
   // Everything here is behaviour, so it is asserted through what the pose and
   // the words actually are at a given moment rather than through the store.
   const DAY = 86400000;
+  /* Mid-morning, so the mood under test is the one the meters asked for and
+   * not 困了. The one sleepy check below asks for a night hour instead. */
+  const DAY_HOUR = 10;
   const careDays = (ago) => ({
     p1: { food: { at: Date.now() - ago * DAY, value: 100 }, play: { at: Date.now() - ago * DAY, value: 100 }, bath: { at: Date.now() - ago * DAY, value: 100 } },
   });
@@ -814,7 +856,7 @@ try {
     }));
   const spendy = { done: Object.fromEntries(Array.from({ length: 40 }, (_, i) => [dateKey(-i), ["s1-m1", "s1-f1"]])) };
 
-  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await open(seedFor(15, { ...spendy, care: careDays(0) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   let now = await pet();
   check("a well-kept pet is happy", now.mood === "开心" && now.window === "mood-happy", JSON.stringify(now));
@@ -823,7 +865,7 @@ try {
 
   // Nine days of drift puts every meter on its floor, which is as low as the
   // model ever goes — there is no sick or dying state below this.
-  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   now = await pet();
   check("a neglected pet looks down", now.mood === "低落" && now.window === "mood-down", JSON.stringify(now));
@@ -839,9 +881,18 @@ try {
   check("the meters are stated as cosmetic only", await hasText(page, "不影响进化"), (await bodyText(page)).slice(0, 900));
   check("neglect is framed as missing you", await hasText(page, "它只是想你了"), (await bodyText(page)).slice(0, 900));
 
+  /* At night it is asleep whatever the meters say, and now that the clock can
+   * be pinned this is worth stating rather than depending on when the suite
+   * happens to run. It was the cause of these checks failing every evening. */
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), 23);
+  await waitBody(page, "今日早教");
+  now = await pet();
+  check("at night it is asleep instead", now.mood === "困了" && now.face === "forest-1-sleepy", JSON.stringify(now));
+  check("a sleeping pet is not rained on", !now.cloud, JSON.stringify(now));
+
   // The point of the split-out score: one empty meter has to read as low even
   // while the other two are full, or the pet says it is hungry and looks fine.
-  await open(seedFor(15, { ...spendy, care: { p1: { food: { at: Date.now() - 9 * DAY, value: 100 }, play: { at: Date.now(), value: 100 }, bath: { at: Date.now(), value: 100 } } } }));
+  await open(seedFor(15, { ...spendy, care: { p1: { food: { at: Date.now() - 9 * DAY, value: 100 }, play: { at: Date.now(), value: 100 }, bath: { at: Date.now(), value: 100 } } } }), DAY_HOUR);
   await waitBody(page, "今日早教");
   now = await pet();
   check("one empty meter is enough to look down", now.mood === "低落", JSON.stringify(now));
@@ -849,7 +900,7 @@ try {
   check("a hungry pet says so", /肚子|嘴巴|你的手/.test(now.line), JSON.stringify(now));
 
   // Feeding has to read as a win immediately, even from the floor.
-  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   await clickSel(page, ".pet-actions .g-chip-btn", 0);
   await new Promise((r) => setTimeout(r, 300));
@@ -883,7 +934,7 @@ try {
   // away in bites. The first version only rained crumbs out of the mouth,
   // which read as the pet dropping its food rather than eating it, so these
   // check the direction of travel as well as the fact that food exists.
-  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   /*
    * Traced frame by frame from inside the page rather than sampled at fixed
@@ -965,13 +1016,13 @@ try {
   // that has not been fed in a week is miserable however clean it is, while
   // one that is merely bored or grubby is only flat.
   const only = (low) => ({ p1: Object.fromEntries(["food", "play", "bath"].map((k) => [k, { at: Date.now() - (k === low ? 9 : 0) * DAY, value: 100 }])) });
-  await open(seedFor(15, { ...spendy, care: only("bath") }));
+  await open(seedFor(15, { ...spendy, care: only("bath") }), DAY_HOUR);
   await waitBody(page, "今日早教");
   now = await pet();
   check("being grubby alone is not misery", now.mood === "一般" && !now.cloud, JSON.stringify(now));
   check("but it is still the marked want", now.want === "干净", JSON.stringify(now));
 
-  await open(seedFor(15, { ...spendy, care: only("food") }));
+  await open(seedFor(15, { ...spendy, care: only("food") }), DAY_HOUR);
   await waitBody(page, "今日早教");
   now = await pet();
   check("hunger outranks the other two", now.mood === "低落", JSON.stringify(now));
@@ -991,6 +1042,11 @@ try {
       const el = document.querySelector(".pet-pose");
       let worst = 0;
       let at = "";
+      /* How far the resting posture tips the creature sideways, which is a
+       * separate failure from stretching it. A pose that holds a fixed
+       * rotation stands the pet permanently crooked, like a picture hung
+       * badly — 低落 used to hold six degrees and 困了 seven. */
+      let tip = 0;
       for (const t0 = Date.now(); Date.now() - t0 < span; ) {
         await new Promise((r) => requestAnimationFrame(r));
         const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
@@ -1003,23 +1059,25 @@ try {
           worst = off;
           at = `${[...el.classList].find((c) => c.startsWith("act-"))} sx=${sx.toFixed(3)} sy=${sy.toFixed(3)}`;
         }
+        tip = Math.max(tip, Math.abs((Math.atan2(m.b, m.a) * 180) / Math.PI));
       }
-      return { worst, at };
+      return { worst, at, tip };
     }, ms);
 
-  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   let warp = await worstAspect(2600);
   check("a low mood does not warp the render", warp.worst < 0.06, JSON.stringify(warp));
+  check("nor stand it permanently crooked", warp.tip < 4, JSON.stringify(warp));
 
-  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await open(seedFor(15, { ...spendy, care: careDays(0) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   warp = await worstAspect(2600);
   check("nor does the happy bounce", warp.worst < 0.06, JSON.stringify(warp));
 
   /* Two days of drift, so the meters are off full and the care buttons are
    * actually clickable. */
-  await open(seedFor(15, { ...spendy, care: careDays(2) }));
+  await open(seedFor(15, { ...spendy, care: careDays(2) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   for (const [i, name] of [
     [0, "feeding"],
@@ -1041,21 +1099,32 @@ try {
   const look = () =>
     page.evaluate(() => {
       const el = document.querySelector(".pet-look");
-      const m = new DOMMatrixReadOnly(getComputedStyle(el).transform);
-      /* Where the head ends up, which is the only part of this anyone sees.
-       * The origin is at the feet, so most of the movement comes out of the
-       * rotation rather than the translation, and reporting the translation
-       * alone badly understates it. The head sits at the top of the box. */
       const h = el.getBoundingClientRect().height || 1;
+      /*
+       * Where the head ends up, which is the only part of this anyone sees.
+       *
+       * Composed down the whole chain rather than read off one element,
+       * because the lean is deliberately spread over two of them — the body
+       * on `pet-look` and the head catching up on `pet-lag` — and either one
+       * on its own understates it. The origin is at the feet, so the head,
+       * which sits at the top of the box, is carried by the shear and the
+       * rotation far more than by the translation.
+       */
+      let m = new DOMMatrixReadOnly();
+      for (const sel of [".pet-look", ".pet-lag"]) {
+        m = m.multiply(new DOMMatrixReadOnly(getComputedStyle(document.querySelector(sel)).transform));
+      }
       return {
         x: Number(getComputedStyle(el).getPropertyValue("--look-x")),
         dx: m.e,
         rot: Math.atan2(m.b, m.a),
+        /* Sideways shear, which is what does most of the leaning now. */
+        shear: Math.atan2(-m.c, m.d),
         head: m.c * -0.96 * h + m.e,
       };
     });
 
-  await open(seedFor(15, { ...spendy, care: careDays(0) }));
+  await open(seedFor(15, { ...spendy, care: careDays(0) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   const box = await page.$eval(".pet-card", (el) => {
     const r = el.getBoundingClientRect();
@@ -1079,19 +1148,30 @@ try {
    */
   const swing = Math.abs(rightward.head - leftward.head);
   check("the turn is big enough to see", swing > 40, JSON.stringify({ swing, leftward, rightward }));
-  check("but it leans rather than lurches", swing < 160 && Math.abs(rightward.rot) < 0.18, JSON.stringify({ swing, rightward }));
+  check("but it leans rather than lurches", swing < 160, JSON.stringify({ swing, rightward }));
+  /*
+   * And it leans rather than tips. Rotating the whole sprite about its feet
+   * was what made the first visible version look like a photograph being
+   * turned: the silhouette went over as one rigid board and the toes swung
+   * with the head. The displacement has to come mostly from the shear, which
+   * keeps the feet flat and the face level, so the rotation is held down to a
+   * couple of degrees and most of the lean has to show up in the other term.
+   */
+  const deg = (rad) => Math.abs((rad * 180) / Math.PI);
+  check("and it bends rather than tips over", deg(rightward.rot) < 3.5, JSON.stringify(rightward));
+  check("the bend is what carries it", deg(rightward.shear) > deg(rightward.rot) * 1.5, JSON.stringify(rightward));
 
   /* On a phone there is no pointer at all, so the resting gaze has to be the
    * thing the line is describing. The 喂食 button is the leftmost of the
    * three, so a hungry pet must be facing left. */
-  await open(seedFor(15, { ...spendy, care: only("food") }));
+  await open(seedFor(15, { ...spendy, care: only("food") }), DAY_HOUR);
   await waitBody(page, "今日早教");
   await new Promise((r) => setTimeout(r, 600));
   const resting = await look();
   check("with no pointer it faces what it wants", resting.x < -0.2, JSON.stringify(resting));
 
   // Poking is the first thing anyone tries and the one interaction that is free.
-  await open(seedFor(15, { ...spendy, care: careDays(9) }));
+  await open(seedFor(15, { ...spendy, care: careDays(9) }), DAY_HOUR);
   await waitBody(page, "今日早教");
   const beforePoke = await readData();
   await clickSel(page, ".pet-figure");

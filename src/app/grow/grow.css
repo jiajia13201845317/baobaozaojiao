@@ -689,6 +689,7 @@
  */
 .pet-look,
 .pet-pose,
+.pet-lag,
 .pet-faces {
   position: relative;
   display: block;
@@ -699,24 +700,61 @@
 }
 
 /*
- * The gaze.
+ * The gaze, in two layers, because how it leans matters as much as whether.
  *
- * This started at 2.4deg and 5px, which on a 448px creature is about one
- * percent of it — the numbers in the DOM were changing and nothing on screen
- * was. Since the complaint was precisely that it claims to be watching you
- * and visibly is not, too subtle to notice is the same bug as not
- * implemented, and the working version has to be big enough to read at a
- * glance on a phone.
+ * It was one rotation, and the size went 2.4deg (invisible, so the same as
+ * not built) then 6deg (visible, and wrong). Rotating a whole sprite about
+ * its feet reads as a photograph being turned or a figurine tipping over:
+ * the silhouette tilts as one rigid board, the horizon of the eyes goes with
+ * it, and the toes swing. Nothing alive leans like that.
  *
- * Rotation does most of the work because the origin is at the feet, so a few
- * degrees swing the head a long way while the toes stay put — which is how a
- * body leans. The translate is a top-up so the lean carries the whole
- * creature rather than just pivoting it.
+ * A shear is much closer to the truth. `skewX` displaces each row in
+ * proportion to its height above the origin, so the feet stay flat on the
+ * ground, the belly goes a little, the head goes most, and — the part that
+ * sells it — horizontal things stay horizontal, so the face stays level
+ * instead of capsizing. That is a body bending rather than an object being
+ * rotated. A couple of degrees of real rotation on top keeps it from looking
+ * like a sheared decal.
+ *
+ * `pet-lag` is the same lean again, smaller and slower. Two nested
+ * transitions of different lengths are overlapping action for free: the body
+ * commits, the head is still catching up, and it settles a moment later with
+ * a touch of overshoot. Arriving all at once, in lockstep, is most of what
+ * made this look mechanical.
  */
 .pet-look {
-  transform: translate(calc(var(--look-x, 0) * 14px), calc(var(--look-y, 0) * 7px))
-    rotate(calc(var(--look-x, 0) * 6deg));
-  transition: transform 0.26s ease-out;
+  transform: translate(calc(var(--look-x, 0) * 7px), calc(var(--look-y, 0) * 5px))
+    skewX(calc(var(--look-x, 0) * -4deg))
+    rotate(calc(var(--look-x, 0) * 1.8deg));
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0.4, 1);
+}
+
+.pet-lag {
+  transform: skewX(calc(var(--look-x, 0) * -1.5deg)) rotate(calc(var(--look-x, 0) * 1deg));
+  /* Overshoots by a hair and comes back, which is what a head does when it
+   * stops turning. */
+  transition: transform 0.52s cubic-bezier(0.22, 1.4, 0.4, 1) 0.05s;
+}
+
+/*
+ * Eating looks down at the food and holds still for it.
+ *
+ * This class was already being set while `act-eat` runs, with a comment
+ * saying the pet watches its food — and no rule anywhere, so it did nothing.
+ * It needs to exist for a mechanical reason as well as a behavioural one:
+ * the biscuit is positioned at the mouth's measured coordinate, and a head
+ * that is off leaning at the pointer has taken its mouth with it, so the food
+ * arrives beside the face instead of in it.
+ */
+.pet-look.is-fixed {
+  /* The transform rather than the two variables, because the hook writes
+   * those to the inline style and would win. A small dip, so it is looking
+   * down at what it is being given. */
+  transform: translateY(3px);
+}
+
+.pet-look.is-fixed .pet-lag {
+  transform: none;
 }
 
 /* One drop shadow for the stack rather than one per face. */
@@ -737,7 +775,7 @@
   width: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.42s ease;
+  transition: opacity 0.6s ease;
 }
 
 /* 开心 and 舒服 share the grin each creature was drawn with. */
@@ -4374,30 +4412,59 @@
  * weight instead of as a warp.
  */
 
+/*
+ * A breath is not a sine wave. Air goes in quickly and comes out slowly, so
+ * the top of the cycle sits past the middle and the return takes longer than
+ * the rise. Even at this amplitude an ear-free eye notices the difference
+ * between that and something oscillating on a timer.
+ */
 @keyframes breathe {
   0%, 100% { transform: translateY(0) scale(1, 1); }
-  50% { transform: translateY(-5px) scale(1.012, 1.024); }
+  38% { transform: translateY(-5px) scale(1.012, 1.024); }
+  58% { transform: translateY(-4px) scale(1.014, 1.02); }
 }
 
-/* The landing stays inside the held-pose ceiling rather than the impact one:
- * this runs on a loop, so you see it as often as a posture. */
+/*
+ * A bounce, with the beats a bounce actually has: a dip to push off from, the
+ * rise, the landing, and a small second hop that does not make it all the way
+ * back up. It used to go up and come down in even halves, which is what makes
+ * a sprite look like it is being slid up and down a track rather than
+ * jumping. The squash still stays inside the held-pose ceiling rather than
+ * the impact one, since on a loop you see it as often as a posture.
+ */
 @keyframes bounce-idle {
   0%, 100% { transform: translateY(0) scale(1, 1); }
-  30% { transform: translateY(-12px) scale(0.985, 1.025); }
-  55% { transform: translateY(0) scale(1.022, 0.978); }
-  75% { transform: translateY(-4px) scale(0.995, 1.008); }
+  10% { transform: translateY(2px) scale(1.016, 0.984); }
+  32% { transform: translateY(-12px) scale(0.985, 1.025); }
+  48% { transform: translateY(-11px) scale(0.99, 1.016); }
+  62% { transform: translateY(0) scale(1.022, 0.978); }
+  78% { transform: translateY(-4px) scale(0.995, 1.008); }
+  90% { transform: translateY(0) scale(1.008, 0.992); }
 }
 
-/* Sunk and tilted. The slump is the translate and the rotate; the squash is
- * only there to stop it looking like the whole card was nudged. */
+/*
+ * Sunk. Not tilted — that is the change.
+ *
+ * This held a constant `rotate(-6deg)`, and its sleeping sibling a constant
+ * +7deg, so a low pet stood permanently canted to one side like a picture
+ * hung crooked. Worse, the lean stacked on top of it, so a sad pet looking
+ * your way reached thirteen degrees and read as falling over.
+ *
+ * Being down is vertical: it sits into its own weight, the volume spreads,
+ * and it breathes slowly. The sideways component is now a degree and a half
+ * of shear, which slouches rather than topples, and the drooping eyes and the
+ * rain cloud carry the rest.
+ */
 @keyframes droop {
-  0%, 100% { transform: translateY(9px) scale(1.022, 0.978) rotate(-6deg); }
-  50% { transform: translateY(11px) scale(1.026, 0.974) rotate(-7deg); }
+  0%, 100% { transform: translateY(9px) scale(1.022, 0.978) skewX(-1.5deg); }
+  46% { transform: translateY(12px) scale(1.026, 0.974) skewX(-2.2deg); }
 }
 
+/* Asleep, so it may loll — but three degrees, and it drifts rather than
+ * holding one fixed angle the way a tipped-over object would. */
 @keyframes doze {
-  0%, 100% { transform: translateY(8px) scale(1.02, 0.98) rotate(7deg); }
-  50% { transform: translateY(4px) scale(1.006, 0.994) rotate(7deg); }
+  0%, 100% { transform: translateY(8px) scale(1.02, 0.98) rotate(2.4deg) skewX(-1deg); }
+  50% { transform: translateY(4px) scale(1.006, 0.994) rotate(3.4deg) skewX(-1.6deg); }
 }
 
 /* ---------- unprompted idle acts ---------- */
@@ -4761,12 +4828,13 @@
   }
 
   /* The gaze is movement too, and the hook stops writing to it. */
-  .pet-look {
+  .pet-look,
+  .pet-lag {
     transition: none;
   }
 
-  .mood-down .act-idle { transform: translateY(6px) scale(1.02, 0.98) rotate(-3deg); }
-  .mood-sleepy .act-idle { transform: translateY(3px) scale(1.012, 0.988) rotate(4deg); }
+  .mood-down .act-idle { transform: translateY(6px) scale(1.02, 0.98) skewX(-1.5deg); }
+  .mood-sleepy .act-idle { transform: translateY(3px) scale(1.012, 0.988) rotate(2.4deg); }
   .pet-bits i { opacity: 1; }
 }
 
@@ -4781,7 +4849,18 @@
  * agreeing with the expression — so every value here is gentler than it was.
  */
 
-.pet-window { transition: background 0.5s; }
+/*
+ * Everything the mood touches eases, and not all at the same speed.
+ *
+ * A mood change used to land as one cut: the face crossed over while the
+ * grade, the light and the shadow all jumped, and a whole card changing on
+ * one frame looks like a state machine rather than a creature cheering up.
+ * The grade is the slowest of them, so the colour is still warming after the
+ * expression has arrived.
+ */
+.pet-window { transition: background 0.75s ease; }
+.pet-faces { transition: filter 0.9s ease; }
+.pet-shadow { transition: width 0.6s ease, opacity 0.6s ease; }
 
 .mood-happy .pet-faces { filter: saturate(1.1) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
 .mood-flat .pet-faces { filter: saturate(0.96) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
