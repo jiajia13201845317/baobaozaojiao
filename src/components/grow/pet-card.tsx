@@ -53,7 +53,6 @@ export function PetCard({
   // never fight over the same element.
   const { act, seed, play, pleased } = usePetAct(resting.id, !party);
   const mood = pleased ? MOODS.happy : resting;
-  const overcast = mood.id === "down" || mood.id === "sleepy";
 
   usePetLook({ card: cardRef, figure: figureRef, look: lookRef, want });
 
@@ -107,19 +106,26 @@ export function PetCard({
        * would give away which creature is inside — so it borrows the baby's own
        * theme and the 蛋仔 sits in matching light.
        *
-       * A low mood drops the series colour too and lets the stylesheet's
-       * overcast light through: the room going grey along with the pet is half
-       * of why the mood reads at a glance, and an inline colour would win over
-       * the rule that does it.
+       * The series colour stays put through a change of mood, and the dimming
+       * is done by a pane fading in over the top of it. Dropping the inline
+       * colour on a low mood was the other way round, and it could only ever
+       * be a cut: an inline style going away takes effect on the frame it goes
+       * away on, so the room changed colour in one step underneath a grade and
+       * an expression that were both still easing across.
        */}
       <div
         className={`pet-window mood-${mood.id}`}
-        style={view.revealed && !overcast ? { background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` } : undefined}
+        style={view.revealed ? { background: `linear-gradient(160deg, ${view.series.tint}, #ffffff 78%)` } : undefined}
       >
         <span
           className="pet-window-glow"
-          style={view.revealed && !overcast ? { background: view.series.color } : undefined}
+          style={view.revealed ? { background: view.series.color } : undefined}
         />
+        {/* The dusk light, on its own layer purely so it can fade. Two
+         * gradients cannot cross-fade into each other, so the low moods get a
+         * pane over the top whose opacity is what changes. It goes over the
+         * glow as well as the background, so the whole room dims together. */}
+        <span className="pet-dusk" aria-hidden />
 
         {/*
          * Tapping the pet is the first thing anyone tries, and a pet that does

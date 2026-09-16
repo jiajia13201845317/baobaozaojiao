@@ -97,6 +97,9 @@ await page.goto(`${BASE}/grow/?e2e-hour=10`, { waitUntil: "domcontentloaded" });
 await page.evaluate((v) => localStorage.setItem("grow-state", v), JSON.stringify(seed));
 await page.reload({ waitUntil: "domcontentloaded" });
 await wait(2600);
+// Chrome offers to translate a Chinese page and the bubble sits over the app.
+await page.keyboard.press("Escape");
+await wait(400);
 
 const state = async () =>
   page.evaluate(() => ({

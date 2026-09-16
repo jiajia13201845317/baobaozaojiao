@@ -661,6 +661,7 @@
   border-radius: 999px;
   opacity: 0.16;
   filter: blur(28px);
+  transition: opacity 0.75s ease;
 }
 
 .pet-figure {
@@ -4866,13 +4867,38 @@
  * one frame looks like a state machine rather than a creature cheering up.
  * The grade is the slowest of them, so the colour is still warming after the
  * expression has arrived.
+ *
+ * Both of the declarations below are fussier than they look, and the first
+ * versions of them did nothing at all:
+ *
+ *   `transition: background` cannot cross-fade two gradients — a gradient is
+ *   not an interpolable value, so the declaration parses, applies, and the
+ *   colour still changes on one frame. The dusk gradient therefore lives on
+ *   its own layer whose opacity is what moves.
+ *
+ *   A filter list only interpolates against another list of the same
+ *   functions in the same order. `saturate() drop-shadow()` against
+ *   `saturate() brightness() drop-shadow()` has no correspondence to
+ *   interpolate, so it snaps. Every mood below now names all three, even
+ *   where a value is the identity.
  */
-.pet-window { transition: background 0.75s ease; }
 .pet-faces { transition: filter 0.9s ease; }
 .pet-shadow { transition: width 0.6s ease, opacity 0.6s ease; }
 
-.mood-happy .pet-faces { filter: saturate(1.1) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
-.mood-flat .pet-faces { filter: saturate(0.96) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
+.pet-dusk {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(165deg, #dfddf6, #f3f1fb 76%);
+  opacity: 0;
+  transition: opacity 0.75s ease;
+}
+
+.mood-down .pet-dusk { opacity: 1; }
+.mood-sleepy .pet-dusk { opacity: 1; }
+
+.mood-happy .pet-faces { filter: saturate(1.1) brightness(1) drop-shadow(0 10px 12px rgba(43, 52, 80, 0.16)); }
+.mood-flat .pet-faces { filter: saturate(0.96) brightness(1) drop-shadow(0 8px 10px rgba(43, 52, 80, 0.14)); }
 
 /*
  * Barely drained now. An early pass pulled saturation to 0.45, which read as
@@ -4893,18 +4919,20 @@
  * office grey it started as: still a saturated, pretty colour, so the card
  * stays in the same world as the rest of the app instead of looking broken.
  */
-.mood-down.pet-window { background: linear-gradient(165deg, #dfddf6, #f3f1fb 76%); }
-.mood-sleepy.pet-window { background: linear-gradient(165deg, #d4d4f0, #eae9f8 76%); }
+/* Asleep is a shade deeper than merely low, and it is the one difference
+ * between the two, so it rides on the same layer's own gradient. */
+.mood-sleepy .pet-dusk { background: linear-gradient(165deg, #d4d4f0, #eae9f8 76%); }
 
 /*
  * The glow defaults to the baby's theme colour, so leaving it lit would put a
  * bright pink or green wash over the dusk window and undo it. Recoloured
  * rather than hidden, so the window keeps its depth.
  */
+/* Turned down rather than recoloured: the dusk pane above it supplies the
+ * colour now, and opacity is a thing that can actually be faded. */
 .mood-down .pet-window-glow,
 .mood-sleepy .pet-window-glow {
-  background: #9b93d8;
-  opacity: 0.22;
+  opacity: 0.1;
 }
 
 /* ---------- the prop above the head ---------- */
