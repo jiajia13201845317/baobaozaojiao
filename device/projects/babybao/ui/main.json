@@ -1040,7 +1040,9 @@
    "font_size": 21,
    "fg_color": "#F2762E",
    "text_align": "center",
-   "font": "fonts/NotoSansSC-Regular.otf"
+   "font": "fonts/NotoSansSC-Regular.otf",
+   "name": "stop_text",
+   "hidden": true
   },
   {
    "type": "label",

@@ -349,6 +349,10 @@ static const text_fn_t VALUE_SET[PET_CARE_COUNT] = {
 
 #define SONG_PROMPT "点一首，它就唱给你听"
 
+/* One size for every short label and for the buffer that formats them, so
+ * truncation is not merely unlikely but impossible to write. */
+#define CHROME_LEN 40
+
 /* ---- state ---- */
 
 static struct {
@@ -385,16 +389,26 @@ static struct {
     uint8_t level_index;
     uint32_t rng;
 
-    /* Last thing written to each live label, so a 1 Hz refresh does not
-     * repaint text that has not changed. */
-    char last_points[24];
-    char last_clock[16];
-    char last_level[32];
-    char last_mood[12];
-    char last_value[PET_CARE_COUNT][20];
+    /*
+     * Last thing written to each live label, so a 1 Hz refresh does not
+     * repaint text that has not changed.
+     *
+     * Sized so nothing can be truncated, which matters because a truncated
+     * cache would also be a truncated label. The chrome shares one size with
+     * the buffer that fills it, so that is provable rather than argued: the
+     * longest of those strings is 积分 plus a number. The caption and the
+     * lyric get their own, measured against the longest line in the tables —
+     * fourteen Chinese characters for a caption, sixteen for a lyric, at
+     * three bytes each.
+     */
+    char last_points[CHROME_LEN];
+    char last_clock[CHROME_LEN];
+    char last_level[CHROME_LEN];
+    char last_mood[CHROME_LEN];
+    char last_value[PET_CARE_COUNT][CHROME_LEN];
+    char last_title[CHROME_LEN];
     char last_line[64];
     char last_cue[80];
-    char last_title[40];
     uint8_t last_particles;
 } s;
 
@@ -613,7 +627,7 @@ static void caption(esp_gsp_handle_t ui)
 
 static void refresh_chrome(esp_gsp_handle_t ui)
 {
-    char buf[40];
+    char buf[CHROME_LEN];
 
     set_text(ui, gsp_baby_mood_text_set_text, s.last_mood, sizeof(s.last_mood),
              pet_mood_name(s.mood));
@@ -850,6 +864,14 @@ static void do_care(esp_gsp_handle_t ui, pet_care_t id)
 
 /* ---- the songs page ---- */
 
+/* The chip and the word on it, which do not hide together on their own: a
+ * hidden button loses its background and keeps its label. */
+static void show_stop(esp_gsp_handle_t ui, bool show)
+{
+    gsp_baby_stop_button_set_visible(ui, show);
+    gsp_baby_stop_text_set_visible(ui, show);
+}
+
 static void clear_song(esp_gsp_handle_t ui)
 {
     s.song = -1;
@@ -858,7 +880,7 @@ static void clear_song(esp_gsp_handle_t ui)
              sizeof(s.last_title), "儿歌");
     set_text(ui, gsp_baby_song_cue_set_text, s.last_cue, sizeof(s.last_cue),
              SONG_PROMPT);
-    gsp_baby_stop_button_set_visible(ui, false);
+    show_stop(ui, false);
 }
 
 static void play_song(esp_gsp_handle_t ui, int index)
@@ -870,7 +892,7 @@ static void play_song(esp_gsp_handle_t ui, int index)
              sizeof(s.last_title), SONGS[index].title);
     set_text(ui, gsp_baby_song_cue_set_text, s.last_cue, sizeof(s.last_cue),
              "");
-    gsp_baby_stop_button_set_visible(ui, true);
+    show_stop(ui, true);
 }
 
 /* Scrolls the lyric so the line on screen is the line being sung. */
@@ -901,6 +923,13 @@ static void show_tab(esp_gsp_handle_t ui, tab_t tab)
     for (int i = 0; i < 3; ++i) {
         PAGE_VIS[i](ui, i == (int)tab);
         TAB_MARK[i](ui, i == (int)tab);
+    }
+    /* Showing a page shows everything under it, including the children that
+     * were authored hidden — a subtree inherits its parent's visibility rather
+     * than keeping its own. So 停下 has to be told again on the way in, or it
+     * offers to stop a song that is not playing. */
+    if (tab == TAB_SONGS) {
+        show_stop(ui, s.song >= 0);
     }
 }
 

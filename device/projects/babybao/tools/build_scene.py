@@ -297,7 +297,11 @@ def songs_page(s: Scene) -> None:
     stop = s.add(type="button", parent=page, x=368, y=10, w=96, h=34,
                  bg_color="#FDECE2", radius=17, callback="stop",
                  name="stop_button", hidden=True)
-    label(s, stop, 0, 0, 96, 34, "停下", 21, "#F2762E")
+    # Hiding the button takes its background but not its text, so the word has
+    # its own name and is hidden alongside it. Without this, a page with
+    # nothing playing still offers to stop something.
+    label(s, stop, 0, 0, 96, 34, "停下", 21, "#F2762E", name="stop_text",
+          hidden=True)
 
     # The sung line, which scrolls with the track. Two lines' worth of room:
     # the longest lyric is sixteen characters and the panel is 440 wide.
