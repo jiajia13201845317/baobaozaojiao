@@ -54,7 +54,8 @@ ANIMALS = [
     ("bird", "鸟"), ("horse", "马"), ("lion", "狮子"), ("elephant", "大象"),
 ]
 
-CJK = re.compile(r"[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]")
+C_STRING = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+C_FORMAT = re.compile(r"%[-+ #0-9.]*([a-zA-Z])")
 
 
 def c_string(text: str) -> str:
@@ -156,11 +157,32 @@ def media_header(count: int) -> str:
 
 
 def charset(sources: list[Path]) -> str:
-    """Every character a runtime string can contain."""
+    """Every character a runtime string can contain.
+
+    Every string literal in every C source, not just the Chinese in them. The
+    English song titles are set from C at a size the static scene text never
+    uses, so scanning only CJK left `Row Row Row Your Boat` with no glyphs at
+    28px bold; the hour and the points are worse, because `?? 点` is what a
+    missing digit looks like on the panel.
+
+    The literals in the logging calls come along too. They are a few dozen
+    Latin glyphs that are never drawn, which is a much better trade than a
+    rule about which files to scan that someone has to remember.
+
+    A `%d` is the one thing a literal cannot show you: `"%d 点"` contains no
+    digits, and the panel renders the hour it is missing as a blank. So a
+    numeric specifier pulls in the ten digits and a minus sign.
+    """
     seen: set[str] = set()
     for path in sources:
-        for ch in CJK.findall(path.read_text(encoding="utf-8")):
-            seen.add(ch)
+        for literal in C_STRING.findall(path.read_text(encoding="utf-8")):
+            for conv in C_FORMAT.findall(literal):
+                if conv in "diuxX":
+                    seen.update("0123456789-")
+            text = C_FORMAT.sub("", literal).replace("\\n", "")
+            for ch in text:
+                if ch.isprintable() and ch != " ":
+                    seen.add(ch)
     return "".join(sorted(seen))
 
 
