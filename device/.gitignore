@@ -8,3 +8,6 @@ dependencies.lock
 
 # build_assets.py imports build_scene.py for the sizes they share.
 __pycache__/
+
+# Per-invocation logs from mosaico.py, one directory per run.
+.mosaico-runs/
