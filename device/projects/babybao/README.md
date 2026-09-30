@@ -134,11 +134,17 @@ them, with no application-side ticking at all.
 
 ## Memory and layout
 
-The compiled bundle is 1.8 MiB (952 KiB of images, 903 KiB of fonts) and the
-embedded audio is 2.6 MiB, so `partitions.csv` grows `ota_0` to 8 MiB and
-`ui_apps` to 6 MiB. The product contract fixes only the regions below
-`application_region_start = 0x200000`; everything above is the app's to lay
-out.
+Measured from a real build: the application is 4.8 MiB, most of it the 2.6 MiB
+of embedded audio, and the UI bundle is 1.9 MiB (952 KiB of images, 1.0 MiB of
+fonts). So `partitions.csv` gives `ota_0` 9 MiB and `ui_apps` 5 MiB, which
+leaves both a little over half empty. The product contract fixes only the
+regions below `application_region_start = 0x200000`; everything above is the
+app's to lay out.
+
+The build prints `1/2 app partitions are too small for binary babybao.bin`.
+That is IDF checking against `factory`, which is the size the product contract
+pins it at and which nothing writes: `mosaico.py iris system-update` installs
+into `ota_0`.
 
 Thirty-six images are registered but exactly one is visible at boot, so the
 initial static decode is a single 270 KB frame. The rest decode lazily into
