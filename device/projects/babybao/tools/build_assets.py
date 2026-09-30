@@ -63,7 +63,12 @@ PROPS = {
     "crumb": 46,
 }
 
-ANIMAL_PX = 116
+# The photos are resized to the exact square the scene draws them in, which
+# build_scene.py owns; a mismatch either resamples again on the panel or pays
+# flash for pixels nobody sees.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_scene import ANIMAL_PX  # noqa: E402
+
 ANIMALS = [
     "dog", "cat", "cow", "duck", "sheep", "pig",
     "chick", "frog", "bird", "horse", "lion", "elephant",

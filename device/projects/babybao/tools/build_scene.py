@@ -86,6 +86,11 @@ CRUMB_X, CRUMB_Y = 218, 300
 CRUMB_TOP = 176
 CRUMB_SWING = 22
 
+# The side of an animal photo on the 动物 page. build_assets.py imports this
+# rather than keeping its own copy: a source resized to anything else is either
+# resampled again at draw time or stores pixels the panel never shows.
+ANIMAL_PX = 86
+
 # Rain falls; sparks bob and shimmer; hearts and bubbles rise.
 DROP_X = [20, 48, 76]
 DROP_TOP, DROP_BOTTOM = 64, 130
@@ -296,15 +301,19 @@ def songs_page(s: Scene) -> None:
 
     # The sung line, which scrolls with the track. Two lines' worth of room:
     # the longest lyric is sixteen characters and the panel is 440 wide.
-    label(s, page, 20, 46, 440, 56, "点一首，它就唱给你听", 22, MUTED,
+    label(s, page, 20, 44, 440, 52, "点一首，它就唱给你听", 22, MUTED,
           name="song_cue", charset=True, lines=2, live=True)
 
-    gap = 7
+    # Six rows have to finish above the tab bar, and a card cut off at the
+    # bottom of the panel is the one thing a grid cannot get away with.
+    gap = 5
     bw = (W - 20 - gap) // 2
-    bh = 50
+    bh = 49
+    top = 100
+    assert top + 6 * (bh + gap) - gap <= PAGE_H, "songs grid runs past the page"
     for i, (sid, title) in enumerate(SONGS):
         x = 10 + (i % 2) * (bw + gap)
-        y = 106 + (i // 2) * (bh + gap)
+        y = top + (i // 2) * (bh + gap)
         btn = s.add(type="button", parent=page, x=x, y=y, w=bw, h=bh,
                     bg_color=CARD, radius=14, border_color=LINE,
                     border_width=1, callback=f"play_{sid.replace('-', '_')}",
@@ -322,19 +331,26 @@ def animals_page(s: Scene) -> None:
     label(s, page, 20, 46, 440, 26, "点一下，听它怎么叫", 20, MUTED,
           align="left")
 
-    cols, gap = 4, 8
-    cell = (W - 16 - gap * (cols - 1)) // cols
+    # Three rows of twelve animals, sized down from the square cell so the
+    # bottom row finishes exactly at the tab bar rather than under it.
+    cols, colgap, rowgap = 4, 8, 8
+    cell = (W - 16 - colgap * (cols - 1)) // cols
+    card_h = 110
+    top = 76
+    assert top + 3 * (card_h + rowgap) - rowgap <= PAGE_H, \
+        "animals grid runs past the page"
     for i, (aid, name) in enumerate(ANIMALS):
-        x = 8 + (i % cols) * (cell + gap)
-        y = 80 + (i // cols) * (cell + 30)
-        btn = s.add(type="button", parent=page, x=x, y=y, w=cell, h=cell + 24,
+        x = 8 + (i % cols) * (cell + colgap)
+        y = top + (i // cols) * (card_h + rowgap)
+        btn = s.add(type="button", parent=page, x=x, y=y, w=cell, h=card_h,
                     bg_color=CARD, radius=16, border_color=LINE,
                     border_width=1, callback=f"cry_{aid}", name=f"cry_{aid}")
         # No radius: the source is opaque, so a corner radius would only round
         # the background behind it and leave the photo's own corners square.
-        s.add(type="image", parent=btn, x=(cell - 96) // 2, y=4, w=96, h=96,
+        s.add(type="image", parent=btn, x=(cell - ANIMAL_PX) // 2, y=4,
+              w=ANIMAL_PX, h=ANIMAL_PX,
               image=f"img/animal-{aid}.png", codec="jpeg", quality=84)
-        label(s, btn, 0, cell + 1, cell, 22, name, 20, INK)
+        label(s, btn, 0, ANIMAL_PX + 5, cell, 19, name, 19, INK)
 
 
 def tabs(s: Scene) -> None:
