@@ -1,0 +1,7 @@
+# ESP-IDF and simulator build trees, plus the components the manager fetches.
+build/
+build-sim/
+managed_components/
+sdkconfig
+sdkconfig.old
+dependencies.lock

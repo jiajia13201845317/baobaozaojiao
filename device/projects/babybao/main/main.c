@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
+#include "baby_audio.h"
+#include "baby_ui.h"
 #include "board_display.h"
 #include "bsp/esp_mosaico.h"
 #include "esp_gsp_esp_lcd.h"
 #include "esp_iris.h"
 #include "esp_log.h"
-#include "hello_ui.h"
-#include "iris_screen_mirror.h"
 #include "iris_ota_support.h"
+#include "iris_screen_mirror.h"
 #include "nvs_flash.h"
 #include "ui_bundle.h"
 
 static const char *TAG = "babybao";
-static hello_ui_t s_hello;
 
 void app_main(void)
 {
@@ -47,8 +47,16 @@ void app_main(void)
     esp_gsp_handle_t ui;
     ESP_ERROR_CHECK(esp_gsp_esp_lcd_start(&app_config, &lcd, &ui));
     ESP_ERROR_CHECK(iris_screen_mirror_attach(ui));
-    ESP_ERROR_CHECK(hello_ui_init(ui, &s_hello));
 
-    ESP_LOGI(TAG, "GSP Hello World ready at %dx%d RGB565",
-             BSP_LCD_H_RES, BSP_LCD_V_RES);
+    /* Sound is not required to hold a screen up. A board whose codec will not
+     * come up still shows the pet and still responds to being touched, so the
+     * failure costs the songs and nothing else. */
+    if (!baby_audio_init()) {
+        ESP_LOGW(TAG, "running without audio");
+    }
+
+    ESP_ERROR_CHECK(baby_ui_init(ui));
+
+    ESP_LOGI(TAG, "宝宝陪伴 ready at %dx%d RGB565", BSP_LCD_H_RES,
+             BSP_LCD_V_RES);
 }

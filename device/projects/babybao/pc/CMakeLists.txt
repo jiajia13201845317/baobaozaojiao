@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hello_backend LANGUAGES C)
+project(babybao_backend LANGUAGES C)
 
 if(NOT ESP_GSP_COMPONENT_DIR AND DEFINED ENV{ESP_GSP_COMPONENT_DIR})
     set(ESP_GSP_COMPONENT_DIR "$ENV{ESP_GSP_COMPONENT_DIR}")
@@ -20,7 +20,16 @@ if(NOT EXISTS "${ESP_GSP_COMPONENT_DIR}/tools/sim_bridge/CMakeLists.txt")
 endif()
 
 add_subdirectory("${ESP_GSP_COMPONENT_DIR}/tools/sim_bridge" sim_bridge)
-gsp_add_backend(hello_backend
-    SOURCES ../main/hello_ui.c platform_pc.c
+
+# The behaviour layer, unchanged from what the board runs. The two files the
+# simulator cannot have — the codec and NVS — are stood in for by
+# platform_pc.c.
+gsp_add_backend(babybao_backend
+    SOURCES
+        ../main/baby_ui.c
+        ../main/pet_state.c
+        ../main/pet_lines.c
+        ../main/catalog_data.c
+        platform_pc.c
     INCLUDE_DIRECTORIES ../main
     SCENES ../ui/main.json)

@@ -1,9 +1,14 @@
 # Name,    Type, SubType, Offset,   Size,     Flags
+# Everything below 0x200000 is fixed by the product contract: the retained
+# Vibe Mode firmware lives there and must stay where the bootloader expects.
 otadata,   data, ota,     0x9000,   0x2000,
 phy_init,  data, phy,     0xb000,   0x1000,
 sysmeta,   data, nvs,     0xc000,   0x14000,
 factory,   app,  factory, 0x20000,  0x1c0000,
 coredump,  data, coredump,0x1e0000, 0x20000,
+# Ours from here. The application carries 2.6MB of embedded tracks, and the UI
+# bundle carries sixteen 300px creature renders plus a Chinese glyph set, so
+# both regions are sized well past the template's defaults.
 nvs,       data, nvs,     0x200000, 0x10000,
-ota_0,     app,  ota_0,   0x210000, 0xcf0000,
-ui_apps,   data, 0x40,    0xf00000, 0x100000,
+ota_0,     app,  ota_0,   0x210000, 0x800000,
+ui_apps,   data, 0x40,    0xa10000, 0x5f0000,

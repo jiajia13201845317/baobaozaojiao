@@ -1,0 +1,322 @@
+{
+ "abc": {
+  "id": "abc",
+  "title": "ABC Song",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "ABC Song"
+   },
+   {
+    "at": 3.0,
+    "text": "A B C D E F G."
+   },
+   {
+    "at": 9.25,
+    "text": "H I J K L M N O P."
+   },
+   {
+    "at": 15.5,
+    "text": "Q R S, T U V."
+   },
+   {
+    "at": 23.0,
+    "text": "W X Y and Z."
+   },
+   {
+    "at": 28.0,
+    "text": "Now I know my A B Cs."
+   },
+   {
+    "at": 34.25,
+    "text": "Next time won't you sing with me."
+   }
+  ]
+ },
+ "boat": {
+  "id": "boat",
+  "title": "Row Row Row Your Boat",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "Row Row Row Your Boat"
+   },
+   {
+    "at": 3.0,
+    "text": "Row, row, row your boat."
+   },
+   {
+    "at": 8.19,
+    "text": "Gently down the stream."
+   },
+   {
+    "at": 13.38,
+    "text": "Merrily, merrily, merrily, merrily."
+   },
+   {
+    "at": 18.58,
+    "text": "Life is but a dream."
+   }
+  ]
+ },
+ "bunny": {
+  "id": "bunny",
+  "title": "小兔子乖乖",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "小兔子乖乖"
+   },
+   {
+    "at": 3.0,
+    "text": "小兔子乖乖，把门开开。"
+   },
+   {
+    "at": 13.91,
+    "text": "快点儿开开，我要进来。"
+   },
+   {
+    "at": 24.82,
+    "text": "不开不开，我不开。"
+   },
+   {
+    "at": 33.0,
+    "text": "妈妈没回来，谁来也不开。"
+   }
+  ]
+ },
+ "ducks": {
+  "id": "ducks",
+  "title": "数鸭子",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "数鸭子"
+   },
+   {
+    "at": 3.0,
+    "text": "门前大桥下，游过一群鸭。"
+   },
+   {
+    "at": 12.6,
+    "text": "快来快来数一数，二四六七八。"
+   },
+   {
+    "at": 22.2,
+    "text": "嘎嘎嘎嘎，真呀真多呀。"
+   },
+   {
+    "at": 31.8,
+    "text": "数不清到底多少鸭。"
+   }
+  ]
+ },
+ "friends": {
+  "id": "friends",
+  "title": "找朋友",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "找朋友"
+   },
+   {
+    "at": 3.0,
+    "text": "找呀找呀找朋友，找到一个好朋友。"
+   },
+   {
+    "at": 15.5,
+    "text": "敬个礼呀握握手，你是我的好朋友。"
+   },
+   {
+    "at": 28.0,
+    "text": "再见！"
+   }
+  ]
+ },
+ "lamb": {
+  "id": "lamb",
+  "title": "Mary Had a Little Lamb",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "Mary Had a Little Lamb"
+   },
+   {
+    "at": 3.0,
+    "text": "Mary had a little lamb, little lamb, little lamb."
+   },
+   {
+    "at": 16.04,
+    "text": "Mary had a little lamb, its fleece was white as snow."
+   },
+   {
+    "at": 29.09,
+    "text": "And everywhere that Mary went, Mary went, Mary went."
+   },
+   {
+    "at": 42.13,
+    "text": "Everywhere that Mary went, the lamb was sure to go."
+   }
+  ]
+ },
+ "macdonald": {
+  "id": "macdonald",
+  "title": "Old MacDonald",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "Old MacDonald"
+   },
+   {
+    "at": 3.0,
+    "text": "Old MacDonald had a farm, E I E I O."
+   },
+   {
+    "at": 15.0,
+    "text": "And on that farm he had a cow, E I E I O."
+   },
+   {
+    "at": 27.0,
+    "text": "With a moo moo here, and a moo moo there."
+   },
+   {
+    "at": 36.6,
+    "text": "Here a moo, there a moo, everywhere a moo moo."
+   },
+   {
+    "at": 46.2,
+    "text": "Old MacDonald had a farm, E I E I O."
+   }
+  ]
+ },
+ "radish": {
+  "id": "radish",
+  "title": "拔萝卜",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "拔萝卜"
+   },
+   {
+    "at": 3.0,
+    "text": "拔萝卜，拔萝卜，嘿哟嘿哟拔萝卜。"
+   },
+   {
+    "at": 12.6,
+    "text": "嘿哟嘿哟拔不动。"
+   },
+   {
+    "at": 17.4,
+    "text": "老公公，快快来，快来帮我们拔萝卜。"
+   }
+  ]
+ },
+ "spider": {
+  "id": "spider",
+  "title": "Itsy Bitsy Spider",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "Itsy Bitsy Spider"
+   },
+   {
+    "at": 3.0,
+    "text": "The itsy bitsy spider climbed up the water spout."
+   },
+   {
+    "at": 15.5,
+    "text": "Down came the rain and washed the spider out."
+   },
+   {
+    "at": 25.5,
+    "text": "Out came the sun and dried up all the rain."
+   },
+   {
+    "at": 35.5,
+    "text": "And the itsy bitsy spider climbed up the spout again."
+   }
+  ]
+ },
+ "stars-zh": {
+  "id": "stars-zh",
+  "title": "小星星",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "小星星"
+   },
+   {
+    "at": 3.0,
+    "text": "一闪一闪亮晶晶，满天都是小星星。"
+   },
+   {
+    "at": 16.64,
+    "text": "挂在天上放光明，好像许多小眼睛。"
+   },
+   {
+    "at": 30.27,
+    "text": "一闪一闪亮晶晶，满天都是小星星。"
+   }
+  ]
+ },
+ "tigers": {
+  "id": "tigers",
+  "title": "两只老虎",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "两只老虎"
+   },
+   {
+    "at": 3.0,
+    "text": "两只老虎，两只老虎。"
+   },
+   {
+    "at": 10.5,
+    "text": "跑得快，跑得快。"
+   },
+   {
+    "at": 18.0,
+    "text": "一只没有眼睛，一只没有尾巴。"
+   },
+   {
+    "at": 25.5,
+    "text": "真奇怪，真奇怪。"
+   }
+  ]
+ },
+ "twinkle": {
+  "id": "twinkle",
+  "title": "Twinkle Twinkle",
+  "cues": [
+   {
+    "at": 0.3,
+    "text": "Twinkle Twinkle"
+   },
+   {
+    "at": 3.0,
+    "text": "Twinkle, twinkle, little star."
+   },
+   {
+    "at": 9.82,
+    "text": "How I wonder what you are."
+   },
+   {
+    "at": 16.64,
+    "text": "Up above the world so high."
+   },
+   {
+    "at": 23.45,
+    "text": "Like a diamond in the sky."
+   },
+   {
+    "at": 30.27,
+    "text": "Twinkle, twinkle, little star."
+   },
+   {
+    "at": 37.09,
+    "text": "How I wonder what you are."
+   }
+  ]
+ }
+}
