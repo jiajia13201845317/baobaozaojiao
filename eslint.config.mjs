@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The ESP-Mosaico firmware. Its ESP-IDF build tree contains files CMake
+    // names `*.ts`, which are dependency lists rather than TypeScript.
+    "device/**",
   ]),
 ]);
 
