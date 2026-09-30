@@ -346,7 +346,12 @@ export function lineFor({
   if (acting) return pick(acting, seed);
   // A thin meter is the most useful thing to say, but not to the exclusion of
   // everything else — every third line stays flavour so it is not a nag.
-  if (want && seed % 3 !== 2) return pick(WANT_LINES[want], seed);
+  //
+  // Never while asleep, though. Every want line is about the pet looking or
+  // turning towards a button, and the sleepy render has its eyes shut and its
+  // head tipped over, so the caption would be describing a pet that is not on
+  // screen.
+  if (want && mood !== "sleepy" && seed % 3 !== 2) return pick(WANT_LINES[want], seed);
   if (seed % 4 === 3) return levelLine;
   return pick(IDLE_LINES[mood], seed);
 }
